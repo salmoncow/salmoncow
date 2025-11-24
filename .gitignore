@@ -75,8 +75,13 @@ public/assets/
 *.swo
 *~
 
-# Claude Code user settings
-.claude/
+# Claude Code user settings (personal preferences)
+.claude/settings.json
+.claude/user-*
+.claude/.history
+
+# But commit shared project commands
+!.claude/commands/
 
 # OS generated files
 .DS_Store

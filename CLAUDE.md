@@ -4,11 +4,15 @@
 Before ANY architectural, implementation, or design decision in this project:
 1. **MUST** reference this file's decision framework below
 2. **MUST** read appropriate `.prompts/` files for the task type
-3. **MUST** document which guidance files influenced the decision in your response
-4. **MUST** apply established patterns consistently
-5. **MUST** cite specific guidance sections when making architectural choices
+3. **MUST** assess if prompts provide COMPREHENSIVE guidance for the task
+4. **MUST** flag prompt gaps rather than guessing or hallucinating guidance
+5. **MUST** document which guidance files influenced the decision in your response
+6. **MUST** apply established patterns consistently
+7. **MUST** cite specific guidance sections when making architectural choices
 
 🎯 **Non-Negotiable**: This guidance consultation is required for every development task - not optional.
+
+⚠️ **PROMPT GAP PROTOCOL**: If prompts are insufficient for the task, follow `meta/prompt-gap-protocol.md` to flag gaps and recommend prompt creation BEFORE implementation.
 
 ---
 
@@ -54,6 +58,7 @@ Deployment & Operations:
 
 **Meta-Guidance:**
 - `meta/prompt-maintenance.md` - Keeping prompt library current and accurate
+- `meta/prompt-gap-protocol.md` - Detecting and handling insufficient prompt coverage
 
 ## Decision Framework
 
@@ -111,16 +116,21 @@ Deployment & Operations:
 
 1. **Identify the Problem Type** (architecture, security, performance, etc.)
 2. **Reference Appropriate Prompt File(s)** from `./.prompts/`
-3. **Apply Guidance** to the specific technology and context
-4. **Document Which Prompts Influenced the Decision**
-5. **Follow Through** with testing and validation as outlined in prompts
+3. **Assess Prompt Coverage** - Is guidance comprehensive for this task?
+   - If **YES**: Proceed to step 4
+   - If **NO**: Follow `meta/prompt-gap-protocol.md` to flag gap and recommend prompt creation
+4. **Apply Guidance** to the specific technology and context
+5. **Document Which Prompts Influenced the Decision**
+6. **Follow Through** with testing and validation as outlined in prompts
 
 ## Session Initialization Protocol
 
 At the start of each development session, Claude must:
 - [ ] Acknowledge this guidance framework is active and mandatory
 - [ ] Confirm understanding of the decision mapping above
+- [ ] Understand the prompt gap protocol (`meta/prompt-gap-protocol.md`)
 - [ ] Reference appropriate guidance files before making architectural decisions
+- [ ] Assess prompt coverage and flag gaps when detected
 - [ ] Document guidance citations in all responses involving design choices
 
 ## Response Documentation Template
@@ -135,5 +145,29 @@ For any architectural or implementation decision, include:
 **Patterns Applied:**
 - Pattern name and implementation approach
 ```
+
+## Available Commands
+
+### `/commit` - Create Git Commit
+Quickly create a git commit for recent changes following project best practices.
+
+**Usage:** `/commit`
+
+**What it does:**
+1. Reviews current changes (`git status`, `git diff`)
+2. Analyzes commit history for style consistency
+3. Drafts a commit message following `core/development/git-best-practices.md`
+4. Stages relevant files and creates commit
+5. Includes Claude Code co-authorship attribution
+
+**Requirements:**
+- Follows conventional commits format
+- Verifies no sensitive files are committed
+- Cites guidance prompts that influenced changes
+- Uses heredoc format for proper message formatting
+
+**Note:** Does NOT push to remote unless explicitly requested.
+
+---
 
 The detailed principles, patterns, and best practices are all maintained in the `./.prompts/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.
