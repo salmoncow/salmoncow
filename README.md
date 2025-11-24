@@ -1,6 +1,6 @@
-# Firebase Base Website
+# Salmoncow
 
-A simple, modern web application that demonstrates Firebase authentication with Google sign-in. The app features a clean, responsive interface with a gradient background and smooth animations. Deployed on Firebase Hosting with free tier optimization.
+A modern web application with Firebase authentication and Google sign-in. The app features a clean, responsive interface with a gradient background and smooth animations. Deployed on Firebase Hosting with free tier optimization.
 
 ## Features
 
@@ -73,9 +73,9 @@ Deploy your application to Firebase Hosting for production use.
 ### Firebase Configuration
 
 The project is configured for Firebase Hosting with:
-- **Project ID**: `base-website-dee90` (configured in `.firebaserc`)
+- **Project ID**: `salmoncow` (configured in `.firebaserc`)
 - **Hosting Config**: `firebase.json` (caching, security headers, routing)
-- **Public URL**: `https://base-website-dee90.web.app`
+- **Public URL**: `https://salmoncow.web.app`
 
 ### Deployment Prerequisites
 
@@ -87,7 +87,7 @@ The project is configured for Firebase Hosting with:
 2. **Verify Project Connection:**
    ```bash
    firebase projects:list
-   firebase use base-website-dee90
+   firebase use salmoncow
    ```
 
 ### Deployment Scripts
@@ -96,7 +96,7 @@ The project is configured for Firebase Hosting with:
 ```bash
 npm run deploy
 ```
-Builds the project and deploys to production (`https://base-website-dee90.web.app`)
+Builds the project and deploys to production (`https://salmoncow.web.app`)
 
 **Preview Channel Deployment (Testing):**
 ```bash
@@ -127,7 +127,7 @@ Opens your deployed site in the browser.
 3. **Deploy to Production:**
    ```bash
    npm run deploy
-   # Live at https://base-website-dee90.web.app
+   # Live at https://salmoncow.web.app
    ```
 
 ### Firebase Hosting Features

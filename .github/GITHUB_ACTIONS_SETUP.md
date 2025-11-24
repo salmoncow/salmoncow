@@ -12,7 +12,7 @@ This project uses GitHub Actions for continuous deployment with three workflows:
 
 ## Prerequisites
 
-- Firebase project created and configured (`base-website-dee90`)
+- Firebase project created and configured (`salmoncow`)
 - GitHub repository with admin access
 - Google Cloud Console access (for creating service account)
 
@@ -33,7 +33,7 @@ Follow these steps:
 #### 1.1 Access Google Cloud Console
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Select your Firebase project (`base-website-dee90`)
+2. Select your Firebase project (`salmoncow`)
 3. Navigate to **IAM & Admin** → **Service Accounts**
 
 #### 1.2 Create Service Account
@@ -41,7 +41,7 @@ Follow these steps:
 1. Click **"+ CREATE SERVICE ACCOUNT"**
 2. Fill in the details:
    - **Service account name**: `github-actions-deploy` (or your preference)
-   - **Service account ID**: Auto-generated (e.g., `github-actions-deploy@base-website-dee90.iam.gserviceaccount.com`)
+   - **Service account ID**: Auto-generated (e.g., `github-actions-deploy@salmoncow.iam.gserviceaccount.com`)
    - **Description**: "Service account for GitHub Actions Firebase deployments"
 3. Click **"CREATE AND CONTINUE"**
 
@@ -92,10 +92,10 @@ Value: <entire contents of the JSON file you downloaded>
    ```json
    {
      "type": "service_account",
-     "project_id": "base-website-dee90",
+     "project_id": "salmoncow",
      "private_key_id": "...",
      "private_key": "-----BEGIN PRIVATE KEY-----\n...",
-     "client_email": "github-actions-deploy@base-website-dee90.iam.gserviceaccount.com",
+     "client_email": "github-actions-deploy@salmoncow.iam.gserviceaccount.com",
      ...
    }
    ```
@@ -112,7 +112,7 @@ Name: VITE_FIREBASE_AUTH_DOMAIN
 Value: <your-project-id>.firebaseapp.com
 
 Name: VITE_FIREBASE_PROJECT_ID
-Value: base-website-dee90
+Value: salmoncow
 
 Name: VITE_FIREBASE_STORAGE_BUCKET
 Value: <your-project-id>.firebasestorage.app
@@ -294,7 +294,7 @@ View workflow runs:
 ### Firebase Console
 
 View deployments:
-- [Firebase Console](https://console.firebase.google.com/project/base-website-dee90/hosting)
+- [Firebase Console](https://console.firebase.google.com/project/salmoncow/hosting)
 - Hosting → Dashboard
 - View release history, preview channels, and usage
 
