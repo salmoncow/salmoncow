@@ -63,16 +63,96 @@ fi
 git branch --merged main | grep -q "^[* ] $current_branch$"
 
 if [ $? -ne 0 ]; then
-  echo "⚠️ WARNING: Branch '$current_branch' is NOT merged to main"
+  echo "⚠️ WARNING: Branch '$current_branch' is NOT merged to main locally"
+  echo ""
+  echo "Checking GitHub for merged PR..."
+
+  # Proceed to Step 2b: Check GitHub
+fi
+```
+
+**Step 2b: Check GitHub PR Status (if not merged locally)**
+```bash
+# Only runs if Step 2 detected branch is not merged locally
+# Check if PR exists and is merged on GitHub
+pr_info=$(gh pr list --head "$current_branch" --state merged --json number,mergedAt,url 2>/dev/null)
+
+if [ -n "$pr_info" ] && [ "$pr_info" != "[]" ]; then
+  # PR is merged on GitHub!
+  pr_number=$(echo "$pr_info" | jq -r '.[0].number')
+  pr_url=$(echo "$pr_info" | jq -r '.[0].url')
+  pr_merged_at=$(echo "$pr_info" | jq -r '.[0].mergedAt')
+
+  echo "✅ Found merged PR on GitHub!"
+  echo ""
+  echo "   PR: #$pr_number"
+  echo "   URL: $pr_url"
+  echo "   Merged: $pr_merged_at"
+  echo ""
+  echo "📚 What happened:"
+  echo "   - Your PR was merged on GitHub"
+  echo "   - Local 'main' branch doesn't have the merge yet"
+  echo "   - Git only checks LOCAL merge status by default"
+  echo ""
+  echo "💡 Solution: Update local main with merged changes"
+  echo ""
+  echo "Would you like me to update main and retry? (y/n)"
+  read -r response
+
+  if [[ "$response" =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "Updating local main branch..."
+
+    # Switch to main and pull
+    git checkout main
+    if [ $? -ne 0 ]; then
+      echo "❌ Failed to switch to main"
+      exit 1
+    fi
+
+    git pull origin main
+    if [ $? -ne 0 ]; then
+      echo "⚠️ Failed to pull main, but continuing..."
+    fi
+
+    # Switch back to feature branch
+    git checkout "$current_branch"
+
+    # Retry merge check
+    if git branch --merged main | grep -q "^[* ] $current_branch$"; then
+      echo "✅ Branch now detected as merged locally!"
+      echo ""
+      # Continue to Step 3
+    else
+      echo "⚠️ Branch still not detected as merged after updating main"
+      echo "   This is unusual. The PR may have been squash-merged."
+      echo ""
+      echo "Options:"
+      echo "1. Switch to main and verify merge manually"
+      echo "2. Force delete: git checkout main && git branch -D $current_branch"
+      exit 1
+    fi
+  else
+    echo ""
+    echo "Cleanup cancelled. To update main manually:"
+    echo "  git checkout main && git pull origin main"
+    echo "  Then retry: /git-cleanup"
+    exit 0
+  fi
+else
+  # No merged PR found on GitHub
+  echo ""
+  echo "No merged PR found on GitHub for branch: $current_branch"
   echo ""
   echo "This branch may contain unmerged work!"
   echo ""
   echo "Options:"
-  echo "1. Check if PR is merged on GitHub"
-  echo "2. Force delete anyway (will lose commits): --force"
-  echo "3. Cancel and investigate"
-
-  # Require --force flag to proceed with unmerged branch
+  echo "1. Check if PR exists: gh pr list --head $current_branch"
+  echo "2. Create PR: /gh-pr"
+  echo "3. Force delete anyway (will lose commits): git branch -D $current_branch"
+  echo "4. Cancel and investigate"
+  echo ""
+  echo "Aborting cleanup for safety."
   exit 1
 fi
 ```
@@ -260,12 +340,35 @@ Input: /git-cleanup
 │  ├─ Yes → Error: "Already on main, specify branch to delete"
 │  └─ No → Store branch name, continue
 │
-├─ Is branch merged to main?
-│  ├─ No → WARN: "Branch not merged! Use --force to delete anyway"
-│  │       └─ Has --force flag?
-│  │          ├─ No → Abort (safe default)
-│  │          └─ Yes → Continue with forced deletion
-│  └─ Yes → Continue
+├─ Is branch merged to main (locally)?
+│  ├─ Yes → Continue to unpushed commits check
+│  └─ No → Check GitHub PR status
+│     ├─ Check gh CLI available
+│     │  └─ Not available → WARN: "Install gh CLI for auto-fix"
+│     │
+│     ├─ Query: gh pr list --head <branch> --state merged
+│     │
+│     ├─ PR found and merged on GitHub?
+│     │  ├─ Yes → Show PR details and offer auto-fix
+│     │  │  ├─ User accepts auto-fix
+│     │  │  │  ├─ Switch to main
+│     │  │  │  ├─ Pull origin main
+│     │  │  │  ├─ Switch back to feature branch
+│     │  │  │  ├─ Retry merge check
+│     │  │  │  │  ├─ Now merged → Continue
+│     │  │  │  │  └─ Still not merged → Error: "Squash merge?"
+│     │  │  │  └─ Continue to unpushed commits check
+│     │  │  └─ User declines → Exit with manual instructions
+│     │  │
+│     │  └─ No → WARN: "No merged PR found"
+│     │     └─ Offer options:
+│     │        1. Check PR status
+│     │        2. Create PR
+│     │        3. Force delete
+│     │        4. Cancel
+│     │        └─ Exit (safe default)
+│     │
+│     └─ gh CLI error → Fallback to manual instructions
 │
 ├─ Are there unpushed commits?
 │  ├─ Yes → WARN: "Unpushed commits will be lost!"
@@ -319,11 +422,14 @@ When this happens:
 ## Safety Features
 
 - **Blocks on main/master** - Can't accidentally delete main
-- **Checks merge status** - Prevents losing unmerged work
+- **Checks merge status locally** - Prevents losing unmerged work
+- **Checks GitHub PR status** - Auto-detects merged PRs even if local main is outdated
+- **Auto-fix for stale main** - Offers to update local main and retry when PR is merged
 - **Warns on unpushed commits** - Prevents data loss
 - **Uses -d not -D** - Safe deletion that requires merge
 - **Asks before remote deletion** - User controls remote cleanup
 - **Clear error messages** - Helps understand what's wrong
+- **Educational feedback** - Explains why issues occur and how to prevent them
 
 ## Examples
 
@@ -357,22 +463,74 @@ You are now on main with latest changes.
 Ready to create a new branch: /git-branch <type>/<name>
 ```
 
-**Cleanup with Warnings:**
+**Cleanup with Auto-Fix (PR merged on GitHub, local main outdated):**
+```bash
+$ /git-cleanup
+
+Cleaning up branch: feat/user-dashboard
+
+Checking merge status...
+⚠️ WARNING: Branch 'feat/user-dashboard' is NOT merged to main locally
+
+Checking GitHub for merged PR...
+✅ Found merged PR on GitHub!
+
+   PR: #42
+   URL: https://github.com/user/repo/pull/42
+   Merged: 2025-11-24T18:31:53Z
+
+📚 What happened:
+   - Your PR was merged on GitHub
+   - Local 'main' branch doesn't have the merge yet
+   - Git only checks LOCAL merge status by default
+
+💡 Solution: Update local main with merged changes
+
+Would you like me to update main and retry? (y/n): y
+
+Updating local main branch...
+Switched to branch 'main'
+From https://github.com/user/repo
+   abc1234..def5678  main       -> origin/main
+Switched to branch 'feat/user-dashboard'
+
+✅ Branch now detected as merged locally!
+
+Checking for unpushed commits...
+✓ All commits are pushed
+
+Switching to main...
+✓ Now on main
+
+Deleting local branch...
+✓ Deleted branch feat/user-dashboard
+
+✅ Cleanup complete!
+
+You are now on main with latest changes.
+Ready to create a new branch: /git-branch <type>/<name>
+```
+
+**Cleanup with Warnings (No PR found):**
 ```bash
 $ /git-cleanup
 
 Cleaning up branch: feat/experimental-feature
 
 Checking merge status...
-⚠️ WARNING: Branch NOT merged to main!
+⚠️ WARNING: Branch 'feat/experimental-feature' is NOT merged to main locally
 
-Your branch 'feat/experimental-feature' is not merged into main.
-Deleting this branch will LOSE all commits!
+Checking GitHub for merged PR...
+
+No merged PR found on GitHub for branch: feat/experimental-feature
+
+This branch may contain unmerged work!
 
 Options:
-1. Cancel and check if PR is merged on GitHub
-2. Cancel and merge/rebase manually
-3. Force delete anyway (use: git branch -D feat/experimental-feature)
+1. Check if PR exists: gh pr list --head feat/experimental-feature
+2. Create PR: /gh-pr
+3. Force delete anyway (will lose commits): git branch -D feat/experimental-feature
+4. Cancel and investigate
 
 Aborting cleanup for safety.
 ```
