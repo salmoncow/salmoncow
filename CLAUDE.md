@@ -148,15 +148,49 @@ For any architectural or implementation decision, include:
 
 ## Available Commands
 
-### `/commit` - Create Git Commit
-Quickly create a git commit for recent changes following project best practices.
+### Command Organization
 
-**Usage:** `/commit`
+Commands use prefixes for easy discovery and auto-completion:
+- **`/git-*`** - Git operations (branch, commit, push, sync, cleanup)
+- **`/gh-*`** - GitHub operations (pull requests, issues, releases)
+
+💡 **Tip:** Type `/git-` or `/gh-` and press TAB to see all commands in that category.
+
+---
+
+### Git Commands
+
+All git commands follow patterns from `core/development/git-best-practices.md`.
+
+#### `/git-branch <name>` - Create New Branch
+Create a feature branch from latest main following naming conventions.
+
+**Usage:** `/git-branch feat/feature-name` or `/git-branch fix/bug-name #123`
+
+**What it does:**
+1. Validates branch name against conventions (lowercase, hyphens, valid type)
+2. Blocks if uncommitted changes exist
+3. Switches to main and pulls latest
+4. Creates and switches to new branch
+5. Parses and formats issue numbers automatically
+
+**Examples:**
+- `/git-branch feat/add-user-dashboard`
+- `/git-branch fix/login-timeout-error #58`
+
+**Next step:** Make changes, then `/git-commit`
+
+---
+
+#### `/git-commit` - Commit Changes
+Create a git commit for recent changes following project best practices.
+
+**Usage:** `/git-commit`
 
 **What it does:**
 1. Reviews current changes (`git status`, `git diff`)
 2. Analyzes commit history for style consistency
-3. Drafts a commit message following `core/development/git-best-practices.md`
+3. Drafts commit message following conventional commits format
 4. Stages relevant files and creates commit
 5. Includes Claude Code co-authorship attribution
 
@@ -164,14 +198,15 @@ Quickly create a git commit for recent changes following project best practices.
 - Follows conventional commits format
 - Verifies no sensitive files are committed
 - Cites guidance prompts that influenced changes
-- Uses heredoc format for proper message formatting
 
-**Note:** Does NOT push to remote unless explicitly requested.
+**Next step:** `/git-push` to share your commits
 
-### `/push` - Push to Remote
+---
+
+#### `/git-push` - Push to Remote
 Push current branch to remote repository following git best practices.
 
-**Usage:** `/push`
+**Usage:** `/git-push`
 
 **What it does:**
 1. Verifies working tree is clean
@@ -187,19 +222,73 @@ Push current branch to remote repository following git best practices.
 - Checks for uncommitted changes
 - Handles non-fast-forward scenarios
 
-**Note:** Follow `core/development/git-best-practices.md` - use PRs for main/master.
+**Next step:** `/gh-pr` to create pull request
 
-### `/pr` - Create Pull Request
-Create a pull request for the current branch using GitHub CLI.
+---
 
-**Usage:** `/pr`
+#### `/git-sync` - Sync with Main
+Update current branch with latest changes from main.
+
+**Usage:** `/git-sync`
+
+**What it does:**
+1. Fetches latest from origin
+2. Rebases current branch on origin/main
+3. Handles conflicts with clear guidance
+4. Shows updated commit status
+
+**When to use:** When main branch has new commits you need to integrate
+
+**Safety features:**
+- Only works on feature branches, not main/master
+- Blocks if uncommitted changes exist
+- Provides conflict resolution instructions
+- Uses rebase for cleaner history
+
+**Note:** After sync, next push may require `--force-with-lease` (handled by `/git-push`)
+
+---
+
+#### `/git-cleanup` - Clean Up Branch
+Clean up local branch after PR is merged.
+
+**Usage:** `/git-cleanup`
+
+**What it does:**
+1. Stores current branch name
+2. Verifies branch is merged to main (safety check)
+3. Switches to main and pulls latest
+4. Deletes local feature branch
+5. Optionally deletes remote branch
+
+**When to use:** After your PR is merged to main
+
+**Safety features:**
+- Blocks if on main/master
+- Warns if branch has unmerged commits
+- Warns if branch has unpushed commits
+- Uses safe delete (`-d` not `-D`)
+- Asks before deleting remote branch
+
+**Next step:** Create new branch with `/git-branch`
+
+---
+
+### GitHub Commands
+
+Commands using GitHub CLI (`gh`) for platform operations.
+
+#### `/gh-pr` - Create Pull Request
+Create a pull request for current branch using GitHub CLI.
+
+**Usage:** `/gh-pr`
 
 **What it does:**
 1. Verifies `gh` CLI is installed and authenticated
 2. Ensures branch is pushed to remote (offers to push if not)
 3. Analyzes commits since branching from main
 4. Drafts PR title following conventional commits format
-5. Generates PR body with summary, changes, and test plan
+5. Generates PR body with summary, changes, test plan
 6. Creates PR using `gh pr create`
 7. Displays PR URL and next steps
 
@@ -214,7 +303,7 @@ Create a pull request for the current branch using GitHub CLI.
 - Branch must be pushed to remote
 - Cannot create PR from main/master branch
 
-**Note:** Uses `--draft` flag for work-in-progress PRs.
+**Next step:** Wait for PR review and approval, then `/git-cleanup` after merge
 
 ---
 
