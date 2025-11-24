@@ -189,6 +189,33 @@ Push current branch to remote repository following git best practices.
 
 **Note:** Follow `core/development/git-best-practices.md` - use PRs for main/master.
 
+### `/pr` - Create Pull Request
+Create a pull request for the current branch using GitHub CLI.
+
+**Usage:** `/pr`
+
+**What it does:**
+1. Verifies `gh` CLI is installed and authenticated
+2. Ensures branch is pushed to remote (offers to push if not)
+3. Analyzes commits since branching from main
+4. Drafts PR title following conventional commits format
+5. Generates PR body with summary, changes, and test plan
+6. Creates PR using `gh pr create`
+7. Displays PR URL and next steps
+
+**PR Body includes:**
+- Summary of changes and rationale
+- Guidance references (which prompts influenced decisions)
+- Test plan checklist
+- Documentation updates if applicable
+
+**Requirements:**
+- GitHub CLI (`gh`) must be installed
+- Branch must be pushed to remote
+- Cannot create PR from main/master branch
+
+**Note:** Uses `--draft` flag for work-in-progress PRs.
+
 ---
 
 The detailed principles, patterns, and best practices are all maintained in the `./.prompts/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.
