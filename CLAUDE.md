@@ -168,6 +168,27 @@ Quickly create a git commit for recent changes following project best practices.
 
 **Note:** Does NOT push to remote unless explicitly requested.
 
+### `/push` - Push to Remote
+Push current branch to remote repository following git best practices.
+
+**Usage:** `/push`
+
+**What it does:**
+1. Verifies working tree is clean
+2. Checks current branch and upstream tracking
+3. Warns if pushing to main/master (should use PRs)
+4. Uses `git push -u origin <branch>` for first push
+5. Uses `git push` for subsequent pushes
+6. Provides PR creation link after successful push
+
+**Safety features:**
+- NEVER force pushes without explicit confirmation
+- Warns before pushing to protected branches
+- Checks for uncommitted changes
+- Handles non-fast-forward scenarios
+
+**Note:** Follow `core/development/git-best-practices.md` - use PRs for main/master.
+
 ---
 
 The detailed principles, patterns, and best practices are all maintained in the `./.prompts/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.
