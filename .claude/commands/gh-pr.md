@@ -9,21 +9,45 @@ Follow these requirements from `core/development/git-best-practices.md`:
 1. **Pre-flight Checks:**
    - Verify `gh` CLI is installed and authenticated
    - Check current branch name
-   - Ensure branch is pushed to remote (`git rev-parse @{u}`)
    - Verify not on main/master branch
-   - Check for uncommitted changes
+   - **Check for uncommitted changes:** `git status --porcelain`
+   - Ensure branch is pushed to remote (`git rev-parse @{u}`)
 
-2. **If Branch Not Pushed:**
-   - Offer to push first using `/push` workflow
+2. **If Uncommitted Changes Exist:**
+   - **BLOCK PR creation** - PRs should only include committed code
+   - Show list of uncommitted files
+   - Error message: "Cannot create PR with uncommitted changes"
+   - Provide options:
+     ```
+     ❌ Cannot create PR: uncommitted changes detected
+
+     Uncommitted files:
+     - file1.js (modified)
+     - file2.md (new file)
+
+     Please choose one:
+     1. Commit changes: /git-commit
+     2. Stash changes: git stash
+     3. Review changes: git diff
+     4. Discard changes: git checkout -- <file>
+
+     After resolving, retry: /gh-pr
+     ```
+   - **Exception:** Files matching .gitignore patterns can be ignored
+   - Use: `git status --porcelain | grep -v '^??'` to check only tracked files
+   - Untracked files (new files starting with `??`) should trigger warning
+
+3. **If Branch Not Pushed:**
+   - Offer to push first using `/git-push` workflow
    - Use `git push -u origin <branch>` if needed
 
-3. **Analyze Changes for PR Description:**
+4. **Analyze Changes for PR Description:**
    - Run `git log main...HEAD` (or `master...HEAD`) to see all commits
    - Run `git diff main...HEAD` to understand full scope of changes
    - Review commit messages for summary points
    - Identify which `.prompts/` files guided the implementation
 
-4. **Draft PR Title and Body:**
+5. **Draft PR Title and Body:**
 
    **Title Format:**
    - Use conventional commits style: `<type>(<scope>): <description>`
@@ -57,7 +81,7 @@ Follow these requirements from `core/development/git-best-practices.md`:
    🤖 Generated with [Claude Code](https://claude.com/claude-code)
    ```
 
-5. **Create PR Using GitHub CLI:**
+6. **Create PR Using GitHub CLI:**
    ```bash
    gh pr create \
      --title "feat(scope): Description" \
@@ -72,7 +96,7 @@ Follow these requirements from `core/development/git-best-practices.md`:
    - `--draft` - create as draft PR
    - `--web` - open in browser after creation
 
-6. **Post-Creation:**
+7. **Post-Creation:**
    - Display PR URL
    - Show next steps (wait for CI, request reviewers)
    - Remind about branch protection policies
@@ -93,7 +117,32 @@ Based on `git-best-practices.md`, branches should follow patterns:
 - Follow conventional commits format in title
 
 **Error Handling:**
+- If uncommitted changes exist: BLOCK and show options to commit/stash/discard
 - If `gh` not installed: Provide installation instructions
 - If not authenticated: Run `gh auth login`
 - If branch not pushed: Offer to push first
 - If PR already exists: Show existing PR URL
+
+**Example: Uncommitted Changes Error**
+```
+$ /gh-pr
+
+⚠️ Pre-flight check: Checking for uncommitted changes...
+
+❌ Cannot create PR: uncommitted changes detected
+
+Uncommitted files:
+  M src/index.js (modified)
+  M README.md (modified)
+  ?? new-feature.js (untracked)
+
+PRs should only include committed code. Please resolve uncommitted changes first.
+
+Options:
+1. Commit changes: /git-commit
+2. Stash changes: git stash
+3. Review changes: git diff
+4. Discard changes: git checkout -- <file>
+
+After resolving, retry: /gh-pr
+```
