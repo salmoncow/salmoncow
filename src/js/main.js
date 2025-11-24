@@ -1,5 +1,5 @@
 /**
- * Firebase Base Website - Main Application
+ * Salmoncow - Main Application
  *
  * Uses Firebase SDK from CDN (no bundler required):
  * - Faster page loads via CDN caching

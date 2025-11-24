@@ -1,7 +1,7 @@
 {
-  "name": "firebase-base-website",
+  "name": "salmoncow",
   "version": "1.0.0",
-  "description": "A simple, modern web application that demonstrates Firebase authentication with Google sign-in",
+  "description": "Salmoncow - A modern web application with Firebase authentication and Google sign-in",
   "engines": {
     "node": ">=24.0.0 <25.0.0",
     "npm": ">=10.0.0"
