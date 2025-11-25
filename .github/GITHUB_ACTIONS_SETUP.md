@@ -69,16 +69,16 @@ Click **"CONTINUE"** then **"DONE"**
 - You'll use this entire JSON content as a GitHub secret
 - Delete the downloaded file after adding it to GitHub secrets
 
-### Step 2: Configure GitHub Repository Secrets
+### Step 2: Configure GitHub Repository Secrets and Variables
 
-Navigate to your GitHub repository:
+Navigate to your GitHub repository settings:
 1. Go to **Settings** → **Secrets and variables** → **Actions**
-2. Click **New repository secret**
-3. Add the following secrets:
 
 #### Required Secrets
 
 **Firebase Service Account:**
+
+Click **New repository secret** and add:
 ```
 Name: FIREBASE_SERVICE_ACCOUNT
 Value: <entire contents of the JSON file you downloaded>
@@ -100,9 +100,9 @@ Value: <entire contents of the JSON file you downloaded>
    }
    ```
 
-**Firebase Configuration (7 variables):**
+**Firebase Configuration Secrets (6 secrets):**
 
-These values are from your Firebase project settings (Project Settings → General → Your apps):
+Click **New repository secret** for each of these values from your Firebase project settings (Project Settings → General → Your apps):
 
 ```
 Name: VITE_FIREBASE_API_KEY
@@ -110,9 +110,6 @@ Value: <your-firebase-api-key>
 
 Name: VITE_FIREBASE_AUTH_DOMAIN
 Value: <your-project-id>.firebaseapp.com
-
-Name: VITE_FIREBASE_PROJECT_ID
-Value: salmoncow
 
 Name: VITE_FIREBASE_STORAGE_BUCKET
 Value: <your-project-id>.firebasestorage.app
@@ -128,6 +125,22 @@ Value: <your-measurement-id>
 ```
 
 **Note:** These Firebase config values are safe to expose client-side (they're public in your deployed app), but storing them as secrets keeps them out of public workflows and makes environment management easier.
+
+#### Required Variables
+
+**Firebase Project ID:**
+
+Click the **Variables** tab, then **New repository variable**:
+```
+Name: VITE_FIREBASE_PROJECT_ID
+Value: salmoncow
+```
+
+**Why use a variable instead of a secret?**
+- Project ID is non-sensitive and visible in URLs and public configuration
+- Variables are easier to view and update without re-entering the value
+- Workflows can use variables in output messages and URLs
+- Follows GitHub's best practice: secrets for sensitive data, variables for configuration
 
 ### Step 3: Verify Workflow Configuration
 
