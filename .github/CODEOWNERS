@@ -1,0 +1,33 @@
+# CODEOWNERS - Require review for sensitive files
+#
+# This file defines code ownership for security-critical files and directories.
+# Any PR that modifies these files will automatically require approval from the
+# specified owners before merging.
+#
+# Reference: core/security/security-principles.md
+# Related: GitHub issue #7 - Service account protection controls
+
+# GitHub Actions workflows - require review for security
+# These workflows use the FIREBASE_SERVICE_ACCOUNT with custom IAM permissions
+# for Firebase Authentication domain management
+/.github/workflows/ @tdeknecht
+
+# GitHub Actions scripts - require review for security
+# Any automation scripts should be reviewed to prevent service account misuse
+/.github/scripts/ @tdeknecht
+
+# GitHub Actions setup documentation - require review for security
+# This file contains service account setup and security best practices
+/.github/GITHUB_ACTIONS_SETUP.md @tdeknecht
+
+# Firestore security rules - require review for security
+# Database security rules protect user data and must be carefully reviewed
+/firestore.rules @tdeknecht
+
+# Firebase configuration - require review for security
+# Main Firebase configuration file that affects deployment and security settings
+/firebase.json @tdeknecht
+
+# Environment configuration template - require review for security
+# Template files that define environment variables and secrets structure
+/.env.example @tdeknecht

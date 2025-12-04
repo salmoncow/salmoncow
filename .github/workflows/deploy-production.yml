@@ -1,5 +1,10 @@
 name: Deploy to Production
 
+# SECURITY: This workflow uses FIREBASE_SERVICE_ACCOUNT for deployment
+# - Service account has custom IAM permissions for Firebase Hosting and Auth domain management
+# - Changes to this file require review from CODEOWNERS
+# - Service account follows least privilege principle (limited to necessary permissions only)
+
 on:
   push:
     branches:
