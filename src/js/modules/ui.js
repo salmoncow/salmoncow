@@ -1,20 +1,31 @@
+/**
+ * UIModule - Manages UI state and status messages
+ *
+ * NOTE: User profile display has been migrated to NavigationModule.
+ * This module now primarily handles status messages and maintains
+ * backward compatibility with legacy UI elements in the main content area.
+ *
+ * Primary Responsibilities (Current):
+ * - Status message display (loading, error, success)
+ * - Backward compatibility for legacy login/logout buttons
+ *
+ * Deprecated Responsibilities (Handled by NavigationModule):
+ * - User profile display in navigation
+ * - Login/logout button management in navigation
+ */
 export class UIModule {
     constructor() {
         this.statusElement = null;
-        this.loginButton = null;
-        this.logoutButton = null;
-        this.userInfo = null;
-        this.userAvatar = null;
-        // Default avatar placeholder (reusable asset)
-        this.defaultAvatarURL = '/assets/images/placeholders/default-avatar.svg';
+        this.homepageLogo = null;
+        this.welcomeMessage = null;
+        this.contentCard = null;
     }
 
     init() {
         this.statusElement = document.getElementById('status');
-        this.loginButton = document.getElementById('loginButton');
-        this.logoutButton = document.getElementById('logoutButton');
-        this.userInfo = document.getElementById('userInfo');
-        this.userAvatar = document.getElementById('userAvatar');
+        this.homepageLogo = document.getElementById('homepageLogo');
+        this.welcomeMessage = document.getElementById('welcomeMessage');
+        this.contentCard = document.getElementById('contentCard');
     }
 
     showStatus(message, type = 'loading') {
@@ -23,56 +34,73 @@ export class UIModule {
         this.statusElement.textContent = message;
         this.statusElement.className = `status ${type}`;
         this.statusElement.style.display = 'block';
+
+        // Show content card when status is visible
+        if (this.contentCard) {
+            this.contentCard.style.display = 'block';
+        }
     }
 
     hideStatus() {
         if (!this.statusElement) return;
         this.statusElement.style.display = 'none';
-    }
 
-    updateAuthUI(user) {
-        if (user) {
-            // Show authenticated state
-            if (this.loginButton) this.loginButton.style.display = 'none';
-            if (this.userInfo) {
-                this.userInfo.style.display = 'block';
-                this.userInfo.querySelector('.user-name').textContent = user.displayName;
-                this.userInfo.querySelector('.user-email').textContent = user.email;
-            }
-            if (this.userAvatar) {
-                // Use photoURL if available, otherwise use default avatar placeholder
-                this.userAvatar.src = user.photoURL || this.defaultAvatarURL;
-                this.userAvatar.alt = `${user.displayName}'s Avatar`;
-
-                // Add error handler for failed image loads
-                this.userAvatar.onerror = () => {
-                    // Prevent infinite loop if default avatar also fails
-                    if (this.userAvatar.src !== this.defaultAvatarURL) {
-                        this.userAvatar.src = this.defaultAvatarURL;
-                    }
-                };
-            }
-            if (this.logoutButton) this.logoutButton.style.display = 'block';
-        } else {
-            // Show unauthenticated state
-            if (this.loginButton) this.loginButton.style.display = 'block';
-            if (this.userInfo) this.userInfo.style.display = 'none';
-            if (this.logoutButton) this.logoutButton.style.display = 'none';
+        // Hide content card if no other content is visible
+        if (this.contentCard && this.welcomeMessage && this.welcomeMessage.style.display === 'none') {
+            this.contentCard.style.display = 'none';
         }
     }
 
-    // Keep backward compatibility
+    /**
+     * Update homepage UI based on auth state
+     * @param {Object|null} user - Firebase user object or null
+     */
+    updateAuthUI(user) {
+        if (user) {
+            // Authenticated: Hide logo, show welcome message in card
+            if (this.homepageLogo) {
+                this.homepageLogo.style.display = 'none';
+            }
+            if (this.welcomeMessage) {
+                this.welcomeMessage.style.display = 'block';
+            }
+            if (this.contentCard) {
+                this.contentCard.style.display = 'block';
+            }
+        } else {
+            // Unauthenticated: Show logo, hide welcome message and card
+            if (this.homepageLogo) {
+                this.homepageLogo.style.display = 'block';
+            }
+            if (this.welcomeMessage) {
+                this.welcomeMessage.style.display = 'none';
+            }
+            // Only hide card if status is also not visible
+            if (this.contentCard && (!this.statusElement || this.statusElement.style.display === 'none')) {
+                this.contentCard.style.display = 'none';
+            }
+        }
+    }
+
+    /**
+     * Keep backward compatibility
+     */
     updateLoginButton(user) {
         this.updateAuthUI(user);
     }
 
+    /**
+     * Legacy methods - no-op for backward compatibility
+     * @deprecated NavigationModule handles login/logout
+     */
     addLoginButtonListener(callback) {
-        if (!this.loginButton) return;
-        this.loginButton.addEventListener('click', callback);
+        // No-op: Navigation module handles login
     }
 
+    /**
+     * @deprecated NavigationModule handles logout
+     */
     addLogoutButtonListener(callback) {
-        if (!this.logoutButton) return;
-        this.logoutButton.addEventListener('click', callback);
+        // No-op: Navigation module handles logout
     }
 }
