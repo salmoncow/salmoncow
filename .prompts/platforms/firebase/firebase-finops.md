@@ -1,5 +1,13 @@
 # FinOps Free Tier Maximization Prompt for Firebase Applications
 
+**Status**: Firebase-Specific
+**Last Updated**: 2025-12-08
+**Free Tier Quotas Verified**: 2025-12-08
+**Next Review**: 2026-03-08
+**Core Principles**: See [../../core/operations/budget-principles.md](../../core/operations/budget-principles.md)
+
+> **Note**: Firebase free tier quotas are subject to change. Verify current limits at [firebase.google.com/pricing](https://firebase.google.com/pricing).
+
 ## Zero-Cost Architecture Strategy
 
 When building Firebase applications, follow these FinOps patterns to maximize free tier usage across all services while maintaining production-ready functionality:

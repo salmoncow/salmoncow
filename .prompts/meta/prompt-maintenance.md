@@ -1,8 +1,8 @@
 # Prompt Library Maintenance Guide
 
-> **Last Updated:** 2025-11-08
+> **Last Updated:** 2025-12-08
 > **Review Frequency:** Quarterly (every 3 months)
-> **Next Review Due:** 2026-02-08
+> **Next Review Due:** 2026-03-08
 
 ## Purpose
 
@@ -22,25 +22,26 @@ Check and update version references in prompts:
 - [ ] Verify current LTS version at https://nodejs.org/en/about/previous-releases
 - [ ] Update `NODE_VERSION` references in workflow examples
 - [ ] Current LTS: Node 24 "Krypton" (Active until April 2028)
-- [ ] Files to check: `deployment-cicd.md`, `platform-simplification.md`, `.nvmrc`, `package.json`
+- [ ] Files to check: `firebase-deployment.md`, `platform-simplification-principles.md`, `.nvmrc`, `package.json`
 
 **Firebase SDK:**
 - [ ] Check latest stable version at https://firebase.google.com/support/releases/js-sdk
 - [ ] Review breaking changes in release notes
 - [ ] Update code examples if syntax changed
-- [ ] Current version: v10+ (as of 2024)
-- [ ] Files to check: `firebase-best-practices.md`, `deployment-cicd.md`
+- [ ] Current version: v12.x+ (as of December 2025)
+- [ ] Key changes in v12: Firebase AI Logic SDK replaces Vertex AI SDK
+- [ ] Files to check: `firebase-best-practices.md`, `firebase-deployment.md`
 
 **GitHub Actions:**
 - [ ] Check action versions at https://github.com/actions
-- [ ] Update action version references (e.g., `@v4` → `@v5`)
+- [ ] Update action version references (e.g., `@v5` → `@v6`)
 - [ ] Key actions to monitor:
-  - `actions/checkout` (currently v4)
-  - `actions/setup-node` (currently v4)
+  - `actions/checkout` (currently v5)
+  - `actions/setup-node` (currently v6, requires runner v2.327.1+)
   - `actions/upload-artifact` (currently v4)
   - `actions/download-artifact` (currently v4)
   - `actions/cache` (currently v4)
-- [ ] Files to check: `deployment-cicd.md`, all `.github/workflows/` files
+- [ ] Files to check: `firebase-deployment.md`, all `.github/workflows/` files
 
 **Testing Libraries:**
 - [ ] Check npm for latest versions of:
@@ -170,16 +171,16 @@ When documenting version-specific features, use this format:
 ```markdown
 ## Feature Name
 
-> **Last Updated:** 2025-01-08
-> **Technology Version:** Firebase SDK v10+, Node 20 LTS
+> **Last Updated:** 2025-12-08
+> **Technology Version:** Firebase SDK v12+, Node 24 LTS
 > **Status:** Current
 
 [Feature documentation here]
 
 ### Version Compatibility
-- Firebase SDK: v10.0.0+
-- Node.js: 18 LTS or higher (20 LTS recommended)
-- Last verified: 2025-01-08
+- Firebase SDK: v12.0.0+
+- Node.js: 22 LTS or higher (24 LTS recommended)
+- Last verified: 2025-12-08
 ```
 
 ---
@@ -243,7 +244,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: lycheeverse/lychee-action@v1
         with:
           args: --verbose '.prompts/**/*.md'
@@ -271,7 +272,7 @@ jobs:
 ### Node.js
 - Node 18 → End of life (2025-04-30) ⚠️ **PAST EOL**
 - Node 20 → LTS (until 2026-04-30)
-- Node 22 → LTS (until 2027-04-30)
+- Node 22 → LTS "Jod" (Active until 2027-04-30)
 - Node 24 → **Current LTS** "Krypton" (Active until 2028-04-30)
 
 ---
