@@ -1,0 +1,290 @@
+/**
+ * NavigationModule - Manages top navigation bar and user profile dropdown
+ *
+ * Responsibilities:
+ * - Render and update navigation UI based on auth state
+ * - Handle dropdown toggle and close interactions
+ * - Emit navigation events for future routing
+ * - Integrate with AuthModule for user state
+ *
+ * Following modular architecture principles from:
+ * - core/architecture/modular-architecture-principles.md
+ * - core/architecture/feature-extensibility.md
+ */
+export class NavigationModule {
+    constructor() {
+        // DOM Elements
+        this.navLoginButton = null;
+        this.navUserContainer = null;
+        this.navUserButton = null;
+        this.navAvatar = null;
+        this.navUsername = null;
+        this.navDropdown = null;
+        this.dropdownAvatar = null;
+        this.dropdownName = null;
+        this.dropdownEmail = null;
+        this.navLogoutButton = null;
+        this.navHomeButton = null;
+
+        // State
+        this.isDropdownOpen = false;
+        this.currentUser = null;
+
+        // Default avatar (reusable asset from placeholders)
+        this.defaultAvatarURL = '/assets/images/placeholders/default-avatar.svg';
+
+        // Event callbacks
+        this.loginCallback = null;
+        this.logoutCallback = null;
+        this.navigationCallbacks = [];
+    }
+
+    /**
+     * Initialize navigation module (called by App)
+     */
+    init() {
+        this.cacheElements();
+        this.setupEventListeners();
+    }
+
+    /**
+     * Cache DOM element references for performance
+     */
+    cacheElements() {
+        this.navLoginButton = document.getElementById('navLoginButton');
+        this.navUserContainer = document.getElementById('navUserContainer');
+        this.navUserButton = document.getElementById('navUserButton');
+        this.navAvatar = document.getElementById('navAvatar');
+        this.navUsername = document.getElementById('navUsername');
+        this.navDropdown = document.getElementById('navDropdown');
+        this.dropdownAvatar = document.getElementById('dropdownAvatar');
+        this.dropdownName = document.getElementById('dropdownName');
+        this.dropdownEmail = document.getElementById('dropdownEmail');
+        this.navLogoutButton = document.getElementById('navLogoutButton');
+        this.navHomeButton = document.getElementById('navHome');
+    }
+
+    /**
+     * Setup all event listeners for navigation interactions
+     */
+    setupEventListeners() {
+        // Login button click (unauthenticated state)
+        if (this.navLoginButton) {
+            this.navLoginButton.addEventListener('click', () => {
+                if (this.loginCallback) {
+                    this.loginCallback();
+                }
+            });
+        }
+
+        // Logout button click (in dropdown)
+        if (this.navLogoutButton) {
+            this.navLogoutButton.addEventListener('click', () => {
+                this.closeDropdown();
+                if (this.logoutCallback) {
+                    this.logoutCallback();
+                }
+            });
+        }
+
+        // Home button click (navigation event for future routing)
+        if (this.navHomeButton) {
+            this.navHomeButton.addEventListener('click', (e) => {
+                // Don't prevent default - allow native link behavior
+                // But emit navigation event for future client-side routing
+                this.emitNavigationEvent('home');
+            });
+        }
+
+        // Dropdown toggle on user button click
+        if (this.navUserButton) {
+            this.navUserButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleDropdown();
+            });
+        }
+
+        // Click outside to close dropdown
+        document.addEventListener('click', (e) => {
+            if (this.isDropdownOpen && !e.target.closest('.nav-user-container')) {
+                this.closeDropdown();
+            }
+        });
+
+        // Escape key to close dropdown
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isDropdownOpen) {
+                this.closeDropdown();
+                // Return focus to trigger button for accessibility
+                this.navUserButton?.focus();
+            }
+        });
+    }
+
+    /**
+     * Update navigation UI based on auth state
+     * @param {Object|null} user - Firebase user object or null
+     */
+    updateAuthState(user) {
+        this.currentUser = user;
+
+        if (user) {
+            this.showAuthenticatedState(user);
+        } else {
+            this.showUnauthenticatedState();
+        }
+    }
+
+    /**
+     * Show authenticated state (user profile dropdown)
+     * @param {Object} user - Firebase user object
+     */
+    showAuthenticatedState(user) {
+        // Hide login button
+        if (this.navLoginButton) {
+            this.navLoginButton.style.display = 'none';
+        }
+
+        // Show user container
+        if (this.navUserContainer) {
+            this.navUserContainer.style.display = 'block';
+        }
+
+        // Update user avatar in nav button
+        if (this.navAvatar) {
+            this.navAvatar.src = user.photoURL || this.defaultAvatarURL;
+            this.navAvatar.alt = `${user.displayName || 'User'}'s avatar`;
+
+            // Add error handler for failed image loads
+            this.navAvatar.onerror = () => {
+                // Prevent infinite loop if default avatar also fails
+                if (this.navAvatar.src !== this.defaultAvatarURL) {
+                    this.navAvatar.src = this.defaultAvatarURL;
+                }
+            };
+        }
+
+        // Update username in nav button
+        if (this.navUsername) {
+            this.navUsername.textContent = user.displayName || 'User';
+        }
+
+        // Update dropdown header avatar
+        if (this.dropdownAvatar) {
+            this.dropdownAvatar.src = user.photoURL || this.defaultAvatarURL;
+            this.dropdownAvatar.alt = `${user.displayName || 'User'}'s avatar`;
+
+            // Add error handler for failed image loads
+            this.dropdownAvatar.onerror = () => {
+                // Prevent infinite loop if default avatar also fails
+                if (this.dropdownAvatar.src !== this.defaultAvatarURL) {
+                    this.dropdownAvatar.src = this.defaultAvatarURL;
+                }
+            };
+        }
+
+        // Update dropdown name
+        if (this.dropdownName) {
+            this.dropdownName.textContent = user.displayName || 'User';
+        }
+
+        // Update dropdown email
+        if (this.dropdownEmail) {
+            this.dropdownEmail.textContent = user.email || '';
+        }
+    }
+
+    /**
+     * Show unauthenticated state (login button)
+     */
+    showUnauthenticatedState() {
+        // Show login button
+        if (this.navLoginButton) {
+            this.navLoginButton.style.display = 'block';
+        }
+
+        // Hide user container
+        if (this.navUserContainer) {
+            this.navUserContainer.style.display = 'none';
+        }
+
+        // Close dropdown if open
+        this.closeDropdown();
+    }
+
+    /**
+     * Toggle dropdown open/closed
+     */
+    toggleDropdown() {
+        this.isDropdownOpen = !this.isDropdownOpen;
+        this.updateDropdownState();
+    }
+
+    /**
+     * Close dropdown
+     */
+    closeDropdown() {
+        this.isDropdownOpen = false;
+        this.updateDropdownState();
+    }
+
+    /**
+     * Update dropdown visual state (CSS classes and ARIA attributes)
+     */
+    updateDropdownState() {
+        if (this.navUserContainer) {
+            this.navUserContainer.classList.toggle('dropdown-open', this.isDropdownOpen);
+        }
+
+        if (this.navUserButton) {
+            this.navUserButton.setAttribute('aria-expanded', String(this.isDropdownOpen));
+        }
+    }
+
+    /**
+     * Register login button callback
+     * @param {Function} callback - Function to call when login button is clicked
+     */
+    onLoginClick(callback) {
+        this.loginCallback = callback;
+    }
+
+    /**
+     * Register logout button callback
+     * @param {Function} callback - Function to call when logout button is clicked
+     */
+    onLogoutClick(callback) {
+        this.logoutCallback = callback;
+    }
+
+    /**
+     * Register navigation event callback (for future routing)
+     * @param {Function} callback - Function to call when navigation occurs
+     * @returns {Function} Unsubscribe function
+     */
+    onNavigate(callback) {
+        this.navigationCallbacks.push(callback);
+
+        // Return unsubscribe function
+        return () => {
+            const index = this.navigationCallbacks.indexOf(callback);
+            if (index > -1) {
+                this.navigationCallbacks.splice(index, 1);
+            }
+        };
+    }
+
+    /**
+     * Emit navigation event to all registered callbacks
+     * @param {string} destination - Navigation destination
+     */
+    emitNavigationEvent(destination) {
+        this.navigationCallbacks.forEach(callback => {
+            try {
+                callback(destination);
+            } catch (error) {
+                console.error('Navigation callback error:', error);
+            }
+        });
+    }
+}

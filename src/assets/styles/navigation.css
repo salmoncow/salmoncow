@@ -1,0 +1,380 @@
+/**
+ * Salmoncow Navigation Styles
+ *
+ * Modern top navigation bar with brand colors extracted from logo
+ * Responsive design with dropdown user profile menu
+ */
+
+/* ===== CSS CUSTOM PROPERTIES ===== */
+:root {
+    /* Brand Colors - Extracted from logo.svg */
+    --brand-primary: #D66E4F;        /* Salmon - main brand color */
+    --brand-secondary: #0F2536;      /* Dark navy - supporting color */
+    --brand-accent: #B7BCBC;         /* Gray - neutral accent */
+    --brand-light: #F9FAF8;          /* Cream - light backgrounds */
+
+    /* Semantic Colors for Navigation */
+    --nav-bg: var(--brand-primary);
+    --nav-text: #ffffff;
+    --nav-hover-bg: rgba(255, 255, 255, 0.15);
+    --nav-active-bg: rgba(255, 255, 255, 0.2);
+
+    /* Dropdown Colors */
+    --dropdown-bg: #ffffff;
+    --dropdown-text: #333333;
+    --dropdown-text-secondary: #6b7280;
+    --dropdown-border: #e5e7eb;
+    --dropdown-hover-bg: #f3f4f6;
+
+    /* Layout Dimensions */
+    --nav-height: 64px;
+    --nav-padding: 1rem;
+    --nav-max-width: 1200px;
+
+    /* Shadows */
+    --nav-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --dropdown-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+    /* Transitions */
+    --transition-speed: 0.2s;
+    --transition-easing: ease;
+}
+
+/* ===== NAVIGATION BAR ===== */
+.navigation-bar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background: var(--nav-bg);
+    box-shadow: var(--nav-shadow);
+    z-index: 1000;
+}
+
+.nav-container {
+    max-width: var(--nav-max-width);
+    margin: 0 auto;
+    padding: 0 var(--nav-padding);
+    height: var(--nav-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ===== LEFT SIDE: LOGO + HOME ===== */
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--nav-text);
+    font-weight: 600;
+    font-size: 1.125rem;
+    transition: opacity var(--transition-speed) var(--transition-easing);
+}
+
+.nav-logo:hover {
+    opacity: 0.9;
+}
+
+.nav-logo:focus {
+    outline: 2px solid var(--brand-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.logo-image {
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
+.logo-text {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+/* ===== RIGHT SIDE: USER PROFILE ===== */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Login Button (Unauthenticated State) */
+.nav-login-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--nav-text);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-speed) var(--transition-easing);
+}
+
+.nav-login-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.nav-login-button:active {
+    transform: translateY(0);
+}
+
+.nav-login-button:focus {
+    outline: 2px solid var(--brand-accent);
+    outline-offset: 2px;
+}
+
+/* User Profile Container (Authenticated State) */
+.nav-user-container {
+    position: relative;
+}
+
+.nav-user-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    color: var(--nav-text);
+    cursor: pointer;
+    transition: all var(--transition-speed) var(--transition-easing);
+}
+
+.nav-user-button:hover {
+    background: var(--nav-hover-bg);
+}
+
+.nav-user-button:active {
+    background: var(--nav-active-bg);
+}
+
+.nav-user-button:focus {
+    outline: 2px solid var(--brand-accent);
+    outline-offset: 2px;
+}
+
+.nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--dropdown-bg);
+}
+
+.nav-username {
+    font-size: 0.875rem;
+    font-weight: 500;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nav-dropdown-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform var(--transition-speed) var(--transition-easing);
+    flex-shrink: 0;
+}
+
+.nav-user-container.dropdown-open .nav-dropdown-icon {
+    transform: rotate(180deg);
+}
+
+/* ===== DROPDOWN MENU ===== */
+.nav-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    background: var(--dropdown-bg);
+    border: 1px solid var(--dropdown-border);
+    border-radius: 8px;
+    box-shadow: var(--dropdown-shadow);
+    min-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--transition-speed) var(--transition-easing);
+}
+
+.nav-user-container.dropdown-open .nav-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.dropdown-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--dropdown-border);
+}
+
+.dropdown-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dropdown-name {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--dropdown-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 0.125rem;
+}
+
+.dropdown-email {
+    font-size: 0.8125rem;
+    color: var(--dropdown-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--dropdown-border);
+    margin: 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--dropdown-text);
+    font-size: 0.875rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--transition-speed) var(--transition-easing);
+}
+
+.dropdown-item:hover {
+    background: var(--dropdown-hover-bg);
+}
+
+.dropdown-item:focus {
+    outline: none;
+    background: var(--dropdown-hover-bg);
+}
+
+.dropdown-item:first-of-type {
+    border-radius: 0 0 8px 8px;
+}
+
+.dropdown-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--dropdown-text-secondary);
+    flex-shrink: 0;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet and below */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 1rem;
+    }
+
+    .nav-username {
+        max-width: 100px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .nav-container {
+        padding: 0 0.75rem;
+    }
+
+    .logo-text {
+        display: none;  /* Hide text on mobile, show only logo image */
+    }
+
+    .nav-username {
+        display: none;  /* Hide username on mobile, show only avatar */
+    }
+
+    .nav-dropdown {
+        min-width: 260px;
+        right: -0.5rem;  /* Adjust positioning on small screens */
+    }
+
+    .logo-image {
+        height: 36px;  /* Slightly smaller logo on mobile */
+    }
+
+    .nav-avatar {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* ===== MAIN CONTENT ADJUSTMENT ===== */
+/* Adjust main content to account for sticky navigation */
+.main-content {
+    min-height: calc(100vh - var(--nav-height));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .nav-logo:focus,
+    .nav-login-button:focus,
+    .nav-user-button:focus {
+        outline: 3px solid currentColor;
+        outline-offset: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .nav-logo,
+    .nav-login-button,
+    .nav-user-button,
+    .nav-dropdown,
+    .nav-dropdown-icon,
+    .dropdown-item {
+        transition: none;
+    }
+}
+
+/* Focus visible (for keyboard navigation) */
+.nav-logo:focus-visible,
+.nav-login-button:focus-visible,
+.nav-user-button:focus-visible,
+.dropdown-item:focus-visible {
+    outline: 2px solid var(--brand-accent);
+    outline-offset: 2px;
+}

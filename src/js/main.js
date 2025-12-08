@@ -12,12 +12,14 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/fireba
 import { firebaseConfig, validateFirebaseConfig } from './firebase-config.js';
 import { AuthModule } from './modules/auth.js';
 import { UIModule } from './modules/ui.js';
+import { NavigationModule } from './modules/navigation.js';
 
 class App {
     constructor() {
         this.firebaseApp = null;
         this.auth = null;
         this.ui = null;
+        this.navigation = null;
     }
 
     async init() {
@@ -25,8 +27,10 @@ class App {
             this.firebaseApp = initializeApp(firebaseConfig);
             this.auth = new AuthModule(this.firebaseApp);
             this.ui = new UIModule();
+            this.navigation = new NavigationModule();
 
             this.ui.init();
+            this.navigation.init();
             this.setupEventListeners();
             this.setupAuthStateListener();
 
@@ -36,7 +40,8 @@ class App {
     }
 
     setupEventListeners() {
-        this.ui.addLoginButtonListener(async () => {
+        // Login via navigation bar
+        this.navigation.onLoginClick(async () => {
             this.ui.showStatus('Initializing sign-in...', 'loading');
 
             try {
@@ -45,6 +50,7 @@ class App {
 
                 if (result.success) {
                     this.ui.showStatus(result.message, 'success');
+                    setTimeout(() => this.ui.hideStatus(), 2000);
                 } else {
                     throw result.error;
                 }
@@ -57,7 +63,8 @@ class App {
             }
         });
 
-        this.ui.addLogoutButtonListener(async () => {
+        // Logout via navigation dropdown
+        this.navigation.onLogoutClick(async () => {
             this.ui.showStatus('Signing out...', 'loading');
 
             try {
@@ -75,11 +82,21 @@ class App {
                 this.ui.showStatus(`Error: ${error.message}`, 'error');
             }
         });
+
+        // Navigation events (future routing support)
+        this.navigation.onNavigate((destination) => {
+            console.log(`Navigation event: ${destination}`);
+            // Future: Handle client-side routing here
+            // For now, native link behavior handles actual navigation
+        });
     }
 
     setupAuthStateListener() {
         this.auth.onAuthStateChanged((user) => {
+            // Update both UI module and navigation module
             this.ui.updateLoginButton(user);
+            this.navigation.updateAuthState(user);
+
             if (user) {
                 this.ui.hideStatus();
             }
