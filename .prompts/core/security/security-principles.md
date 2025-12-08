@@ -1,7 +1,7 @@
 # Security Principles
 
 **Status**: Platform-Agnostic
-**Last Updated**: 2025-11-18
+**Last Updated**: 2025-12-08
 
 ## Overview
 
@@ -140,11 +140,42 @@ Universal security principles for web applications that apply to any technology 
 - Segment networks appropriately
 
 **Content Security Policy (CSP)**
-- Implement CSP headers to prevent XSS attacks
-- Use nonces or hashes for inline scripts
-- Avoid 'unsafe-inline' and 'unsafe-eval'
-- Report CSP violations for monitoring
-- Gradually tighten CSP policies
+
+CSP is a critical defense layer against XSS attacks. Modern best practices (2025) favor **strict CSP** over allowlist-based approaches.
+
+*Strict CSP (Recommended)*
+- Use **nonce-based** or **hash-based** CSP instead of allowlist-based policies
+- Nonces: Server generates random value per-response, included in CSP header and script tags
+- Hashes: Compute SHA-256/384/512 hash of inline script content and include in CSP
+- Strict CSP is more secure and easier to maintain than allowlists
+
+*Key Directives*
+- `default-src 'self'` - Baseline fallback for all resource types
+- `script-src 'nonce-{random}' 'strict-dynamic'` - Allow scripts with valid nonce
+- `style-src 'self' 'nonce-{random}'` - Control stylesheet sources
+- `upgrade-insecure-requests` - Auto-upgrade HTTP to HTTPS
+
+*Avoid These Anti-Patterns*
+- ❌ `'unsafe-inline'` - Defeats XSS protection entirely
+- ❌ `'unsafe-eval'` - Allows dangerous JavaScript eval()
+- ❌ Wildcard domains (`*.example.com`) - Too permissive
+- ❌ Allowlist CSPs with many domains - Hard to maintain, often bypassable
+- ❌ `X-Content-Security-Policy` or `X-WebKit-CSP` headers - Obsolete, use `Content-Security-Policy`
+
+*Deployment Strategy*
+- Start with `Content-Security-Policy-Report-Only` header to monitor without blocking
+- Review violation reports and adjust policy
+- Gradually tighten restrictions
+- Only switch to enforcing mode when confident
+- Review and update CSP as application evolves (new scripts, CDNs, integrations)
+
+*Static Hosting Considerations*
+- Nonce-based CSP requires dynamic server-side generation per request
+- For static hosting (Firebase Hosting, GitHub Pages), use hash-based CSP
+- Hash-based CSP requires updating hashes when scripts change
+- Alternative: Use `'strict-dynamic'` with inline script hashes
+
+> **Note**: CSP is a defense-in-depth layer. Always implement proper input validation and output encoding - don't rely on CSP alone for XSS prevention.
 
 **HTTPS/TLS Enforcement**
 - Ensure all communications use HTTPS/TLS

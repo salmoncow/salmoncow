@@ -1,8 +1,28 @@
 # Firebase Best Practices Prompt
 
-> **Last Updated:** 2025-11-08
-> **Firebase SDK:** v10.13.2+ (Modular)
-> **Next Review:** 2026-02-08
+> **Last Updated:** 2025-12-08
+> **Firebase SDK:** v12.x+ (Modular)
+> **Next Review:** 2026-03-08
+
+## SDK v12.x Notable Changes
+
+### Key Updates from v10.x to v12.x
+- **Firebase AI Logic SDK**: New `@firebase/ai` package replaces `@firebase/vertexai`. Import from `firebase/ai` instead of `firebase/vertexai`
+- **App Check Limited-Use Tokens**: Support for replay protection via limited-use tokens
+- **Realtime Remote Config**: Real-time parameter updates now available for web
+- **Firestore Serialization**: New `toJSON()`/`fromJSON()` methods for result type serialization
+- **Bug Fixes**: CORS issues in Firebase Studio emulators resolved, WebChannel leak fixes, Safari cache improvements with client-side indexing
+
+### Migration Notes
+```typescript
+// ❌ Old (v10.x - deprecated)
+import { getVertexAI } from 'firebase/vertexai';
+
+// ✅ New (v12.x)
+import { getAI } from 'firebase/ai';
+```
+
+---
 
 ## Firestore Database Design & Optimization
 

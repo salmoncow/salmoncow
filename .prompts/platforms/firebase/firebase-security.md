@@ -1,7 +1,7 @@
 # Firebase Security Implementation
 
 **Status**: Firebase-Specific
-**Last Updated**: 2025-11-18
+**Last Updated**: 2025-12-08
 **Core Principles**: See [../../core/security/security-principles.md](../../core/security/security-principles.md)
 
 ## Overview
@@ -406,6 +406,78 @@ npm run test:auth
 # Validate security rules
 firebase deploy --only firestore:rules --dry-run
 ```
+
+---
+
+## Content Security Policy for Firebase Hosting
+
+**Core Principle**: [Content Security Policy](../../core/security/security-principles.md#4-infrastructure-security)
+
+Firebase Hosting supports CSP headers via `firebase.json`. Since Firebase Hosting serves static files, nonce-based CSP is not directly available without Cloud Functions.
+
+### Basic CSP Configuration for Firebase Hosting
+
+```json
+// firebase.json
+{
+  "hosting": {
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; script-src 'self' https://*.googleapis.com https://*.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://identitytoolkit.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Required Domains for Firebase Services
+
+Firebase SDKs require these domains in your CSP:
+
+| Firebase Service | Required Domains |
+|------------------|------------------|
+| **Firebase SDK** | `https://*.googleapis.com`, `https://*.gstatic.com` |
+| **Authentication** | `https://identitytoolkit.googleapis.com`, `https://accounts.google.com`, `https://*.firebaseapp.com` |
+| **Firestore** | `https://*.googleapis.com`, `https://*.firebaseio.com`, `wss://*.firebaseio.com` |
+| **Storage** | `https://*.googleapis.com`, `https://firebasestorage.googleapis.com` |
+| **Analytics** | `https://www.google-analytics.com`, `https://*.google.com` |
+
+### CSP with Report-Only Mode
+
+Start with report-only mode to identify issues before enforcement:
+
+```json
+{
+  "headers": [
+    {
+      "key": "Content-Security-Policy-Report-Only",
+      "value": "default-src 'self'; script-src 'self' https://*.googleapis.com; report-uri /csp-report"
+    }
+  ]
+}
+```
+
+### Considerations for Firebase Hosting (Static)
+
+- **No nonce support**: Firebase Hosting serves static files, so per-request nonces aren't available without Cloud Functions
+- **Hash-based CSP**: For inline scripts, compute hashes and include in CSP (requires rebuild on changes)
+- **CDN scripts**: Firebase SDK loaded from `gstatic.com` requires allowlisting that domain
+- **Future implementation**: Consider adding Cloud Functions to enable nonce-based CSP when security requirements increase
+
+### When to Implement Full CSP
+
+For static Firebase Hosting apps with minimal inline scripts, focus on:
+1. Basic security headers first (X-Content-Type-Options, X-Frame-Options)
+2. Allowlist-based CSP for Firebase SDK domains
+3. Upgrade to strict CSP when Cloud Functions are added
+
+> **Note**: See the [Core Security Principles](../../core/security/security-principles.md) for comprehensive CSP guidance, including strict CSP patterns for dynamic applications.
 
 ---
 
