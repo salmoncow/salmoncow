@@ -48,9 +48,8 @@ export class AuthModule {
 
     onAuthStateChanged(callback) {
         this.authStateCallbacks.push(callback);
-        if (this.currentUser !== null) {
-            callback(this.currentUser);
-        }
+        // Always call callback immediately with current state (even if null)
+        callback(this.currentUser);
         return () => {
             const index = this.authStateCallbacks.indexOf(callback);
             if (index > -1) {

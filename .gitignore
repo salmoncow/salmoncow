@@ -40,6 +40,9 @@ jspm_packages/
 public/js/
 public/assets/
 
+# Vite build output
+dist/
+
 # Optional npm cache directory
 .npm
 

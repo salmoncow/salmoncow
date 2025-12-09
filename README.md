@@ -12,13 +12,15 @@ This project serves as a lightweight sandbox for exploring:
 
 ## Live Site
 
-**Production**: https://salmoncow.web.app
+**Production**: https://salmoncow.com
 
 ## Tech Stack
 
-- Vanilla HTML/CSS/JavaScript (ES6 modules)
-- Firebase Authentication (Google sign-in)
-- Firebase Hosting
+- **Build Tool**: Vite 7.x (HMR, optimized builds)
+- **JavaScript**: Vanilla ES6+ modules with TypeScript support
+- **Styling**: Plain CSS with CSS variables
+- **Authentication**: Firebase Authentication (Google sign-in)
+- **Hosting**: Firebase Hosting with CDN
 
 ## Quick Start
 

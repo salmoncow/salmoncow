@@ -8,6 +8,11 @@
  *
  * Firebase Version: 10.13.2 (latest stable v10.x)
  */
+
+// Import styles
+import './assets/styles/navigation.css';
+import './styles/main.css';
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
 import { firebaseConfig, validateFirebaseConfig } from './firebase-config.js';
 import { AuthModule } from './modules/auth.js';
