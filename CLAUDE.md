@@ -100,7 +100,7 @@ Deployment & Operations:
 - Then: `platforms/firebase/firebase-platform-guide.md` for Firebase strategy
 
 **Version Control & Commits** →
-- `core/development/git-best-practices.md`
+- `core/development/git-best-practices.md` (REQUIRED: conventional commits, PR descriptions, atomic commits)
 
 **Build Tool Configuration** →
 - `core/development/vite-best-practices.md` (Vite setup, optimization, environment variables)
@@ -116,6 +116,11 @@ Deployment & Operations:
 3. **Document Decisions**: Reference which prompt files guided your approach
 4. **Stay Consistent**: Follow patterns established in the prompt files
 5. **Adapt Context**: Apply prompt guidance to the specific technology stack in use
+6. **Git Quality**: ALWAYS follow `core/development/git-best-practices.md` for commits and PRs
+   - Use conventional commits format (feat:, fix:, docs:, etc.)
+   - Break changes into atomic, logical commits
+   - Write detailed PR descriptions with Summary, Changes, Testing sections
+   - Include guidance references in commit messages
 
 ## Workflow Integration
 
