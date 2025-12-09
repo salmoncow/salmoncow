@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js (for package management and build process)
+- Node.js 24.x or higher
 - Firebase CLI (`npm install -g firebase-tools`)
 - Modern web browser
 
@@ -15,24 +15,41 @@ npm install
 npm run dev
 ```
 
-This builds the project and starts the server at http://localhost:3000
+This starts the Vite development server with Hot Module Replacement (HMR) at http://localhost:3000
 
 ### Build Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Build and start development server |
-| `npm run build` | Full build (assets + environment injection) |
-| `npm run build:assets` | Copy static assets from `src/assets/` to `public/assets/` |
-| `npm run build:env` | Inject environment variables and copy JS to `public/js/` |
-| `npm run clean` | Remove built files |
+| `npm run dev` | Start Vite dev server with HMR |
+| `npm run build` | Production build with Vite |
+| `npm run preview` | Preview production build locally |
+| `npm run clean` | Remove build output (`dist/`) |
+| `npm run deploy` | Build and deploy to production |
+| `npm run deploy:preview` | Build and deploy to preview channel |
 
 ## Build Process
 
-The project uses a two-stage build:
+The project uses **Vite** for modern development tooling:
 
-1. **Asset Pipeline** (`build:assets`) - Copies static resources from `src/assets/` to `public/assets/`
-2. **Environment Injection** (`build:env`) - Processes JavaScript with Firebase config injection
+### Development Mode (`npm run dev`)
+- Instant server start with native ES modules
+- Hot Module Replacement (HMR) for instant updates
+- Fast refresh without losing application state
+- On-demand compilation for fast iteration
+
+### Production Build (`npm run build`)
+- Automatic code splitting and tree-shaking
+- Asset optimization and hashing
+- Minification with Terser
+- Source maps for debugging
+- Output to `dist/` directory
+
+### Environment Variables
+- Vite natively loads `.env` files from project root
+- Variables prefixed with `VITE_` are exposed to client code
+- Access via `import.meta.env.VITE_*` in source files
+- No build-time template injection needed
 
 ## Deployment
 
@@ -69,29 +86,37 @@ firebase use salmoncow
 ## Project Structure
 
 ```
-├── public/                     # Deployed directory
+├── dist/                       # Build output (gitignored)
 │   ├── index.html
-│   ├── js/                     # Built JavaScript
-│   └── assets/                 # Built static assets
+│   └── assets/                 # Optimized assets with hashes
+│       ├── js/                 # Minified JavaScript bundles
+│       ├── styles/             # Optimized CSS
+│       └── images/             # Optimized images
 │
-├── src/                        # Source files
-│   ├── js/
-│   │   ├── modules/
-│   │   │   ├── auth.js         # Authentication
-│   │   │   ├── navigation.js   # Navigation bar
-│   │   │   └── ui.js           # UI utilities
-│   │   ├── firebase-config.js  # Firebase config template
-│   │   └── main.js             # Entry point
+├── src/                        # Source files (Vite root)
+│   ├── index.html              # HTML entry point
+│   ├── main.js                 # JavaScript entry point
+│   ├── firebase-config.js      # Firebase configuration
+│   ├── modules/
+│   │   ├── auth.js             # Authentication
+│   │   ├── navigation.js       # Navigation bar
+│   │   └── ui.js               # UI utilities
+│   ├── styles/
+│   │   ├── main.css            # Base styles
+│   │   └── navigation.css      # Navigation styles
 │   └── assets/
-│       ├── images/branding/    # Logo and brand assets
-│       ├── images/placeholders/
-│       └── styles/             # CSS files
+│       └── images/             # Source images
+│           ├── branding/       # Logo and brand assets
+│           └── placeholders/   # Default avatars, etc.
 │
-├── scripts/
-│   ├── build-assets.js         # Asset pipeline
-│   └── inject-env.js           # Environment injection
+├── public/                     # Static assets (copied as-is)
+│   └── assets/
+│       └── images/
+│           └── placeholders/   # Public static images
 │
 ├── .prompts/                   # Development guidance
+├── vite.config.js              # Vite configuration
+├── tsconfig.json               # TypeScript configuration
 ├── firebase.json               # Hosting configuration
 ├── .firebaserc                 # Firebase project ID
 ├── .env                        # Environment variables (not committed)
@@ -102,9 +127,10 @@ firebase use salmoncow
 
 ### Environment Variables
 
-Firebase config is stored in `.env` and injected at build time:
-- **Source template**: `src/js/firebase-config.js`
-- **Injection script**: `scripts/inject-env.js`
+Firebase config is loaded from `.env` via Vite's native environment variable support:
+- **Configuration file**: `src/firebase-config.js`
+- **Access pattern**: `import.meta.env.VITE_*`
+- **Loading**: Automatic at build time and dev server startup
 
 ### Required Firebase Console Settings
 

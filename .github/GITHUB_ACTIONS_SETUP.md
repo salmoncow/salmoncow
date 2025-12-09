@@ -163,8 +163,8 @@ No modifications should be needed if you're using the default Firebase project.
 
 2. Make a small change and commit:
    ```bash
-   echo "<!-- Testing GitHub Actions -->" >> public/index.html
-   git add public/index.html
+   echo "<!-- Testing GitHub Actions -->" >> src/index.html
+   git add src/index.html
    git commit -m "test: verify GitHub Actions preview deployment"
    ```
 
@@ -205,10 +205,10 @@ No modifications should be needed if you're using the default Firebase project.
 **Runtime:** ~3-5 minutes
 **Steps:**
 1. Checkout code
-2. Setup Node.js 18 with npm caching
+2. Setup Node.js 24 with npm caching
 3. Install dependencies
 4. Create `.env` from GitHub secrets
-5. Build project (`npm run build`)
+5. Build project with Vite (`npm run build`)
 6. Deploy to Firebase Hosting
 
 **Output:** Live production site at `https://<project-id>.web.app`
@@ -219,10 +219,10 @@ No modifications should be needed if you're using the default Firebase project.
 **Runtime:** ~3-5 minutes
 **Steps:**
 1. Checkout code
-2. Setup Node.js 18 with npm caching
+2. Setup Node.js 24 with npm caching
 3. Install dependencies
 4. Create `.env` from GitHub secrets
-5. Build project (`npm run build`)
+5. Build project with Vite (`npm run build`)
 6. Deploy to preview channel (`pr-<number>`)
 7. Comment on PR with preview URL
 
@@ -353,9 +353,10 @@ To modify workflows:
 ## Additional Resources
 
 **Project Documentation:**
-- `.prompts/deployment-cicd.md` - Comprehensive CI/CD patterns
-- `.prompts/firebase-best-practices.md` - Firebase-specific guidance
-- `.prompts/finops-free-tier-maximization.md` - Cost optimization strategies
+- `.prompts/core/deployment/deployment-principles.md` - Comprehensive CI/CD patterns
+- `.prompts/platforms/firebase/firebase-best-practices.md` - Firebase-specific guidance
+- `.prompts/platforms/firebase/firebase-deployment.md` - Firebase deployment workflows
+- `.prompts/platforms/firebase/firebase-finops.md` - Cost optimization strategies
 
 **External Resources:**
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)

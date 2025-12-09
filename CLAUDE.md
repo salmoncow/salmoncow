@@ -35,6 +35,7 @@ Architecture:
 Development:
 - `core/development/asset-reusability.md` - Resource management and DRY principles
 - `core/development/git-best-practices.md` - Git workflows, commit conventions, branching strategies
+- `core/development/vite-best-practices.md` - Modern build tooling, HMR, environment variables, optimization
 
 Security & Testing:
 - `core/security/security-principles.md` - Security patterns and defensive practices
@@ -100,6 +101,10 @@ Deployment & Operations:
 
 **Version Control & Commits** →
 - `core/development/git-best-practices.md`
+
+**Build Tool Configuration** →
+- `core/development/vite-best-practices.md` (Vite setup, optimization, environment variables)
+- Then: `platforms/firebase/firebase-deployment.md` (Firebase Hosting integration)
 
 **Prompt Library Updates** →
 - `meta/prompt-maintenance.md`

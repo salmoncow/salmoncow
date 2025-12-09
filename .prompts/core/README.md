@@ -44,6 +44,14 @@ Day-to-day development workflows and patterns.
 - Branching strategies
 - Code review practices
 
+### [Vite Best Practices](./development/vite-best-practices.md)
+- Modern build tooling patterns
+- Environment variable management
+- Asset optimization strategies
+- Development server configuration
+- TypeScript integration
+- CI/CD integration
+
 ---
 
 ## Security
