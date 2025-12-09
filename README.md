@@ -12,7 +12,7 @@ This project serves as a lightweight sandbox for exploring:
 
 ## Live Site
 
-**Production**: https://salmoncow.web.app
+**Production**: https://salmoncow.com
 
 ## Tech Stack
 
