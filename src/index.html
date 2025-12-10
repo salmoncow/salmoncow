@@ -6,6 +6,11 @@
     <title>Salmoncow</title>
 </head>
 <body>
+    <!-- Loading Overlay (shown during auth initialization) -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: flex;">
+        <loading-spinner message="Loading your session..." size="large"></loading-spinner>
+    </div>
+
     <!-- Navigation Bar -->
     <nav class="navigation-bar" id="navigationBar">
         <div class="nav-container">
@@ -27,7 +32,7 @@
                 <!-- Authenticated State: User Profile Dropdown -->
                 <div class="nav-user-container" id="navUserContainer" style="display: none;">
                     <button class="nav-user-button" id="navUserButton" aria-haspopup="true" aria-expanded="false">
-                        <img src="" alt="User Avatar" class="nav-avatar" id="navAvatar">
+                        <span id="navAvatar"></span>
                         <span class="nav-username" id="navUsername"></span>
                         <svg class="nav-dropdown-icon" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -37,7 +42,7 @@
                     <!-- Dropdown Menu -->
                     <div class="nav-dropdown" id="navDropdown" role="menu" aria-labelledby="navUserButton">
                         <div class="dropdown-header">
-                            <img src="" alt="User Avatar" class="dropdown-avatar" id="dropdownAvatar">
+                            <span id="dropdownAvatar"></span>
                             <div class="dropdown-user-info">
                                 <div class="dropdown-name" id="dropdownName"></div>
                                 <div class="dropdown-email" id="dropdownEmail"></div>
