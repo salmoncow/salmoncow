@@ -6,10 +6,23 @@ export class AuthModule {
         this.provider = new GoogleAuthProvider();
         this.currentUser = null;
         this.authStateCallbacks = [];
+        this.authInitialized = false;
+        this.initializationPromise = null;
 
-        this.auth.onAuthStateChanged((user) => {
-            this.currentUser = user;
-            this.authStateCallbacks.forEach(callback => callback(user));
+        // Track initialization state
+        this.initializationPromise = new Promise((resolve) => {
+            this.auth.onAuthStateChanged((user) => {
+                this.currentUser = user;
+
+                // Mark as initialized on first auth state change
+                if (!this.authInitialized) {
+                    this.authInitialized = true;
+                    resolve(user);
+                }
+
+                // Notify all callbacks
+                this.authStateCallbacks.forEach(callback => callback(user));
+            });
         });
     }
 
@@ -64,5 +77,16 @@ export class AuthModule {
 
     isAuthenticated() {
         return this.currentUser !== null;
+    }
+
+    /**
+     * Wait for Firebase Auth to complete its initial state check
+     * This prevents the "flash of unauthenticated content" (FOUC)
+     * by ensuring we know the auth state before showing any content
+     *
+     * @returns {Promise<User|null>} Resolves with user object or null
+     */
+    async waitForAuthInitialization() {
+        return this.initializationPromise;
     }
 }

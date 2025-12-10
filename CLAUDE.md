@@ -58,6 +58,8 @@ Deployment & Operations:
 - `platforms/firebase/firebase-platform-guide.md` - Firebase + GitHub strategy
 
 **Meta-Guidance:**
+- `meta/architectural-evolution-strategy.md` - Strategic framework for evolving architecture across all domains
+- `meta/architectural-decision-log.md` - Historical record of architectural decisions made
 - `meta/prompt-maintenance.md` - Keeping prompt library current and accurate
 - `meta/prompt-gap-protocol.md` - Detecting and handling insufficient prompt coverage
 
@@ -98,6 +100,11 @@ Deployment & Operations:
 **Technology Selection** →
 - `core/operations/platform-simplification-principles.md`
 - Then: `platforms/firebase/firebase-platform-guide.md` for Firebase strategy
+
+**Architectural Evolution** →
+- `meta/architectural-evolution-strategy.md` (framework for phase transitions)
+- `meta/architectural-decision-log.md` (check current phase for each domain)
+- Consult decision triggers before recommending phase transitions
 
 **Version Control & Commits** →
 - `core/development/git-best-practices.md` (REQUIRED: conventional commits, PR descriptions, atomic commits)

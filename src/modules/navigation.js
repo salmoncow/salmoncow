@@ -150,18 +150,16 @@ export class NavigationModule {
             this.navUserContainer.style.display = 'block';
         }
 
-        // Update user avatar in nav button
+        // Update user avatar in nav button (using UserAvatar component)
         if (this.navAvatar) {
-            this.navAvatar.src = user.photoURL || this.defaultAvatarURL;
-            this.navAvatar.alt = `${user.displayName || 'User'}'s avatar`;
+            const navAvatarComponent = document.createElement('user-avatar');
+            navAvatarComponent.setAttribute('photo', user.photoURL || '');
+            navAvatarComponent.setAttribute('alt', `${user.displayName || 'User'}'s avatar`);
+            navAvatarComponent.setAttribute('size', 'medium');
 
-            // Add error handler for failed image loads
-            this.navAvatar.onerror = () => {
-                // Prevent infinite loop if default avatar also fails
-                if (this.navAvatar.src !== this.defaultAvatarURL) {
-                    this.navAvatar.src = this.defaultAvatarURL;
-                }
-            };
+            // Replace existing content
+            this.navAvatar.innerHTML = '';
+            this.navAvatar.appendChild(navAvatarComponent);
         }
 
         // Update username in nav button
@@ -169,18 +167,16 @@ export class NavigationModule {
             this.navUsername.textContent = user.displayName || 'User';
         }
 
-        // Update dropdown header avatar
+        // Update dropdown header avatar (using UserAvatar component)
         if (this.dropdownAvatar) {
-            this.dropdownAvatar.src = user.photoURL || this.defaultAvatarURL;
-            this.dropdownAvatar.alt = `${user.displayName || 'User'}'s avatar`;
+            const dropdownAvatarComponent = document.createElement('user-avatar');
+            dropdownAvatarComponent.setAttribute('photo', user.photoURL || '');
+            dropdownAvatarComponent.setAttribute('alt', `${user.displayName || 'User'}'s avatar`);
+            dropdownAvatarComponent.setAttribute('size', 'large');
 
-            // Add error handler for failed image loads
-            this.dropdownAvatar.onerror = () => {
-                // Prevent infinite loop if default avatar also fails
-                if (this.dropdownAvatar.src !== this.defaultAvatarURL) {
-                    this.dropdownAvatar.src = this.defaultAvatarURL;
-                }
-            };
+            // Replace existing content
+            this.dropdownAvatar.innerHTML = '';
+            this.dropdownAvatar.appendChild(dropdownAvatarComponent);
         }
 
         // Update dropdown name
