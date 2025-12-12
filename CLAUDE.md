@@ -35,14 +35,12 @@ Architecture:
 Development:
 - `core/development/asset-reusability.md` - Resource management and DRY principles
 - `core/development/git-best-practices.md` - Git workflows, commit conventions, branching strategies
-- `core/development/vite-best-practices.md` - Modern build tooling, HMR, environment variables, optimization
 
 Security & Testing:
 - `core/security/security-principles.md` - Security patterns and defensive practices
 - `core/testing/testing-principles.md` - Testing strategies and quality assurance
 
-Deployment & Operations:
-- `core/deployment/deployment-principles.md` - CI/CD patterns and deployment strategies
+Operations:
 - `core/operations/monitoring-principles.md` - Observability and performance tracking
 - `core/operations/budget-principles.md` - Cost management and resilience patterns
 - `core/operations/platform-simplification-principles.md` - Platform selection and simplification
@@ -51,17 +49,20 @@ Deployment & Operations:
 - `platforms/firebase/firebase-best-practices.md` - Firebase SDK patterns and fundamentals
 - `platforms/firebase/firebase-security.md` - Firestore rules, App Check, custom claims
 - `platforms/firebase/firebase-testing.md` - Emulator usage, security rules testing
-- `platforms/firebase/firebase-deployment.md` - GitHub Actions, Hosting, Functions deployment
 - `platforms/firebase/firebase-monitoring.md` - Performance Monitoring, Analytics, Cloud Logging
-- `platforms/firebase/firebase-finops.md` - Free tier maximization and cost optimization
-- `platforms/firebase/firebase-resilience.md` - Error handling, retry patterns
-- `platforms/firebase/firebase-platform-guide.md` - Firebase + GitHub strategy
+
+**Technical Specifications (Project-Specific):**
+- `.specs/constitution.md` - Project constitutional spec (quality standards, tech stack, workflows)
+- `.specs/technical/build-system.md` - Vite configuration and optimization
+- `.specs/technical/cicd-pipeline.md` - GitHub Actions CI/CD workflows
+- `.specs/technical/firebase-deployment.md` - Firebase Hosting deployment process
 
 **Meta-Guidance:**
 - `meta/architectural-evolution-strategy.md` - Strategic framework for evolving architecture across all domains
 - `meta/architectural-decision-log.md` - Historical record of architectural decisions made
 - `meta/prompt-maintenance.md` - Keeping prompt library current and accurate
 - `meta/prompt-gap-protocol.md` - Detecting and handling insufficient prompt coverage
+- `meta/speckit-integration-guide.md` - Spec-kit + prompts hybrid architecture documentation
 
 ## Decision Framework
 
@@ -90,8 +91,8 @@ Deployment & Operations:
 - Then: `platforms/firebase/firebase-testing.md` (Firebase emulator, rules testing)
 
 **Deployment Planning** →
-- `core/deployment/deployment-principles.md` (CI/CD patterns)
-- Then: `platforms/firebase/firebase-deployment.md` (GitHub Actions setup)
+- `.specs/technical/cicd-pipeline.md` (GitHub Actions CI/CD workflows)
+- `.specs/technical/firebase-deployment.md` (Firebase Hosting deployment process)
 
 **Cost Management** →
 - `core/operations/budget-principles.md` (universal FinOps)
@@ -99,7 +100,7 @@ Deployment & Operations:
 
 **Technology Selection** →
 - `core/operations/platform-simplification-principles.md`
-- Then: `platforms/firebase/firebase-platform-guide.md` for Firebase strategy
+- `.specs/constitution.md` (approved technology stack, platform constraints)
 
 **Architectural Evolution** →
 - `meta/architectural-evolution-strategy.md` (framework for phase transitions)
@@ -110,11 +111,17 @@ Deployment & Operations:
 - `core/development/git-best-practices.md` (REQUIRED: conventional commits, PR descriptions, atomic commits)
 
 **Build Tool Configuration** →
-- `core/development/vite-best-practices.md` (Vite setup, optimization, environment variables)
-- Then: `platforms/firebase/firebase-deployment.md` (Firebase Hosting integration)
+- `.specs/technical/build-system.md` (Vite setup, optimization, environment variables)
+- `.specs/technical/firebase-deployment.md` (Firebase Hosting integration)
 
 **Prompt Library Updates** →
 - `meta/prompt-maintenance.md`
+
+**Project Configuration & Constraints** →
+- `.specs/constitution.md` (current phase, quality thresholds, technology stack, cost constraints)
+- `.specs/technical/build-system.md` (Vite configuration and optimization)
+- `.specs/technical/cicd-pipeline.md` (GitHub Actions workflows)
+- `.specs/technical/firebase-deployment.md` (Firebase Hosting deployment)
 
 ## Core Working Principles
 
@@ -140,12 +147,57 @@ Deployment & Operations:
 5. **Document Which Prompts Influenced the Decision**
 6. **Follow Through** with testing and validation as outlined in prompts
 
+## Spec-Kit + Prompts Workflow
+
+### When to Use Spec-Kit vs. .prompts/
+
+**Use Spec-Kit (.specs/) for:**
+- Project-specific constraints → `.specs/constitution.md`
+- Feature requirements & planning → `.specs/features/`
+- Technical configurations → `.specs/technical/`
+- Implementation plans and work breakdown
+
+**Use Prompts (.prompts/) for:**
+- Foundational architectural patterns → `.prompts/core/architecture/`
+- Universal security/testing principles → `.prompts/core/security/`, `.prompts/core/testing/`
+- Firebase SDK implementation guidance → `.prompts/platforms/firebase/`
+- Strategic frameworks → `.prompts/meta/architectural-evolution-strategy.md`
+
+### Feature Development Workflow
+
+1. **Consult Constitution**: Read `.specs/constitution.md` for project constraints
+2. **Create Spec**: `/speckit-specify <feature-name>` (references constitutional constraints)
+3. **Plan Implementation**: `/speckit-plan` (references `.prompts/core/*` patterns)
+4. **Break Down Work**: `/speckit-tasks`
+5. **Implement**: `/speckit-implement` (follows `.prompts/platforms/firebase/*` guidance)
+6. **Document**: Commit with guidance references (constitutional + prompts)
+
+### Architectural Evolution Workflow
+
+1. **Check State**: `.prompts/meta/architectural-decision-log.md` (current phases)
+2. **Evaluate Triggers**: `.prompts/meta/architectural-evolution-strategy.md` (decision triggers)
+3. **If Triggers Met**: `/speckit-specify architectural-evolution-<domain>` → Update decision log + constitution
+4. **If Triggers NOT Met**: Stay in current phase, cite unmet triggers
+
+### Spec-Kit Commands
+
+- **`/speckit-constitution`** - View project constitutional spec
+- **`/speckit-specify <feature>`** - Create feature requirement specification
+- **`/speckit-plan`** - Design technical implementation plan
+- **`/speckit-tasks`** - Break down into actionable tasks
+- **`/speckit-implement`** - Execute implementation with validation
+
+**See also**: `.prompts/meta/speckit-integration-guide.md` for complete integration documentation
+
+---
+
 ## Session Initialization Protocol
 
 At the start of each development session, Claude must:
 - [ ] Acknowledge this guidance framework is active and mandatory
 - [ ] Confirm understanding of the decision mapping above
 - [ ] Understand the prompt gap protocol (`meta/prompt-gap-protocol.md`)
+- [ ] Understand spec-kit integration (`.prompts/meta/speckit-integration-guide.md`)
 - [ ] Reference appropriate guidance files before making architectural decisions
 - [ ] Assess prompt coverage and flag gaps when detected
 - [ ] Document guidance citations in all responses involving design choices
