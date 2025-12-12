@@ -91,8 +91,8 @@ Operations:
 - Then: `platforms/firebase/firebase-testing.md` (Firebase emulator, rules testing)
 
 **Deployment Planning** →
-- `core/deployment/deployment-principles.md` (CI/CD patterns)
-- Then: `platforms/firebase/firebase-deployment.md` (GitHub Actions setup)
+- `.specs/technical/cicd-pipeline.md` (GitHub Actions CI/CD workflows)
+- `.specs/technical/firebase-deployment.md` (Firebase Hosting deployment process)
 
 **Cost Management** →
 - `core/operations/budget-principles.md` (universal FinOps)
@@ -100,7 +100,7 @@ Operations:
 
 **Technology Selection** →
 - `core/operations/platform-simplification-principles.md`
-- Then: `platforms/firebase/firebase-platform-guide.md` for Firebase strategy
+- `.specs/constitution.md` (approved technology stack, platform constraints)
 
 **Architectural Evolution** →
 - `meta/architectural-evolution-strategy.md` (framework for phase transitions)
@@ -111,11 +111,17 @@ Operations:
 - `core/development/git-best-practices.md` (REQUIRED: conventional commits, PR descriptions, atomic commits)
 
 **Build Tool Configuration** →
-- `core/development/vite-best-practices.md` (Vite setup, optimization, environment variables)
-- Then: `platforms/firebase/firebase-deployment.md` (Firebase Hosting integration)
+- `.specs/technical/build-system.md` (Vite setup, optimization, environment variables)
+- `.specs/technical/firebase-deployment.md` (Firebase Hosting integration)
 
 **Prompt Library Updates** →
 - `meta/prompt-maintenance.md`
+
+**Project Configuration & Constraints** →
+- `.specs/constitution.md` (current phase, quality thresholds, technology stack, cost constraints)
+- `.specs/technical/build-system.md` (Vite configuration and optimization)
+- `.specs/technical/cicd-pipeline.md` (GitHub Actions workflows)
+- `.specs/technical/firebase-deployment.md` (Firebase Hosting deployment)
 
 ## Core Working Principles
 
