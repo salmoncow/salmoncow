@@ -35,6 +35,10 @@ Opens at http://localhost:3000
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for setup instructions, build process, and deployment workflows.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for git conventions, development workflow, and architectural guidelines.
+
 ## License
 
 Apache 2.0
