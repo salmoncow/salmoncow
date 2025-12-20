@@ -201,6 +201,7 @@ At the start of each development session, Claude must:
 - [ ] Reference appropriate guidance files before making architectural decisions
 - [ ] Assess prompt coverage and flag gaps when detected
 - [ ] Document guidance citations in all responses involving design choices
+- [ ] Follow `core/development/git-best-practices.md` for ALL commits and PRs (conventional commits, atomic commits, PR template)
 
 ## Response Documentation Template
 
@@ -215,164 +216,68 @@ For any architectural or implementation decision, include:
 - Pattern name and implementation approach
 ```
 
-## Available Commands
+## Common Commands
 
-### Command Organization
+This section provides quick reference for frequently-used commands in this project.
 
-Commands use prefixes for easy discovery and auto-completion:
-- **`/git-*`** - Git operations (branch, commit, push, sync, cleanup)
-- **`/gh-*`** - GitHub operations (pull requests, issues, releases)
+### Development Commands
 
-💡 **Tip:** Type `/git-` or `/gh-` and press TAB to see all commands in that category.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server with HMR at http://localhost:3000 |
+| `npm run build` | Create production build in `dist/` directory |
+| `npm run preview` | Preview production build locally |
+| `npm run clean` | Remove `dist/` directory |
 
----
+### Deployment Commands
 
-### Git Commands
+| Command | Description |
+|---------|-------------|
+| `npm run deploy` | Build and deploy to Firebase production |
+| `npm run deploy:preview` | Deploy to Firebase preview channel (7-day expiry) |
+| `firebase login` | Authenticate with Firebase CLI |
+| `firebase use salmoncow` | Switch to salmoncow project |
+| `firebase open hosting:site` | Open live site in browser |
 
-All git commands follow patterns from `core/development/git-best-practices.md`.
+### Git Workflow
 
-#### `/git-branch <name>` - Create New Branch
-Create a feature branch from latest main following naming conventions.
+All git operations follow conventions from `.prompts/core/development/git-best-practices.md`.
 
-**Usage:** `/git-branch feat/feature-name` or `/git-branch fix/bug-name #123`
+**Create Feature Branch:**
+```bash
+git checkout -b <type>/<description>
+# Examples:
+#   git checkout -b feat/user-dashboard
+#   git checkout -b fix/login-timeout
+#   git checkout -b docs/update-readme
+```
 
-**What it does:**
-1. Validates branch name against conventions (lowercase, hyphens, valid type)
-2. Blocks if uncommitted changes exist
-3. Switches to main and pulls latest
-4. Creates and switches to new branch
-5. Parses and formats issue numbers automatically
+**Commit Changes (Conventional Commits):**
+```bash
+git add <files>
+git commit -m "<type>(<scope>): <subject>"
+# Examples:
+#   git commit -m "feat(auth): add Google OAuth sign-in"
+#   git commit -m "fix(ui): resolve avatar fallback display"
+#   git commit -m "docs: update deployment instructions"
+```
 
-**Examples:**
-- `/git-branch feat/add-user-dashboard`
-- `/git-branch fix/login-timeout-error #58`
+**Common Commit Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `ci`
 
-**Next step:** Make changes, then `/git-commit`
+**Push and Create PR:**
+```bash
+git push -u origin <branch-name>
+# Then create PR via GitHub web UI
+```
 
----
+### Utility Commands
 
-#### `/git-commit` - Commit Changes
-Create a git commit for recent changes following project best practices.
-
-**Usage:** `/git-commit`
-
-**What it does:**
-1. Reviews current changes (`git status`, `git diff`)
-2. Analyzes commit history for style consistency
-3. Drafts commit message following conventional commits format
-4. Stages relevant files and creates commit
-5. Includes Claude Code co-authorship attribution
-
-**Requirements:**
-- Follows conventional commits format
-- Verifies no sensitive files are committed
-- Cites guidance prompts that influenced changes
-
-**Next step:** `/git-push` to share your commits
-
----
-
-#### `/git-push` - Push to Remote
-Push current branch to remote repository following git best practices.
-
-**Usage:** `/git-push`
-
-**What it does:**
-1. Verifies working tree is clean
-2. Checks current branch and upstream tracking
-3. Warns if pushing to main/master (should use PRs)
-4. Uses `git push -u origin <branch>` for first push
-5. Uses `git push` for subsequent pushes
-6. Provides PR creation link after successful push
-
-**Safety features:**
-- NEVER force pushes without explicit confirmation
-- Warns before pushing to protected branches
-- Checks for uncommitted changes
-- Handles non-fast-forward scenarios
-
-**Next step:** `/gh-pr` to create pull request
-
----
-
-#### `/git-sync` - Sync with Main
-Update current branch with latest changes from main.
-
-**Usage:** `/git-sync`
-
-**What it does:**
-1. Fetches latest from origin
-2. Rebases current branch on origin/main
-3. Handles conflicts with clear guidance
-4. Shows updated commit status
-
-**When to use:** When main branch has new commits you need to integrate
-
-**Safety features:**
-- Only works on feature branches, not main/master
-- Blocks if uncommitted changes exist
-- Provides conflict resolution instructions
-- Uses rebase for cleaner history
-
-**Note:** After sync, next push may require `--force-with-lease` (handled by `/git-push`)
-
----
-
-#### `/git-cleanup` - Clean Up Branch
-Clean up local branch after PR is merged.
-
-**Usage:** `/git-cleanup`
-
-**What it does:**
-1. Stores current branch name
-2. Verifies branch is merged to main (safety check)
-3. Switches to main and pulls latest
-4. Deletes local feature branch
-5. Optionally deletes remote branch
-
-**When to use:** After your PR is merged to main
-
-**Safety features:**
-- Blocks if on main/master
-- Warns if branch has unmerged commits
-- Warns if branch has unpushed commits
-- Uses safe delete (`-d` not `-D`)
-- Asks before deleting remote branch
-
-**Next step:** Create new branch with `/git-branch`
-
----
-
-### GitHub Commands
-
-Commands using GitHub CLI (`gh`) for platform operations.
-
-#### `/gh-pr` - Create Pull Request
-Create a pull request for current branch using GitHub CLI.
-
-**Usage:** `/gh-pr`
-
-**What it does:**
-1. Verifies `gh` CLI is installed and authenticated
-2. Ensures branch is pushed to remote (offers to push if not)
-3. Analyzes commits since branching from main
-4. Drafts PR title following conventional commits format
-5. Generates PR body with summary, changes, test plan
-6. Creates PR using `gh pr create`
-7. Displays PR URL and next steps
-
-**PR Body includes:**
-- Summary of changes and rationale
-- Guidance references (which prompts influenced decisions)
-- Test plan checklist
-- Documentation updates if applicable
-
-**Requirements:**
-- GitHub CLI (`gh`) must be installed
-- Branch must be pushed to remote
-- Cannot create PR from main/master branch
-
-**Next step:** Wait for PR review and approval, then `/git-cleanup` after merge
+| Command | Description |
+|---------|-------------|
+| `git status` | Check working tree status |
+| `git log --oneline` | View commit history (concise) |
+| `git diff` | Show unstaged changes |
+| `git branch` | List local branches |
 
 ---
 
