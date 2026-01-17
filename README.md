@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="src/assets/images/branding/logo.svg" alt="Salmoncow Logo" width="200">
+</p>
+
 # Salmoncow
 
 A minimal single-page application for experimentation with modern web technologies and Firebase services.
