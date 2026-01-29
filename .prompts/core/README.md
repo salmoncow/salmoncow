@@ -44,13 +44,8 @@ Day-to-day development workflows and patterns.
 - Branching strategies
 - Code review practices
 
-### [Vite Best Practices](./development/vite-best-practices.md)
-- Modern build tooling patterns
-- Environment variable management
-- Asset optimization strategies
-- Development server configuration
-- TypeScript integration
-- CI/CD integration
+> **Note**: Build tool configuration (Vite) has been migrated to project-specific specs.
+> See `.specs/technical/build-system.md` for Vite configuration.
 
 ---
 
@@ -80,21 +75,6 @@ Comprehensive testing strategies for quality assurance.
 - Security testing
 - Performance testing
 - Testing anti-patterns
-
----
-
-## Deployment & CI/CD
-
-Continuous integration and deployment patterns.
-
-### [Deployment Principles](./deployment/deployment-principles.md)
-- CI/CD pipeline stages
-- Deployment strategies (blue-green, canary, rolling)
-- Environment parity
-- Database migrations
-- Version control everything
-- Build once, deploy many
-- Common CI/CD anti-patterns
 
 ---
 
@@ -138,7 +118,7 @@ These core principles are implemented for specific platforms:
 **Architecture Decisions** → Architecture section
 **Security Implementation** → Security Principles
 **Testing Strategy** → Testing Principles
-**Deployment Planning** → Deployment Principles
+**Deployment Planning** → See `.specs/technical/cicd-pipeline.md`
 **Cost Optimization** → Budget Principles
 **Operational Simplification** → Platform Simplification
 
