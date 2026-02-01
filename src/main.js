@@ -18,11 +18,15 @@ import { firebaseConfig, validateFirebaseConfig } from './firebase-config.js';
 import { AuthModule } from './modules/auth.js';
 import { UIModule } from './modules/ui.js';
 import { NavigationModule } from './modules/navigation.js';
+import { UserPortalModule } from './modules/user-portal.js';
+import { createRepositoryFactory } from './factories/repository-factory.js';
+import { UserProfileService } from './services/user-profile-service.js';
 
 // Import Web Components
 import './components/LoadingSpinner.js';
 import './components/UserAvatar.js';
 import './components/StatusBadge.js';
+import './components/UserPortal.js';
 
 class App {
     constructor() {
@@ -30,6 +34,8 @@ class App {
         this.auth = null;
         this.ui = null;
         this.navigation = null;
+        this.userPortal = null;
+        this.profileService = null;
     }
 
     async init() {
@@ -47,6 +53,9 @@ class App {
             this.firebaseApp = initializeApp(firebaseConfig);
             this.auth = new AuthModule(this.firebaseApp);
 
+            // Initialize user profile service and portal
+            this.initializeUserPortal();
+
             // Wait for auth initialization (prevents FOUC)
             await this.auth.waitForAuthInitialization();
 
@@ -61,6 +70,17 @@ class App {
             console.error('Failed to initialize app:', error);
             this.ui.hideLoadingOverlay();
         }
+    }
+
+    /**
+     * Initialize user profile service and portal module
+     */
+    initializeUserPortal() {
+        const repositoryFactory = createRepositoryFactory();
+        const repository = repositoryFactory.getUserProfileRepository();
+        this.profileService = new UserProfileService(repository);
+        this.userPortal = new UserPortalModule(this.profileService);
+        this.userPortal.init('userPortalContainer');
     }
 
     setupEventListeners() {
@@ -178,6 +198,11 @@ class App {
             // Update both UI module and navigation module
             this.ui.updateLoginButton(user);
             this.navigation.updateAuthState(user);
+
+            // Update user portal state
+            if (this.userPortal) {
+                this.userPortal.handleAuthStateChange(user);
+            }
 
             if (user) {
                 // Remove any status badges when user signs in
