@@ -39,9 +39,9 @@ These principles apply to any technology stack and form the foundation of good s
 - [Asset Reusability](./core/development/asset-reusability.md) - DRY principles, asset pipeline, resource management
 - [Git Best Practices](./core/development/git-best-practices.md) - Git workflows, commit conventions, branching strategies
 
-**Project-Specific Build & Deployment** (moved to `.specs/technical/`):
-- Build System: See `.specs/technical/build-system.md`
-- CI/CD Pipeline: See `.specs/technical/cicd-pipeline.md`
+**Project-Specific Build & Deployment**:
+- Build System: `.specs/technical/build-system.md`
+- CI/CD Pipeline: `.specs/technical/cicd-pipeline.md`
 
 ### Security
 - [Security Principles](./core/security/security-principles.md) - Authentication, authorization, data protection, API security
@@ -66,9 +66,9 @@ Firebase-specific patterns, configurations, and best practices. All Firebase gui
 - [Firebase Testing](./platforms/firebase/firebase-testing.md) - Emulator usage, security rules testing
 - [Firebase Monitoring](./platforms/firebase/firebase-monitoring.md) - Performance Monitoring, Analytics, logging
 
-**Project-Specific Firebase Configuration** (moved to `.specs/`):
-- Firebase Deployment: See `.specs/technical/firebase-deployment.md`
-- Project Constraints: See `.specs/constitution.md` §VI (Cost constraints, free tier limits)
+**Project-Specific Firebase Configuration**:
+- Firebase Deployment: `.specs/technical/firebase-deployment.md`
+- Project Constraints: `.specs/constitution.md` §VI (Cost constraints, free tier limits)
 
 ---
 
@@ -139,17 +139,3 @@ See [Prompt Maintenance](./meta/prompt-maintenance.md) for guidelines on:
 - Maintaining accuracy
 - Version management
 
----
-
-## Reorganization History
-
-**2025-12-11**: Spec-Kit integration - Hybrid architecture with `.prompts/` (foundational patterns) + `.specs/` (project specifications)
-- Migrated project-specific configurations to `.specs/technical/`
-- Created constitutional spec distilling project constraints
-- Established clear boundaries: foundational vs. project-specific
-- See [Spec-Kit Integration Guide](./meta/speckit-integration-guide.md)
-
-**2025-11-18**: Major reorganization to separate platform-agnostic principles from Firebase-specific implementations
-- Organized into `core/` (universal) and `platforms/` (specific) with clear cross-references
-
-**Previous structure**: All prompts in flat `.prompts/` directory with mixed universal/Firebase content

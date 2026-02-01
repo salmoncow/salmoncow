@@ -2,7 +2,7 @@
 
 **Project**: SalmonCow
 **Version**: 1.0.0
-**Last Updated**: 2025-12-11
+**Last Updated**: 2026-01-29
 **Vite Version**: 7.x
 **Status**: Active
 
@@ -45,77 +45,9 @@ salmoncow/
 - `public/` files are copied verbatim to `dist/` (no processing)
 - `index.html` is the entry point and must be in `src/` (Vite root)
 
-### I.2 Vite Configuration
+### I.2 Vite Configuration Principles
 
-**File**: `/home/td000/salmoncow/vite.config.js`
-
-```javascript
-import { defineConfig } from 'vite';
-import path from 'path';
-
-export default defineConfig(({ mode }) => ({
-  // Development server configuration
-  server: {
-    port: 3000,
-    open: true,           // Auto-open browser on start
-    cors: true,           // Enable CORS for Firebase API calls
-  },
-
-  // Preview server (for testing production build locally)
-  preview: {
-    port: 3000,           // Match dev server port
-  },
-
-  // Source root configuration
-  root: 'src',            // index.html location
-  envDir: '..',           // Look for .env in project root
-
-  // Path aliases for cleaner imports
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@services': path.resolve(__dirname, './src/services'),
-      '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
-      '@assets': path.resolve(__dirname, './src/assets'),
-    },
-  },
-
-  // Production build configuration
-  build: {
-    outDir: '../dist',      // Output to project root /dist
-    emptyOutDir: true,      // Clean dist/ before build
-    minify: 'terser',       // Better compression than esbuild
-    cssCodeSplit: true,     // Split CSS per chunk for lazy loading
-    sourcemap: mode === 'production' ? true : 'inline',
-
-    // Asset organization and optimization
-    assetsDir: 'assets',
-    rollupOptions: {
-      // External dependencies (Firebase on CDN)
-      external: [
-        /^https:\/\/www\.gstatic\.com\/firebasejs\/.*/,
-      ],
-
-      output: {
-        // Organize assets by type for optimal caching
-        assetFileNames: (assetInfo) => {
-          const ext = assetInfo.name.split('.').pop();
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-            return 'assets/images/[name]-[hash][extname]';
-          }
-          if (/css/i.test(ext)) {
-            return 'assets/styles/[name]-[hash][extname]';
-          }
-          return 'assets/[name]-[hash][extname]';
-        },
-        chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-      },
-    },
-  },
-}));
-```
+**File**: `vite.config.js` (see actual file for current implementation)
 
 **Key Decisions**:
 1. **Firebase on CDN**: Large Firebase SDK marked as external, loaded from CDN for better caching

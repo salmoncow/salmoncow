@@ -123,6 +123,22 @@ Operations:
 - `.specs/technical/cicd-pipeline.md` (GitHub Actions workflows)
 - `.specs/technical/firebase-deployment.md` (Firebase Hosting deployment)
 
+**Architecture Review** →
+- `.specs/constitution.md` §II.1 (current state, metrics - single source of truth)
+- Delta-based review process (see below)
+
+### Architecture Review Process
+
+For periodic architecture reviews:
+1. **Check what changed**: `git diff <last-review-commit>..HEAD --stat`
+2. **Review changed files** against:
+   - Constitution §II.3-4 (modularity, code structure)
+   - Constitution §III.2 (security standards)
+   - Constitution §IV.2 (forbidden patterns)
+3. **Update constitution §II.1** if metrics changed (component count, module count, etc.)
+4. **Add decision log entry** only if issues require architectural action
+5. **Update "Last Architecture Review" date** in constitution §II.1
+
 ## Core Working Principles
 
 1. **Reference First**: Always check relevant prompt files before making decisions

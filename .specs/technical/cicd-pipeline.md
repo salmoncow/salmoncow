@@ -2,8 +2,8 @@
 
 **Project**: SalmonCow
 **Version**: 1.0.0
-**Last Updated**: 2025-12-11
-**Status**: Planned (Phase 1, not yet implemented)
+**Last Updated**: 2026-01-29
+**Status**: Implemented (Phase 2)
 **Platform**: GitHub Actions
 
 ---
@@ -12,11 +12,10 @@
 
 This specification defines the Continuous Integration and Continuous Deployment (CI/CD) pipeline for the SalmonCow project using GitHub Actions. The pipeline automates testing, building, and deployment to Firebase Hosting.
 
-**Constitutional Reference**: [.specs/constitution.md](.specs/constitution.md) §II.1 - Current Architectural State (Deployment: Phase 1)
+**Constitutional Reference**: [.specs/constitution.md](.specs/constitution.md) §II.1 - Current Architectural State
 
-**Current State**: Phase 1 (Manual deployment via `npm run deploy`)
-**Planned State**: Phase 2 (GitHub Actions automation)
-**Trigger for Phase 2**: Daily deployments OR team size ≥2
+**Current State**: Phase 2 (GitHub Actions automation implemented)
+**Next Phase**: Phase 3 (Testing integration, advanced CI/CD)
 
 ---
 
@@ -85,151 +84,26 @@ on:
 
 ## II. GitHub Actions Configuration
 
-### II.1 Production Deployment Workflow
+### II.1 Workflow Files
 
-**File**: `.github/workflows/deploy-production.yml`
+The actual workflow implementations are in:
+- `.github/workflows/deploy-production.yml` - Production deployment on push to main
+- `.github/workflows/deploy-preview.yml` - Preview deployment on pull requests
 
-```yaml
-name: Deploy to Production
+> **Note**: See the actual workflow files for current implementation.
+> This spec documents the principles and architecture, not the specific YAML which may evolve.
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+### II.2 Workflow Principles
 
-# Ensure only one deployment runs at a time
-concurrency:
-  group: production-deployment
-  cancel-in-progress: false
+**Production Deployment**:
+- Triggers on push to `main` branch and manual dispatch
+- Uses concurrency control (one deployment at a time)
+- Pipeline: checkout → setup → install → build → deploy
 
-jobs:
-  deploy:
-    name: Build and Deploy to Firebase Hosting
-    runs-on: ubuntu-latest
-
-    steps:
-      # 1. Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # 2. Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
-      # 3. Install dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # 4. Create environment file from secrets
-      - name: Create environment file
-        run: |
-          cat > .env << EOF
-          VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
-          EOF
-
-      # 5. Build project
-      - name: Build project
-        run: npm run build
-
-      # 6. Deploy to Firebase Hosting
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-
-      # 7. Post-deploy notification (future: Slack, Discord, etc.)
-      - name: Deployment success
-        if: success()
-        run: echo "Deployment to production successful!"
-
-      - name: Deployment failure
-        if: failure()
-        run: echo "Deployment to production failed!"
-```
-
-### II.2 Preview Deployment Workflow (Pull Requests)
-
-**File**: `.github/workflows/deploy-preview.yml`
-
-```yaml
-name: Deploy Preview
-
-on:
-  pull_request:
-    branches: [main]
-
-# Allow multiple PR previews
-concurrency:
-  group: preview-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  deploy:
-    name: Build and Deploy Preview
-    runs-on: ubuntu-latest
-
-    steps:
-      # 1-5: Same as production (checkout, setup, install, env, build)
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Create environment file
-        run: |
-          cat > .env << EOF
-          VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
-          EOF
-
-      - name: Build project
-        run: npm run build
-
-      # 6. Deploy to Firebase Hosting preview channel
-      - name: Deploy to Firebase Hosting preview channel
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        id: deploy
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          projectId: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          expires: 7d  # Auto-expire after 7 days
-
-      # 7. Comment on PR with preview URL
-      - name: Comment PR with preview URL
-        uses: actions/github-script@v7
-        if: success()
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Preview Deployment Ready! 🚀\n\n**Preview URL:** ${{ steps.deploy.outputs.details_url }}\n\n*This preview will expire in 7 days.*`
-            })
-```
+**Preview Deployment**:
+- Triggers on pull requests to `main`
+- Auto-expires preview channels after 7 days
+- Comments on PR with preview URL
 
 ---
 
@@ -628,7 +502,7 @@ git push --force origin main
 - [.specs/technical/firebase-deployment.md](.specs/technical/firebase-deployment.md) - Firebase Hosting setup
 
 **Foundational Patterns**:
-- [.prompts/core/deployment/deployment-principles.md](.prompts/core/deployment/deployment-principles.md) - Universal CI/CD principles (now deleted, moved here)
+- CI/CD principles are documented directly in this specification (previously in core prompts, consolidated here)
 
 **External Documentation**:
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)

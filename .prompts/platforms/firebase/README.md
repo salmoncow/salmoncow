@@ -16,7 +16,6 @@ Firebase-specific implementations of core software development principles.
 - [Firebase Monitoring](./firebase-monitoring.md) - Performance Monitoring, Analytics, Cloud Logging
 - [Firebase FinOps](./firebase-finops.md) - Free tier maximization, cost optimization
 - [Firebase Resilience](./firebase-resilience.md) - Error handling, retry patterns, budget-friendly patterns
-- [Firebase Platform Guide](./firebase-platform-guide.md) - Firebase + GitHub simplification strategy
 
 ---
 
@@ -47,8 +46,6 @@ Firebase-specific implementations of core software development principles.
 ---
 
 ### Deployment & CI/CD
-**Core Principles**: [Deployment Principles](../../core/deployment/deployment-principles.md)
-
 **Firebase Implementation**: [Firebase Deployment](./firebase-deployment.md)
 - GitHub Actions workflows for Firebase
 - Firebase Hosting deployment (production and preview channels)
@@ -82,11 +79,7 @@ Firebase-specific implementations of core software development principles.
 ### Platform Simplification
 **Core Principles**: [Platform Simplification Principles](../../core/operations/platform-simplification-principles.md)
 
-**Firebase Implementation**: [Firebase Platform Guide](./firebase-platform-guide.md)
-- Firebase + GitHub as single-platform strategy
-- Replacing Vercel/Netlify with Firebase Hosting
-- Operational simplification benefits
-- Migration strategies
+Platform simplification strategy is documented in the core principles. Firebase + GitHub serves as the two-platform strategy for this project.
 
 ---
 
@@ -153,7 +146,7 @@ This implementation assumes:
 - **Repository**: GitHub
 - **Monitoring**: Firebase Console + free-tier services
 
-For the rationale behind this stack, see [Firebase Platform Guide](./firebase-platform-guide.md).
+For platform simplification rationale, see [Platform Simplification Principles](../../core/operations/platform-simplification-principles.md).
 
 ---
 

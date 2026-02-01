@@ -2,7 +2,7 @@
 
 **Project**: SalmonCow
 **Version**: 1.0.0
-**Last Updated**: 2025-12-11
+**Last Updated**: 2026-01-29
 **Firebase CLI Version**: Latest
 **Status**: Active
 
@@ -40,59 +40,11 @@ firebase init hosting
 # - Set up GitHub Actions: No (manual for Phase 1)
 ```
 
-### I.2 Firebase Configuration File
+### I.2 Firebase Configuration Principles
 
-**File**: `/home/td000/salmoncow/firebase.json`
+**File**: `firebase.json` (see actual file for current implementation)
 
-```json
-{
-  "hosting": {
-    "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "**/*.@(js|css|svg|png|jpg|jpeg|gif|ico|woff|woff2)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
-          }
-        ]
-      },
-      {
-        "source": "index.html",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=0, must-revalidate"
-          }
-        ]
-      },
-      {
-        "source": "**/*.@(js|css)",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "text/javascript; charset=utf-8"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**Key Configuration**:
+**Key Configuration Principles**:
 1. **public: "dist"**: Vite build output directory
 2. **SPA rewrites**: All routes serve index.html (client-side routing)
 3. **Cache headers**:
