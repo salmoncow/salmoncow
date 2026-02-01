@@ -48,6 +48,61 @@ export class NavigationModule {
     }
 
     /**
+     * Initialize navigation with auth hint (for instant rendering)
+     * @param {{ isAuthenticated: boolean, displayName: string|null, photoURL: string|null }|null} hint
+     */
+    initWithHint(hint) {
+        if (hint && hint.isAuthenticated) {
+            // Show user container with cached data (pending state)
+            if (this.navLoginButton) {
+                this.navLoginButton.style.display = 'none';
+            }
+            if (this.navUserContainer) {
+                this.navUserContainer.style.display = 'block';
+            }
+            if (this.navUserButton) {
+                this.navUserButton.classList.add('auth-pending');
+            }
+
+            // Populate with cached name
+            if (this.navUsername) {
+                this.navUsername.textContent = hint.displayName || 'User';
+            }
+
+            // Populate avatar from hint
+            if (this.navAvatar && hint.photoURL) {
+                const navAvatarComponent = document.createElement('user-avatar');
+                navAvatarComponent.setAttribute('photo', hint.photoURL);
+                navAvatarComponent.setAttribute('alt', `${hint.displayName || 'User'}'s avatar`);
+                navAvatarComponent.setAttribute('size', 'medium');
+                this.navAvatar.innerHTML = '';
+                this.navAvatar.appendChild(navAvatarComponent);
+            }
+
+            // Populate dropdown with hint data
+            if (this.dropdownName) {
+                this.dropdownName.textContent = hint.displayName || 'User';
+            }
+            if (this.dropdownAvatar && hint.photoURL) {
+                const dropdownAvatarComponent = document.createElement('user-avatar');
+                dropdownAvatarComponent.setAttribute('photo', hint.photoURL);
+                dropdownAvatarComponent.setAttribute('alt', `${hint.displayName || 'User'}'s avatar`);
+                dropdownAvatarComponent.setAttribute('size', 'large');
+                this.dropdownAvatar.innerHTML = '';
+                this.dropdownAvatar.appendChild(dropdownAvatarComponent);
+            }
+        } else {
+            // Show login button (safe default)
+            if (this.navLoginButton) {
+                this.navLoginButton.style.display = 'block';
+            }
+            if (this.navUserContainer) {
+                this.navUserContainer.style.display = 'none';
+            }
+        }
+    }
+
+    /**
      * Cache DOM element references for performance
      */
     cacheElements() {
@@ -145,9 +200,12 @@ export class NavigationModule {
             this.navLoginButton.style.display = 'none';
         }
 
-        // Show user container
+        // Show user container and remove pending state
         if (this.navUserContainer) {
             this.navUserContainer.style.display = 'block';
+        }
+        if (this.navUserButton) {
+            this.navUserButton.classList.remove('auth-pending');
         }
 
         // Update user avatar in nav button (using UserAvatar component)
