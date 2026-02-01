@@ -49,33 +49,9 @@ When making architectural changes, add an entry using this template:
 
 ## Current Architectural State
 
-**Last Updated**: 2025-12-09
+**For current domain phases and metrics, see [.specs/constitution.md §II.1](../../.specs/constitution.md#ii1-current-architectural-state).**
 
-### Domain Phases
-
-| Domain | Current Phase | Next Phase | Triggers to Watch |
-|--------|--------------|------------|-------------------|
-| **UI Components** | Phase 1: Vanilla Web Components | Phase 2: Lit | Component count (currently ~3) |
-| **Security** | Phase 1: Basic Auth + Rules | Phase 2: App Check + Custom Claims | Production launch |
-| **Data** | Phase 1: Simple Collections | Phase 2: Optimized NoSQL | Query complexity |
-| **Testing** | Phase 1: Manual | Phase 2: Unit Tests | Module count (currently ~4) |
-| **Deployment** | Phase 1: Manual | Phase 2: GitHub Actions | Deploy frequency |
-| **Monitoring** | Phase 1: Manual | Phase 2: Firebase Performance | Production launch |
-| **Cost** | Phase 1: Free Tier | Phase 2: Optimized Free Tier | Usage growth |
-| **Platform** | 2 platforms (Firebase + GitHub) | Maintain | Avoid additions |
-
-### Key Metrics (as of 2025-12-09)
-
-- **Active Users**: 0 (pre-launch)
-- **Components**: ~3-4 (navigation, auth UI, loading states)
-- **Modules**: 4 (auth, ui, navigation, main)
-- **Routes**: 1 (homepage)
-- **Team Size**: 1 developer
-- **Firebase Usage**:
-  - Reads/day: <100 / 50K limit
-  - Writes/day: <10 / 20K limit
-  - Hosting: <1MB / 360MB limit
-- **Platform Count**: 2 (Firebase + GitHub)
+The constitution is the single source of truth for current state. This log is an append-only historical record of decisions made.
 
 ---
 

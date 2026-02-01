@@ -1,7 +1,7 @@
 # Project Constitution: SalmonCow Web Application
 
-**Version:** 1.0.1
-**Last Updated:** 2026-01-29
+**Version:** 1.0.2
+**Last Updated:** 2026-01-31
 **Scope:** All development on the SalmonCow project
 **Review Frequency:** Quarterly (next review: 2026-03-11)
 
@@ -66,8 +66,8 @@ This constitutional spec establishes the governing principles, standards, and co
 
 ### II.1 Current Architectural State
 
-**Last Updated**: 2025-12-11
-**Source**: [.prompts/meta/architectural-decision-log.md](.prompts/meta/architectural-decision-log.md)
+**Last Updated**: 2026-01-31
+**Last Architecture Review**: 2026-01-31
 
 | Domain | Current Phase | Target Phase | Status |
 |--------|---------------|--------------|---------|
@@ -80,7 +80,7 @@ This constitutional spec establishes the governing principles, standards, and co
 | **Cost** | Phase 1: Free Tier | Phase 2: Optimized Free Tier | Monitor usage growth |
 | **Platform** | 2 platforms (Firebase + GitHub) | Maintain at 2 | Avoid additions |
 
-**Key Metrics** (as of 2025-12-11):
+**Key Metrics** (as of 2026-01-31):
 - **Active Users**: 0 (pre-launch)
 - **Components**: 3-4 (navigation, auth UI, loading states)
 - **Modules**: 4 (auth, ui, navigation, main)
@@ -635,7 +635,7 @@ async function getCachedUser(uid) {
 
 ### IX.1 Quick Reference
 
-**Current State (as of 2025-12-11)**:
+**Current State (as of 2026-01-31)**:
 - Phase 1 across all domains
 - 3-4 components, 4 modules, 1 route
 - 1 developer, 0 active users
