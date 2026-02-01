@@ -1,4 +1,5 @@
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+import { AuthHintModule } from './auth-hint.js';
 
 export class AuthModule {
     constructor(firebaseApp) {
@@ -29,6 +30,8 @@ export class AuthModule {
     async signInWithGoogle() {
         try {
             const result = await signInWithPopup(this.auth, this.provider);
+            // Save auth hint for instant rendering on reload
+            AuthHintModule.saveHint(result.user);
             return {
                 success: true,
                 user: result.user,
@@ -46,6 +49,8 @@ export class AuthModule {
     async signOut() {
         try {
             await this.auth.signOut();
+            // Clear auth hint on sign out
+            AuthHintModule.clearHint();
             return {
                 success: true,
                 message: 'Signed out successfully'

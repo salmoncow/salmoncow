@@ -4,7 +4,6 @@
  * Responsibilities:
  * - Status message display (loading, error, success)
  * - Homepage content visibility based on auth state
- * - Loading overlay for auth initialization
  */
 export class UIModule {
     constructor() {
@@ -12,7 +11,6 @@ export class UIModule {
         this.homepageLogo = null;
         this.welcomeMessage = null;
         this.contentCard = null;
-        this.loadingOverlay = null;
     }
 
     init() {
@@ -20,7 +18,6 @@ export class UIModule {
         this.homepageLogo = document.getElementById('homepageLogo');
         this.welcomeMessage = document.getElementById('welcomeMessage');
         this.contentCard = document.getElementById('contentCard');
-        this.loadingOverlay = document.getElementById('loadingOverlay');
     }
 
     showStatus(message, type = 'loading') {
@@ -97,24 +94,5 @@ export class UIModule {
      */
     addLogoutButtonListener(callback) {
         // No-op: Navigation module handles logout
-    }
-
-    /**
-     * Show loading overlay during auth initialization
-     * Prevents flash of unauthenticated content (FOUC)
-     */
-    showLoadingOverlay() {
-        if (this.loadingOverlay) {
-            this.loadingOverlay.style.display = 'flex';
-        }
-    }
-
-    /**
-     * Hide loading overlay after auth state is determined
-     */
-    hideLoadingOverlay() {
-        if (this.loadingOverlay) {
-            this.loadingOverlay.style.display = 'none';
-        }
     }
 }

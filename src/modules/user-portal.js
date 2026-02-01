@@ -87,7 +87,6 @@ export class UserPortalModule {
         if (!this.portal) return;
 
         this.portal.setLoading(true);
-        this.showPortal();
 
         const result = await this.profileService.getOrCreateProfile(user);
 
@@ -128,25 +127,6 @@ export class UserPortalModule {
         }
         if (this.portal) {
             this.portal.clear();
-        }
-        this.hidePortal();
-    }
-
-    /**
-     * Show the portal container
-     */
-    showPortal() {
-        if (this.container) {
-            this.container.style.display = 'block';
-        }
-    }
-
-    /**
-     * Hide the portal container
-     */
-    hidePortal() {
-        if (this.container) {
-            this.container.style.display = 'none';
         }
     }
 

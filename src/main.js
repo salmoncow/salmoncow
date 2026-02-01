@@ -19,6 +19,8 @@ import { AuthModule } from './modules/auth.js';
 import { UIModule } from './modules/ui.js';
 import { NavigationModule } from './modules/navigation.js';
 import { UserPortalModule } from './modules/user-portal.js';
+import { RouterModule } from './modules/router.js';
+import { AuthHintModule } from './modules/auth-hint.js';
 import { createRepositoryFactory } from './factories/repository-factory.js';
 import { UserProfileService } from './services/user-profile-service.js';
 
@@ -36,6 +38,7 @@ class App {
         this.navigation = null;
         this.userPortal = null;
         this.profileService = null;
+        this.router = null;
     }
 
     async init() {
@@ -46,30 +49,80 @@ class App {
             this.ui.init();
             this.navigation.init();
 
-            // Show loading overlay immediately
-            this.ui.showLoadingOverlay();
+            // Apply auth hint immediately (no blocking wait)
+            const hint = AuthHintModule.getHint();
+            this.navigation.initWithHint(hint);
 
-            // Initialize Firebase
+            // Initialize Firebase (non-blocking)
             this.firebaseApp = initializeApp(firebaseConfig);
             this.auth = new AuthModule(this.firebaseApp);
 
+            // Initialize router
+            this.router = new RouterModule();
+            this.setupRoutes();
+
             // Initialize user profile service and portal
             this.initializeUserPortal();
-
-            // Wait for auth initialization (prevents FOUC)
-            await this.auth.waitForAuthInitialization();
-
-            // Hide loading overlay - auth state is now known
-            this.ui.hideLoadingOverlay();
 
             // Setup event listeners and auth state monitoring
             this.setupEventListeners();
             this.setupAuthStateListener();
 
+            // Initialize router (handles initial route)
+            this.router.init();
+
         } catch (error) {
             console.error('Failed to initialize app:', error);
-            this.ui.hideLoadingOverlay();
         }
+    }
+
+    /**
+     * Setup routes for hash-based navigation
+     */
+    setupRoutes() {
+        this.router.register('/', () => this.showHome());
+        this.router.register('/profile', () => this.showProfile());
+
+        // Protect profile route
+        this.router.onBeforeNavigate((newPath) => {
+            if (newPath === '/profile') {
+                // Allow if authenticated or hint suggests authentication
+                const hint = AuthHintModule.getHint();
+                if (!this.auth?.isAuthenticated() && !hint?.isAuthenticated) {
+                    this.router.navigate('/');
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    /**
+     * Show home view
+     */
+    showHome() {
+        const homeView = document.getElementById('homeView');
+        const profileView = document.getElementById('profileView');
+
+        if (homeView) homeView.style.display = 'block';
+        if (profileView) profileView.style.display = 'none';
+
+        // Close dropdown when navigating
+        this.navigation.closeDropdown();
+    }
+
+    /**
+     * Show profile view
+     */
+    showProfile() {
+        const homeView = document.getElementById('homeView');
+        const profileView = document.getElementById('profileView');
+
+        if (homeView) homeView.style.display = 'none';
+        if (profileView) profileView.style.display = 'block';
+
+        // Close dropdown when navigating
+        this.navigation.closeDropdown();
     }
 
     /**
@@ -151,6 +204,9 @@ class App {
                 this.removeStatusBadge();
 
                 if (result.success) {
+                    // Navigate to home on logout
+                    this.router.navigate('/');
+
                     // Show success badge
                     const successBadge = document.createElement('status-badge');
                     successBadge.setAttribute('type', 'success');
@@ -191,6 +247,14 @@ class App {
             // Future: Handle client-side routing here
             // For now, native link behavior handles actual navigation
         });
+
+        // Handle profile link click (close dropdown)
+        const profileLink = document.getElementById('navProfileLink');
+        if (profileLink) {
+            profileLink.addEventListener('click', () => {
+                this.navigation.closeDropdown();
+            });
+        }
     }
 
     setupAuthStateListener() {
@@ -202,6 +266,11 @@ class App {
             // Update user portal state
             if (this.userPortal) {
                 this.userPortal.handleAuthStateChange(user);
+            }
+
+            // If user signed out and on profile page, redirect to home
+            if (!user && this.router.getCurrentRoute() === '/profile') {
+                this.router.navigate('/');
             }
 
             if (user) {
