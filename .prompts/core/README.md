@@ -44,9 +44,6 @@ Day-to-day development workflows and patterns.
 - Branching strategies
 - Code review practices
 
-> **Note**: Build tool configuration (Vite) has been migrated to project-specific specs.
-> See `.specs/technical/build-system.md` for Vite configuration.
-
 ---
 
 ## Security

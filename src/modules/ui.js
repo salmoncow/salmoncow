@@ -1,17 +1,10 @@
 /**
  * UIModule - Manages UI state and status messages
  *
- * NOTE: User profile display has been migrated to NavigationModule.
- * This module now primarily handles status messages and maintains
- * backward compatibility with legacy UI elements in the main content area.
- *
- * Primary Responsibilities (Current):
+ * Responsibilities:
  * - Status message display (loading, error, success)
- * - Backward compatibility for legacy login/logout buttons
- *
- * Deprecated Responsibilities (Handled by NavigationModule):
- * - User profile display in navigation
- * - Login/logout button management in navigation
+ * - Homepage content visibility based on auth state
+ * - Loading overlay for auth initialization
  */
 export class UIModule {
     constructor() {
