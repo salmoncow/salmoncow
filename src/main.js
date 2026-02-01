@@ -29,6 +29,7 @@ import './components/LoadingSpinner.js';
 import './components/UserAvatar.js';
 import './components/StatusBadge.js';
 import './components/UserPortal.js';
+import './components/ToastContainer.js';
 
 class App {
     constructor() {
@@ -39,6 +40,7 @@ class App {
         this.userPortal = null;
         this.profileService = null;
         this.router = null;
+        this.toastContainer = null;
     }
 
     async init() {
@@ -67,6 +69,9 @@ class App {
             // Setup event listeners and auth state monitoring
             this.setupEventListeners();
             this.setupAuthStateListener();
+
+            // Initialize toast container
+            this.toastContainer = document.getElementById('toastContainer');
 
             // Initialize router (handles initial route)
             this.router.init();
@@ -136,116 +141,70 @@ class App {
         this.userPortal.init('userPortalContainer');
     }
 
+    /**
+     * Show a toast notification
+     * @param {string} type - Type: success, error, warning, info, loading
+     * @param {string} message - Message to display
+     * @param {number} duration - Auto-dismiss in ms (0 = manual only)
+     * @returns {HTMLElement|null} The toast element for programmatic control
+     */
+    showToast(type, message, duration = 3000) {
+        return this.toastContainer?.show(type, message, duration);
+    }
+
     setupEventListeners() {
         // Login via navigation bar
         this.navigation.onLoginClick(async () => {
-            // Show loading badge
-            const loadingBadge = document.createElement('status-badge');
-            loadingBadge.setAttribute('type', 'loading');
-            loadingBadge.setAttribute('message', 'Signing in...');
-            this.showStatusBadge(loadingBadge);
+            const loadingToast = this.showToast('loading', 'Signing in...', 0);
 
             try {
                 validateFirebaseConfig();
                 const result = await this.auth.signInWithGoogle();
 
-                // Remove loading badge
-                this.removeStatusBadge();
+                loadingToast?.dismiss();
 
                 if (result.success) {
-                    // Show success badge (will auto-hide when auth state updates)
-                    const successBadge = document.createElement('status-badge');
-                    successBadge.setAttribute('type', 'success');
-                    successBadge.setAttribute('message', result.message);
-                    successBadge.setAttribute('dismissible', 'true');
-                    this.showStatusBadge(successBadge);
-
-                    // Handle manual dismiss
-                    successBadge.addEventListener('dismiss', () => {
-                        this.removeStatusBadge();
-                    });
-
-                    // Auto-dismiss after 3 seconds
-                    setTimeout(() => this.removeStatusBadge(), 3000);
+                    this.showToast('success', result.message);
+                    // Redirect to profile on successful login
+                    this.router.navigate('/profile');
                 } else {
                     throw result.error;
                 }
             } catch (error) {
-                // Remove loading badge
-                this.removeStatusBadge();
-
-                // Show error badge
-                const errorBadge = document.createElement('status-badge');
-                errorBadge.setAttribute('type', 'error');
+                loadingToast?.dismiss();
 
                 if (error.message && error.message.includes('Firebase configuration incomplete')) {
-                    errorBadge.setAttribute('message', 'Please update firebase-config.js with your Firebase project details.');
+                    this.showToast('error', 'Please update firebase-config.js with your Firebase project details.', 5000);
                 } else {
-                    errorBadge.setAttribute('message', `Error: ${error.message}`);
+                    this.showToast('error', `Error: ${error.message}`, 5000);
                 }
-
-                errorBadge.setAttribute('dismissible', 'true');
-                this.showStatusBadge(errorBadge);
             }
         });
 
         // Logout via navigation dropdown
         this.navigation.onLogoutClick(async () => {
-            // Show loading badge
-            const loadingBadge = document.createElement('status-badge');
-            loadingBadge.setAttribute('type', 'loading');
-            loadingBadge.setAttribute('message', 'Signing out...');
-            this.showStatusBadge(loadingBadge);
+            const loadingToast = this.showToast('loading', 'Signing out...', 0);
 
             try {
                 const result = await this.auth.signOut();
 
-                // Remove loading badge
-                this.removeStatusBadge();
+                loadingToast?.dismiss();
 
                 if (result.success) {
-                    // Navigate to home on logout
                     this.router.navigate('/');
-
-                    // Show success badge
-                    const successBadge = document.createElement('status-badge');
-                    successBadge.setAttribute('type', 'success');
-                    successBadge.setAttribute('message', result.message);
-                    successBadge.setAttribute('dismissible', 'true');
-                    this.showStatusBadge(successBadge);
-
-                    // Handle manual dismiss
-                    successBadge.addEventListener('dismiss', () => {
-                        this.removeStatusBadge();
-                        this.hideContentCardIfUnauthenticated();
-                    });
-
-                    // Auto-dismiss after 2 seconds and hide content card
-                    setTimeout(() => {
-                        this.removeStatusBadge();
-                        this.hideContentCardIfUnauthenticated();
-                    }, 2000);
+                    this.showToast('success', result.message);
                 } else {
                     throw result.error;
                 }
             } catch (error) {
-                // Remove loading badge
-                this.removeStatusBadge();
-
-                // Show error badge
-                const errorBadge = document.createElement('status-badge');
-                errorBadge.setAttribute('type', 'error');
-                errorBadge.setAttribute('message', `Error: ${error.message}`);
-                errorBadge.setAttribute('dismissible', 'true');
-                this.showStatusBadge(errorBadge);
+                loadingToast?.dismiss();
+                this.showToast('error', `Error: ${error.message}`, 5000);
             }
         });
 
         // Navigation events (future routing support)
         this.navigation.onNavigate((destination) => {
             console.log(`Navigation event: ${destination}`);
-            // Future: Handle client-side routing here
-            // For now, native link behavior handles actual navigation
         });
 
         // Handle profile link click (close dropdown)
@@ -273,57 +232,7 @@ class App {
                 this.router.navigate('/');
             }
 
-            if (user) {
-                // Remove any status badges when user signs in
-                this.removeStatusBadge();
-            }
         });
-    }
-
-    /**
-     * Show a status badge in the content card
-     * @param {HTMLElement} badge - StatusBadge element
-     */
-    showStatusBadge(badge) {
-        const contentCard = document.getElementById('contentCard');
-        const statusContainer = document.getElementById('status');
-
-        if (contentCard && statusContainer) {
-            // Clear existing status
-            statusContainer.innerHTML = '';
-
-            // Add new badge
-            statusContainer.appendChild(badge);
-
-            // Show the content card and status container
-            contentCard.style.display = 'block';
-            statusContainer.style.display = 'block';
-        }
-    }
-
-    /**
-     * Remove status badge from display
-     */
-    removeStatusBadge() {
-        const statusContainer = document.getElementById('status');
-
-        if (statusContainer) {
-            statusContainer.innerHTML = '';
-            statusContainer.style.display = 'none';
-        }
-    }
-
-    /**
-     * Hide content card if user is not authenticated
-     * Used after status badges are dismissed
-     */
-    hideContentCardIfUnauthenticated() {
-        if (!this.auth.isAuthenticated()) {
-            const contentCard = document.getElementById('contentCard');
-            if (contentCard) {
-                contentCard.style.display = 'none';
-            }
-        }
     }
 }
 

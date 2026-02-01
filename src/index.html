@@ -67,10 +67,6 @@
     <main class="main-content">
         <!-- Homepage View -->
         <div id="homeView" class="page-view">
-            <div class="content-card" id="contentCard" style="display: none;">
-                <div class="welcome-message" id="welcomeMessage" style="display: none;">Welcome</div>
-                <div class="status" id="status" style="display: none;"></div>
-            </div>
             <img src="/assets/images/branding/logo.svg" alt="Salmoncow Logo" class="homepage-logo" id="homepageLogo">
         </div>
 
@@ -79,6 +75,9 @@
             <div id="userPortalContainer"></div>
         </div>
     </main>
+
+    <!-- Toast notification container (fixed position, no layout impact) -->
+    <toast-container id="toastContainer"></toast-container>
 
     <!-- Main application script -->
     <script type="module" src="/main.js"></script>
