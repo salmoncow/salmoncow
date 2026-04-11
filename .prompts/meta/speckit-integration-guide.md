@@ -96,7 +96,7 @@ salmoncow/
 → If triggers met: Create spec via `/speckit-specify`
 
 **Need to understand Git workflow?**
-→ Read `.prompts/core/development/git-best-practices.md`
+→ See `.claude/skills/git-conventions/SKILL.md`
 
 ### II.2 Workflow Integration
 
@@ -112,7 +112,7 @@ salmoncow/
    ↓ (break down work)
 5. /speckit-implement
    ↓ (execute, following constitutional + prompt guidance)
-6. Git commit (conventional format from prompts/core/development/git-best-practices.md)
+6. Git commit (conventional format from .claude/skills/git-conventions/SKILL.md)
 7. Create PR (citing constitutional compliance + prompt references)
 ```
 

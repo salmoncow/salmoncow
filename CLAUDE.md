@@ -34,7 +34,7 @@ Architecture:
 
 Development:
 - `core/development/asset-reusability.md` - Resource management and DRY principles
-- `core/development/git-best-practices.md` - Git workflows, commit conventions, branching strategies
+- `.claude/skills/git-conventions/SKILL.md` - Git conventions (Conventional Commits, branch naming, PR structure)
 
 Security & Testing:
 - `core/security/security-principles.md` - Security patterns and defensive practices
@@ -108,7 +108,7 @@ Operations:
 - Consult decision triggers before recommending phase transitions
 
 **Version Control & Commits** →
-- `core/development/git-best-practices.md` (REQUIRED: conventional commits, PR descriptions, atomic commits)
+- `.claude/skills/git-conventions/SKILL.md` (Conventional Commits, branch naming, PR structure)
 
 **Build Tool Configuration** →
 - `.specs/technical/build-system.md` (Vite setup, optimization, environment variables)
@@ -146,11 +146,7 @@ For periodic architecture reviews:
 3. **Document Decisions**: Reference which prompt files guided your approach
 4. **Stay Consistent**: Follow patterns established in the prompt files
 5. **Adapt Context**: Apply prompt guidance to the specific technology stack in use
-6. **Git Quality**: ALWAYS follow `core/development/git-best-practices.md` for commits and PRs
-   - Use conventional commits format (feat:, fix:, docs:, etc.)
-   - Break changes into atomic, logical commits
-   - Write detailed PR descriptions with Summary, Changes, Testing sections
-   - Include guidance references in commit messages
+6. **Git Quality**: Git conventions are enforced by `.claude/skills/git-conventions/SKILL.md`
 
 ## Workflow Integration
 
@@ -217,7 +213,7 @@ At the start of each development session, Claude must:
 - [ ] Reference appropriate guidance files before making architectural decisions
 - [ ] Assess prompt coverage and flag gaps when detected
 - [ ] Document guidance citations in all responses involving design choices
-- [ ] Follow `core/development/git-best-practices.md` for ALL commits and PRs (conventional commits, atomic commits, PR template)
+- [ ] Git conventions enforced by `.claude/skills/git-conventions/SKILL.md` (conventional commits, branch naming, PR structure)
 
 ## Response Documentation Template
 
@@ -257,44 +253,8 @@ This section provides quick reference for frequently-used commands in this proje
 
 ### Git Workflow
 
-All git operations follow conventions from `.prompts/core/development/git-best-practices.md`.
-
-**Create Feature Branch:**
-```bash
-git checkout -b <type>/<description>
-# Examples:
-#   git checkout -b feat/user-dashboard
-#   git checkout -b fix/login-timeout
-#   git checkout -b docs/update-readme
-```
-
-**Commit Changes (Conventional Commits):**
-```bash
-git add <files>
-git commit -m "<type>(<scope>): <subject>"
-# Examples:
-#   git commit -m "feat(auth): add Google OAuth sign-in"
-#   git commit -m "fix(ui): resolve avatar fallback display"
-#   git commit -m "docs: update deployment instructions"
-```
-
-**Common Commit Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `ci`
-
-**Push and Create PR:**
-```bash
-git push -u origin <branch-name>
-# Then create PR via GitHub web UI
-```
-
-### Utility Commands
-
-| Command | Description |
-|---------|-------------|
-| `git status` | Check working tree status |
-| `git log --oneline` | View commit history (concise) |
-| `git diff` | Show unstaged changes |
-| `git branch` | List local branches |
+Git conventions (branch naming, commit messages, PR structure) are enforced by the project skill at `.claude/skills/git-conventions/SKILL.md`. See that file for the full reference.
 
 ---
 
-The detailed principles, patterns, and best practices are all maintained in the `./.prompts/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.
+The detailed principles, patterns, and best practices are maintained in the `./.prompts/` directory and `.claude/skills/` directory. This file serves as both a navigation guide and a mandatory protocol for consistent development practices.

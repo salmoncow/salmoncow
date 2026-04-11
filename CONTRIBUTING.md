@@ -23,18 +23,13 @@ Thank you for your interest in contributing to SalmonCow! This document provides
 
 ### 1. Create a Feature Branch
 
-Follow conventional branch naming from [git-best-practices.md](.prompts/core/development/git-best-practices.md):
+Follow the git conventions in [.claude/skills/git-conventions/SKILL.md](.claude/skills/git-conventions/SKILL.md) for branch naming, commit messages, and PR structure.
 
 ```bash
 git checkout main
 git pull origin main
 git checkout -b <type>/<description>
 ```
-
-**Branch naming format:** `<type>/<description>`
-- Types: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`, `chore/`
-- Use lowercase, hyphens only
-- Be descriptive: `feat/user-dashboard`, `fix/login-timeout`
 
 ### 2. Make Changes Following Architectural Guidance
 
@@ -48,100 +43,18 @@ Before making changes, consult:
 - Reference `.prompts/` files for architectural patterns
 - Check `.specs/constitution.md` for project-specific constraints
 
-### 3. Commit Using Conventional Commits
+### 3. Commit and Create PR
 
-All commits must follow [Conventional Commits](https://www.conventionalcommits.org/) format:
+All git conventions (commit messages, branch naming, PR structure) are defined in [.claude/skills/git-conventions/SKILL.md](.claude/skills/git-conventions/SKILL.md). Key points:
 
-```bash
-git commit -m "<type>(<scope>): <subject>"
-```
-
-**Common types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `ci`
-
-**Examples:**
-```bash
-git commit -m "feat(auth): add Google OAuth sign-in"
-git commit -m "fix(ui): resolve avatar fallback display"
-git commit -m "docs: update deployment instructions"
-```
-
-**Important guidelines:**
-- Write atomic commits (one logical change per commit)
-- Explain "why" in the commit body, not just "what"
-- Reference guidance files that influenced your decisions
-
-See [git-best-practices.md](.prompts/core/development/git-best-practices.md) for detailed commit guidelines.
-
-### 4. Create a Pull Request
+- **Commits**: `<type>(<scope>): <subject>` — atomic, imperative mood
+- **PRs**: Must include Summary, Changes, Testing sections
+- **Branch protection**: No direct commits to `main`, all changes via PRs
 
 Push your branch and create a PR:
-
 ```bash
 git push -u origin <branch-name>
 ```
-
-Then create a PR via GitHub web UI. The PR template will auto-populate with required sections:
-- **Summary** - Brief description and rationale
-- **Changes** - List of specific changes
-- **Testing** - Test results
-- **Guidance References** - Constitutional compliance and prompt references
-- **Related Issues** - Link to issues
-
-See [git-best-practices.md](.prompts/core/development/git-best-practices.md) lines 1057-1081 for PR description best practices.
-
-## Git Conventions
-
-### Branch Naming
-
-**Format:** `<type>/<description>`
-
-**Rules:**
-- Lowercase only
-- Use hyphens (not underscores or spaces)
-- 2-5 words, max 50 characters
-- Be descriptive
-
-**Examples:**
-```bash
-feat/add-user-dashboard
-fix/login-timeout-error
-docs/update-api-guide
-refactor/auth-module
-```
-
-### Commit Messages
-
-**Format:** `<type>(<scope>): <subject>`
-
-**Types:**
-- `feat` - New feature
-- `fix` - Bug fix
-- `docs` - Documentation only
-- `refactor` - Code restructuring
-- `test` - Adding or updating tests
-- `chore` - Maintenance tasks
-- `perf` - Performance improvements
-- `ci` - CI/CD changes
-
-**Guidelines:**
-- Subject line: 50 characters or less
-- Use imperative mood ("add" not "added")
-- No period at the end
-- Body: explain "why" not "what"
-
-### Pull Requests
-
-**Required sections:**
-1. **Summary** - What and why
-2. **Changes** - Bullet list of changes
-3. **Testing** - Test checklist
-4. **Guidance References** - Constitutional + prompt references
-5. **Related Issues** - Link issues
-
-**Branch protection:**
-- No direct commits to `main`
-- All changes via Pull Requests
-- PR approval required before merge
 
 ## Architectural Decisions
 
@@ -168,7 +81,7 @@ See [CLAUDE.md](CLAUDE.md) for the complete decision framework.
 
 - **Documentation questions:** Check [CLAUDE.md](CLAUDE.md), [.specs/constitution.md](.specs/constitution.md), or [.prompts/](.prompts/)
 - **Development setup:** See [DEVELOPMENT.md](DEVELOPMENT.md)
-- **Git workflow:** See [.prompts/core/development/git-best-practices.md](.prompts/core/development/git-best-practices.md)
+- **Git conventions:** See [.claude/skills/git-conventions/SKILL.md](.claude/skills/git-conventions/SKILL.md)
 - **Issues:** Create a GitHub issue with details
 
 ## Code of Conduct
@@ -185,4 +98,4 @@ By contributing, you agree that your contributions will be licensed under the Ap
 - [CLAUDE.md](CLAUDE.md) - Decision framework
 - [DEVELOPMENT.md](DEVELOPMENT.md) - Setup and build
 - [.specs/constitution.md](.specs/constitution.md) - Project constraints
-- [.prompts/core/development/git-best-practices.md](.prompts/core/development/git-best-practices.md) - Git conventions (comprehensive)
+- [.claude/skills/git-conventions/SKILL.md](.claude/skills/git-conventions/SKILL.md) - Git conventions

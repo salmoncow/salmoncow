@@ -222,13 +222,7 @@ src/
 
 ### III.4 Code Quality Standards
 
-**Git Workflow** (from git-best-practices.md):
-- **Conventional commits format**: `<type>: <description>` (e.g., `feat:`, `fix:`, `docs:`, `refactor:`)
-- **Atomic commits**: One logical change per commit
-- **Commit messages**: Clear, descriptive, explain "why" not just "what"
-- **PR descriptions**: Must include Summary, Changes, Testing, Guidance References sections
-- **No force pushes** to main/master
-- **Branch naming**: `<type>/<description>` (e.g., `feat/add-user-dashboard`)
+**Git Workflow**: Enforced by `.claude/skills/git-conventions/SKILL.md` (Conventional Commits, branch naming, PR structure).
 
 **Code Review**:
 - All changes via Pull Request (no direct commits to main)
@@ -240,7 +234,7 @@ src/
 - README.md for each major component/module
 - Document architectural decisions in architectural-decision-log.md
 
-**Reference**: [.prompts/core/development/git-best-practices.md](.prompts/core/development/git-best-practices.md)
+**Reference**: [.claude/skills/git-conventions/SKILL.md](.claude/skills/git-conventions/SKILL.md)
 
 ---
 
@@ -525,7 +519,7 @@ async function getCachedUser(uid) {
 - [monitoring-principles.md](.prompts/core/operations/monitoring-principles.md) - Observability patterns
 
 **Core Development**:
-- [git-best-practices.md](.prompts/core/development/git-best-practices.md) - Git workflow, conventional commits
+- [git-conventions SKILL.md](.claude/skills/git-conventions/SKILL.md) - Git conventions (Conventional Commits, branch naming, PR structure)
 - [asset-reusability.md](.prompts/core/development/asset-reusability.md) - DRY principles, resource management
 
 ### VII.2 Platform Implementation (Reference as Needed)
