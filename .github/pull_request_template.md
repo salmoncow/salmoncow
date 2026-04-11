@@ -24,4 +24,4 @@ Related to #[issue number]
 [Add screenshots here]
 
 ---
-📖 See [git-best-practices.md](./.prompts/core/development/git-best-practices.md) for commit and PR conventions.
+📖 See [git-conventions](./.claude/skills/git-conventions/SKILL.md) for commit and PR conventions.
