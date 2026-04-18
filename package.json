@@ -14,11 +14,18 @@
     "clean": "rm -rf dist",
     "deploy": "npm run build && firebase deploy --only hosting",
     "deploy:preview": "npm run build && firebase hosting:channel:deploy preview",
-    "firebase:open": "firebase open hosting:site"
+    "firebase:open": "firebase open hosting:site",
+    "emulators": "firebase emulators:start --only auth,firestore,functions",
+    "test:rules": "firebase emulators:exec --only firestore 'vitest run tests/rules'",
+    "test:functions": "firebase emulators:exec --only auth,firestore,functions 'npm --prefix functions test'",
+    "test": "npm run test:rules && npm run test:functions"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "@types/node": "^20.14.0",
     "terser": "^5.44.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.7"
+    "vite": "^7.2.7",
+    "vitest": "^2.1.0"
   }
 }
