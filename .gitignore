@@ -10,6 +10,9 @@
 *-debug.log
 firebase-debug.log
 
+# Service-account keys and other secrets (never commit)
+.secrets/
+
 # Logs
 logs
 *.log

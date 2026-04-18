@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// Placeholder rules for Group 1 scaffolding. Role-aware rules land in Group 2.
+// Current posture: deny everything. This makes emulator boot viable without
+// opening any surface that downstream groups haven't yet secured.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
