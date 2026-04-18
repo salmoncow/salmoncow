@@ -23,6 +23,9 @@ import { RouterModule } from './modules/router.js';
 import { AuthHintModule } from './modules/auth-hint.js';
 import { createRepositoryFactory } from './factories/repository-factory.js';
 import { UserProfileService } from './services/user-profile-service.js';
+import { initAppCheck } from './infrastructure/appcheck.js';
+import { RoleModule } from './modules/role.js';
+import { getDb } from './infrastructure/firestore.js';
 
 // Import Web Components
 import './components/LoadingSpinner.js';
@@ -35,6 +38,7 @@ class App {
     constructor() {
         this.firebaseApp = null;
         this.auth = null;
+        this.role = null;
         this.ui = null;
         this.navigation = null;
         this.userPortal = null;
@@ -57,7 +61,14 @@ class App {
 
             // Initialize Firebase (non-blocking)
             this.firebaseApp = initializeApp(firebaseConfig);
+            // App Check must initialize before any protected callable is invoked.
+            // Skipped automatically in emulator mode (see infrastructure/appcheck.js).
+            initAppCheck(this.firebaseApp);
             this.auth = new AuthModule(this.firebaseApp);
+
+            // Role state (custom claim + users/{uid}.roleChangedAt mirror listener)
+            this.role = new RoleModule(this.auth, getDb(this.firebaseApp));
+            this.role.init();
 
             // Initialize router
             this.router = new RouterModule();
@@ -134,7 +145,7 @@ class App {
      * Initialize user profile service and portal module
      */
     initializeUserPortal() {
-        const repositoryFactory = createRepositoryFactory();
+        const repositoryFactory = createRepositoryFactory({ firebaseApp: this.firebaseApp });
         const repository = repositoryFactory.getUserProfileRepository();
         this.profileService = new UserProfileService(repository);
         this.userPortal = new UserPortalModule(this.profileService);

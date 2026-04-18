@@ -13,6 +13,9 @@ firebase-debug.log
 # Service-account keys and other secrets (never commit)
 .secrets/
 
+# Firebase emulator data snapshot (created by `npm run dev` via --export-on-exit)
+.emulator-data/
+
 # Logs
 logs
 *.log

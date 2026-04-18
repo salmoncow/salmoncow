@@ -1,110 +1,50 @@
 /**
  * Repository Factory
  *
- * Creates repository instances based on configuration.
- * Enables swapping storage backends without changing service layer.
+ * Constructs repository instances wired to Firestore. The localStorage
+ * implementation was retired when the project adopted Firestore as the
+ * source of truth for the users collection — see
+ * .specs/features/001-multi-user-rbac/spec.md §X.1, §X.2.
  *
- * Current backends:
- * - 'localStorage': Browser localStorage (Phase 1)
+ * Local dev uses the Firestore emulator (wired automatically by
+ * src/infrastructure/firestore.js). Developer setup: run `npm run dev`
+ * which starts the emulator + Vite together.
  *
- * Future backends:
- * - 'firestore': Cloud Firestore (when persistent storage needed)
- *
- * Architecture Reference:
- * - .prompts/core/architecture/feature-extensibility.md (Factory Pattern)
- * - .prompts/core/architecture/code-structure.md (Dependency Inversion)
+ * Architecture: factory pattern preserved so future backends (e.g. an
+ * alternate projection) can be added without touching the service layer.
  */
 
-import { LocalStorageUserProfileRepository } from '../repositories/local-storage-user-profile-repository.js';
-
-/**
- * @typedef {'localStorage' | 'firestore'} StorageBackend
- */
+import { getDb } from '../infrastructure/firestore.js';
+import { FirestoreUserProfileRepository } from '../repositories/firestore-user-profile-repository.js';
 
 /**
  * @typedef {Object} RepositoryConfig
- * @property {StorageBackend} [userProfileBackend] - Backend for user profiles
+ * @property {import('firebase/app').FirebaseApp} firebaseApp - Required; used to derive Firestore
  */
 
-/**
- * Default configuration
- * @type {RepositoryConfig}
- */
-const DEFAULT_CONFIG = Object.freeze({
-    userProfileBackend: 'localStorage'
-});
-
-/**
- * Repository Factory
- *
- * Creates repository instances based on configuration.
- * Centralizes backend selection logic.
- */
 export class RepositoryFactory {
     /**
-     * Create a new RepositoryFactory
-     * @param {RepositoryConfig} [config] - Configuration options
+     * @param {RepositoryConfig} config
      */
     constructor(config = {}) {
-        this.config = { ...DEFAULT_CONFIG, ...config };
+        if (!config.firebaseApp) {
+            throw new Error('RepositoryFactory requires config.firebaseApp');
+        }
+        this.firebaseApp = config.firebaseApp;
         this.instances = new Map();
     }
 
-    /**
-     * Get a UserProfileRepository instance
-     * Uses singleton pattern - returns same instance for same backend
-     *
-     * @returns {import('../repositories/user-profile-repository.js').UserProfileRepository}
-     */
     getUserProfileRepository() {
-        const backend = this.config.userProfileBackend;
-        const cacheKey = `userProfile:${backend}`;
-
-        if (this.instances.has(cacheKey)) {
-            return this.instances.get(cacheKey);
-        }
-
-        let repository;
-
-        switch (backend) {
-            case 'localStorage':
-                repository = new LocalStorageUserProfileRepository();
-                break;
-
-            case 'firestore':
-                // Future: import and instantiate FirestoreUserProfileRepository
-                throw new Error('Firestore backend not yet implemented');
-
-            default:
-                throw new Error(`Unknown storage backend: ${backend}`);
-        }
-
-        this.instances.set(cacheKey, repository);
-        return repository;
-    }
-
-    /**
-     * Get current configuration
-     * @returns {RepositoryConfig}
-     */
-    getConfig() {
-        return { ...this.config };
-    }
-
-    /**
-     * Update configuration (clears cached instances)
-     * @param {RepositoryConfig} config - New configuration
-     */
-    updateConfig(config) {
-        this.config = { ...this.config, ...config };
-        this.instances.clear();
+        const key = 'userProfile:firestore';
+        if (this.instances.has(key)) return this.instances.get(key);
+        const repo = new FirestoreUserProfileRepository(getDb(this.firebaseApp));
+        this.instances.set(key, repo);
+        return repo;
     }
 }
 
 /**
- * Create a default factory instance
- * @param {RepositoryConfig} [config] - Optional configuration
- * @returns {RepositoryFactory}
+ * @param {RepositoryConfig} config
  */
 export function createRepositoryFactory(config) {
     return new RepositoryFactory(config);
