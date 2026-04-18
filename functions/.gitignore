@@ -1,3 +1,5 @@
 node_modules/
-lib/
+# TypeScript compiled output — anchor to functions/ root so it doesn't
+# accidentally match functions/src/lib/ (which holds real source).
+/lib/
 *.log
