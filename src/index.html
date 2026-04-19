@@ -50,6 +50,13 @@
                             </svg>
                             Profile
                         </a>
+                        <!-- Admin link: hidden by default; NavigationModule.setRole() reveals for owner/admin -->
+                        <a href="#/admin" class="dropdown-item" id="navAdminLink" style="display: none;">
+                            <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                            </svg>
+                            Admin
+                        </a>
                         <div class="dropdown-divider"></div>
                         <button class="dropdown-item" id="navLogoutButton">
                             <svg class="dropdown-icon" viewBox="0 0 20 20" fill="currentColor">

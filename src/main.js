@@ -23,6 +23,8 @@ import { RouterModule } from './modules/router.js';
 import { AuthHintModule } from './modules/auth-hint.js';
 import { createRepositoryFactory } from './factories/repository-factory.js';
 import { UserProfileService } from './services/user-profile-service.js';
+import { AdminUserService } from './services/admin-user-service.js';
+import { AdminPortalModule } from './modules/admin-portal.js';
 import { initAppCheck } from './infrastructure/appcheck.js';
 import { RoleModule } from './modules/role.js';
 import { getDb } from './infrastructure/firestore.js';
@@ -32,6 +34,7 @@ import './components/LoadingSpinner.js';
 import './components/UserAvatar.js';
 import './components/StatusBadge.js';
 import './components/UserPortal.js';
+import './components/AdminPortal.js';
 import './components/ToastContainer.js';
 
 class App {
@@ -42,7 +45,9 @@ class App {
         this.ui = null;
         this.navigation = null;
         this.userPortal = null;
+        this.adminPortal = null;
         this.profileService = null;
+        this.adminUserService = null;
         this.router = null;
         this.toastContainer = null;
     }
@@ -89,6 +94,9 @@ class App {
             // Initialize user profile service and portal
             this.initializeUserPortal();
 
+            // Initialize admin portal (owner/admin only; UI guards shown/hidden by role)
+            this.initializeAdminPortal();
+
             // Setup event listeners and auth state monitoring
             this.setupEventListeners();
             this.setupAuthStateListener();
@@ -110,7 +118,10 @@ class App {
     setupRoutes() {
         this.router.register('/', () => this.showView('homeView'));
         this.router.register('/profile', () => this.showView('profileView'));
-        this.router.register('/admin', () => this.showView('adminView'));
+        this.router.register('/admin', () => {
+            this.showView('adminView');
+            this.adminPortal?.show();
+        });
 
         this.router.onBeforeNavigate((newPath) => {
             if (newPath === '/profile') {
@@ -159,10 +170,34 @@ class App {
      */
     initializeUserPortal() {
         const repositoryFactory = createRepositoryFactory({ firebaseApp: this.firebaseApp });
-        const repository = repositoryFactory.getUserProfileRepository();
-        this.profileService = new UserProfileService(repository);
+        this._userRepository = repositoryFactory.getUserProfileRepository();
+        this.profileService = new UserProfileService(this._userRepository);
         this.userPortal = new UserPortalModule(this.profileService);
         this.userPortal.init('userPortalContainer');
+    }
+
+    /**
+     * Initialize admin portal. Created unconditionally; the component is a
+     * no-op render until setRole('owner'|'admin') is called and users are
+     * loaded on first route match.
+     */
+    initializeAdminPortal() {
+        this.adminUserService = new AdminUserService({
+            firebaseApp: this.firebaseApp,
+            repository: this._userRepository,
+        });
+        this.adminPortal = new AdminPortalModule({
+            adminService: this.adminUserService,
+            role: this.role,
+            toast: {
+                show: (type, message, duration) =>
+                    this.showToast(type, message, duration),
+            },
+        });
+        this.adminPortal.init('adminPortalContainer');
+
+        // Keep navigation Admin link synced with the role observable.
+        this.role.onRoleChange((next) => this.navigation.setRole(next));
     }
 
     /**
