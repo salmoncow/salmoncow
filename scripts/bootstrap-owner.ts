@@ -8,13 +8,24 @@
  * It must be run exactly once per project, using a downloaded service-account
  * key that lives outside the repo (or in .secrets/ which is gitignored).
  *
- * Usage:
+ * Usage (production):
  *   FIREBASE_SA_KEY=/abs/path/to/sa-key.json \
  *   TARGET_UID=<firebase-auth-uid> \
  *   npm run bootstrap:owner
  *
  *   # Preview what the script would do without writing:
  *   DRY_RUN=1 FIREBASE_SA_KEY=... TARGET_UID=... npm run bootstrap:owner
+ *
+ * Usage (emulator / dev):
+ *   # When FIREBASE_AUTH_EMULATOR_HOST + FIRESTORE_EMULATOR_HOST are set
+ *   # (e.g. by `firebase emulators:exec`), the script auto-detects emulator
+ *   # mode and skips the service-account key requirement. The emulator
+ *   # accepts any Admin SDK call without credentials.
+ *   FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
+ *   FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+ *   GCLOUD_PROJECT=salmoncow \
+ *   TARGET_UID=<uid-from-emulator> \
+ *   npm run bootstrap:owner
  *
  * Full runbook: .specs/features/001-multi-user-rbac/bootstrap.md
  */
@@ -26,6 +37,10 @@ import {
     getFirestore,
     type Firestore,
 } from 'firebase-admin/firestore';
+
+const isEmulator =
+    !!process.env.FIREBASE_AUTH_EMULATOR_HOST ||
+    !!process.env.FIRESTORE_EMULATOR_HOST;
 
 type ServiceAccount = {
     project_id: string;
@@ -43,40 +58,57 @@ function requireEnv(name: string): string {
 }
 
 async function main(): Promise<void> {
-    const keyPath = requireEnv('FIREBASE_SA_KEY');
     const targetUid = requireEnv('TARGET_UID');
     const dryRun = process.env.DRY_RUN === '1';
 
-    let sa: ServiceAccount;
-    try {
-        sa = JSON.parse(readFileSync(keyPath, 'utf8')) as ServiceAccount;
-    } catch (e) {
-        console.error(`error: cannot read service account key at ${keyPath}`);
-        console.error((e as Error).message);
-        process.exit(2);
+    let projectId: string;
+    let saEmail = '(emulator — no service account)';
+
+    if (isEmulator) {
+        // Emulator accepts any Admin SDK call without credentials. Use the
+        // project id Firebase emulators:exec provisioned (GCLOUD_PROJECT).
+        projectId =
+            process.env.GCLOUD_PROJECT ??
+            process.env.GCP_PROJECT ??
+            'salmoncow';
+    } else {
+        const keyPath = requireEnv('FIREBASE_SA_KEY');
+        let sa: ServiceAccount;
+        try {
+            sa = JSON.parse(readFileSync(keyPath, 'utf8')) as ServiceAccount;
+        } catch (e) {
+            console.error(`error: cannot read service account key at ${keyPath}`);
+            console.error((e as Error).message);
+            process.exit(2);
+        }
+        if (!sa.project_id || !sa.client_email || !sa.private_key) {
+            console.error('error: service account key is missing required fields');
+            process.exit(2);
+        }
+        projectId = sa.project_id;
+        saEmail = sa.client_email;
+        if (getApps().length === 0) {
+            initializeApp({
+                credential: cert({
+                    projectId: sa.project_id,
+                    clientEmail: sa.client_email,
+                    privateKey: sa.private_key,
+                }),
+            });
+        }
     }
 
-    if (!sa.project_id || !sa.client_email || !sa.private_key) {
-        console.error('error: service account key is missing required fields');
-        process.exit(2);
+    if (isEmulator && getApps().length === 0) {
+        initializeApp({ projectId });
     }
 
     console.log('─── bootstrap-owner ─────────────────────────────────────');
-    console.log(`project   : ${sa.project_id}`);
+    console.log(`project   : ${projectId}`);
     console.log(`target uid: ${targetUid}`);
-    console.log(`sa email  : ${sa.client_email}`);
+    console.log(`sa email  : ${saEmail}`);
+    console.log(`mode      : ${isEmulator ? 'EMULATOR' : 'PRODUCTION'}`);
     console.log(`dry run   : ${dryRun ? 'YES (no writes)' : 'NO (will write)'}`);
     console.log('─────────────────────────────────────────────────────────');
-
-    if (getApps().length === 0) {
-        initializeApp({
-            credential: cert({
-                projectId: sa.project_id,
-                clientEmail: sa.client_email,
-                privateKey: sa.private_key,
-            }),
-        });
-    }
 
     const auth = getAuth();
     const db: Firestore = getFirestore();

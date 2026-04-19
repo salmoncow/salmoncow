@@ -141,6 +141,32 @@ treat it like a SEV2 incident.
 
 ---
 
+## Running against the emulator (local dev)
+
+The same script also works against the Firebase Local Emulator Suite — no
+service-account key required. Handy when you've wiped `.emulator-data/` and
+need to re-promote yourself.
+
+1. Start the emulator (leave it running): `npm run emulators`
+2. Sign in to `http://localhost:3000` once via the fake Google picker — any
+   email works. The `onUserCreate` trigger seeds your `users/{uid}` doc.
+3. Copy your uid from the Emulator UI (`http://localhost:4000/auth`).
+4. In a second terminal:
+
+   ```bash
+   FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
+   FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+   GCLOUD_PROJECT=salmoncow \
+   TARGET_UID="<uid-you-copied>" \
+   npm run bootstrap:owner
+   ```
+
+5. Sign out and back in in the browser — the Admin link appears in the
+   dropdown. Emulator state exports to `.emulator-data/` on Ctrl-C, so the
+   claim survives restarts.
+
+---
+
 ## When would I run this again?
 
 Only if:
