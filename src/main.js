@@ -70,6 +70,18 @@ class App {
             this.role = new RoleModule(this.auth, getDb(this.firebaseApp));
             this.role.init();
 
+            // If a role change demotes the user off /admin, bounce them to home.
+            this.role.onRoleChange((nextRole) => {
+                if (
+                    this.router?.getCurrentRoute() === '/admin' &&
+                    nextRole !== null &&
+                    nextRole !== 'owner' &&
+                    nextRole !== 'admin'
+                ) {
+                    this.router.navigate('/');
+                }
+            });
+
             // Initialize router
             this.router = new RouterModule();
             this.setupRoutes();
@@ -96,10 +108,10 @@ class App {
      * Setup routes for hash-based navigation
      */
     setupRoutes() {
-        this.router.register('/', () => this.showHome());
-        this.router.register('/profile', () => this.showProfile());
+        this.router.register('/', () => this.showView('homeView'));
+        this.router.register('/profile', () => this.showView('profileView'));
+        this.router.register('/admin', () => this.showView('adminView'));
 
-        // Protect profile route
         this.router.onBeforeNavigate((newPath) => {
             if (newPath === '/profile') {
                 // Allow if authenticated or hint suggests authentication
@@ -109,35 +121,36 @@ class App {
                     return false;
                 }
             }
+            if (newPath === '/admin') {
+                // Security is enforced server-side by Firestore rules + the
+                // setUserRole callable. This guard is UX only: keep unprivileged
+                // users from landing on a page that would render nothing.
+                if (!this.auth?.isAuthenticated()) {
+                    this.router.navigate('/');
+                    return false;
+                }
+                const role = this.role?.getRole();
+                // role === null means the token hasn't loaded yet; let the user
+                // through and re-evaluate when onRoleChange fires (see init()).
+                if (role !== null && role !== 'owner' && role !== 'admin') {
+                    this.router.navigate('/');
+                    return false;
+                }
+            }
             return true;
         });
     }
 
     /**
-     * Show home view
+     * Show exactly one page view, hiding the others.
+     * @param {'homeView'|'profileView'|'adminView'} id
      */
-    showHome() {
-        const homeView = document.getElementById('homeView');
-        const profileView = document.getElementById('profileView');
-
-        if (homeView) homeView.style.display = 'block';
-        if (profileView) profileView.style.display = 'none';
-
-        // Close dropdown when navigating
-        this.navigation.closeDropdown();
-    }
-
-    /**
-     * Show profile view
-     */
-    showProfile() {
-        const homeView = document.getElementById('homeView');
-        const profileView = document.getElementById('profileView');
-
-        if (homeView) homeView.style.display = 'none';
-        if (profileView) profileView.style.display = 'block';
-
-        // Close dropdown when navigating
+    showView(id) {
+        const views = ['homeView', 'profileView', 'adminView'];
+        for (const v of views) {
+            const el = document.getElementById(v);
+            if (el) el.style.display = v === id ? 'block' : 'none';
+        }
         this.navigation.closeDropdown();
     }
 
@@ -238,9 +251,12 @@ class App {
                 this.userPortal.handleAuthStateChange(user);
             }
 
-            // If user signed out and on profile page, redirect to home
-            if (!user && this.router.getCurrentRoute() === '/profile') {
-                this.router.navigate('/');
+            // If user signed out while on a protected route, redirect home
+            if (!user) {
+                const current = this.router.getCurrentRoute();
+                if (current === '/profile' || current === '/admin') {
+                    this.router.navigate('/');
+                }
             }
 
         });
