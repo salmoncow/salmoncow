@@ -1,12 +1,12 @@
 /**
  * Firebase App Check bootstrap.
  *
- * - In emulator mode: skipped. The local emulator doesn't enforce App Check
- *   and local traffic can't produce a valid reCAPTCHA Enterprise token.
+ * - In emulator mode: skipped. The local Functions emulator doesn't mock the
+ *   App Check token exchange (that hits real Firebase infra), and debug
+ *   tokens would need to be registered in the real console. Instead, the
+ *   setUserRole callable relaxes its enforceAppCheck guard when running
+ *   under FUNCTIONS_EMULATOR (see functions/src/setUserRole.ts).
  * - In prod: initializes reCAPTCHA Enterprise using the site key from env.
- *
- * Must be called AFTER initializeApp and BEFORE any Firestore/Functions
- * operations that require App Check enforcement (e.g. setUserRole callable).
  *
  * Spec §VI, §X.4 (App Check enforcement on setUserRole)
  */
@@ -22,7 +22,7 @@ export function initAppCheck(firebaseApp) {
     if (appCheckInstance) return appCheckInstance;
 
     if (isEmulatorMode()) {
-        console.info('[app-check] skipped in emulator mode');
+        console.info('[app-check] skipped in emulator mode (server-side enforcement also relaxed)');
         return null;
     }
 

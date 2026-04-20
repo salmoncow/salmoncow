@@ -5,6 +5,16 @@ import { assertNotLastOwnerDemotion } from './lib/lastOwnerGuard.js';
 import { checkAndIncrementRateLimit } from './lib/rateLimit.js';
 import { setUserRoleInput } from './lib/validate.js';
 
+// Production posture: App Check enforced.
+// Local-emulator posture: App Check relaxed, because the emulator doesn't
+// mock the App Check token-exchange endpoint and we can't get a valid token
+// without round-tripping through real Firebase. FUNCTIONS_EMULATOR is set
+// automatically by the Functions emulator; it's never set in prod.
+const opts = { enforceAppCheck: true };
+if (process.env.FUNCTIONS_EMULATOR) {
+    opts.enforceAppCheck = false;
+}
+
 /**
  * setUserRole — owner-only callable that changes a user's role claim + mirror.
  *
@@ -24,7 +34,7 @@ import { setUserRoleInput } from './lib/validate.js';
  *   - { ok: true, fromRole, toRole } on success
  */
 export const setUserRole = onCall(
-    { enforceAppCheck: true },
+    opts,
     async (request): Promise<{ ok: true; fromRole: Role | null; toRole: Role }> => {
         const { auth: callerAuth, data } = request;
 
