@@ -235,17 +235,64 @@ describe('setUserRole callable', () => {
         expect(counter.data()?.count).toBe(1);
     });
 
-    it('declares App Check enforcement in source (regression guard)', () => {
-        // firebase-functions v6 stores enforceAppCheck in a closure, not on
-        // __endpoint or __trigger, so we can't inspect it at runtime.
-        // Transport-layer enforcement is exercised only in real deploys.
-        // This source-level assertion catches accidental removal of the guard
-        // in code review / refactors.
+    // App Check enforcement regression guards.
+    //
+    // firebase-functions v6 stores enforceAppCheck in a closure, not on
+    // __endpoint or __trigger, so we can't inspect it at runtime; transport-
+    // layer enforcement is exercised only in real deploys. These source-level
+    // assertions catch accidental changes in code review / refactors.
+    //
+    // The guarded shape we expect:
+    //   const opts = { enforceAppCheck: true };
+    //   if (process.env.FUNCTIONS_EMULATOR) {
+    //       opts.enforceAppCheck = false;
+    //   }
+    //
+    // Failure modes the individual assertions below catch:
+    //   - Default flipped or removed           → "default is true"
+    //   - `!` added to the guard condition     → "guard uses positive form"
+    //   - Extra assignment sneaked in          → "exactly two assignments"
+    //   - False assignment moved out of block  → "false lives inside guard"
+    describe('App Check enforcement (source-level regression guards)', () => {
         const src = readFileSync(
             resolve(process.cwd(), 'src/setUserRole.ts'),
             'utf8',
         );
-        expect(src).toMatch(/enforceAppCheck:\s*true/);
+
+        it('declares enforceAppCheck: true as the default', () => {
+            expect(src).toMatch(/enforceAppCheck:\s*true\b/);
+        });
+
+        it('has exactly one FUNCTIONS_EMULATOR-gated override and it uses the positive form', () => {
+            const ifHeaders =
+                src.match(/if\s*\([^)]*FUNCTIONS_EMULATOR[^)]*\)/g) ?? [];
+            expect(ifHeaders).toHaveLength(1);
+            // A `!` here would disable App Check in prod — the exact failure
+            // mode this guard exists to prevent.
+            expect(ifHeaders[0]).not.toMatch(/!\s*process\.env\.FUNCTIONS_EMULATOR/);
+            expect(ifHeaders[0]).toMatch(/process\.env\.FUNCTIONS_EMULATOR/);
+        });
+
+        it('never negates FUNCTIONS_EMULATOR anywhere in the file', () => {
+            expect(src).not.toMatch(/!\s*process\.env\.FUNCTIONS_EMULATOR/);
+        });
+
+        it('has exactly two enforceAppCheck assignments: default true and emulator override false', () => {
+            const mentions =
+                src.match(/enforceAppCheck\s*[:=]\s*(true|false)\b/g) ?? [];
+            const normalized = mentions.map((m) => m.replace(/\s+/g, ''));
+            expect(normalized.sort()).toEqual(
+                ['enforceAppCheck:true', 'enforceAppCheck=false'].sort(),
+            );
+        });
+
+        it('places the false assignment inside the FUNCTIONS_EMULATOR guard block', () => {
+            const block = src.match(
+                /if\s*\(\s*process\.env\.FUNCTIONS_EMULATOR\s*\)\s*\{[\s\S]*?\}/,
+            );
+            expect(block).not.toBeNull();
+            expect(block![0]).toMatch(/enforceAppCheck\s*=\s*false\b/);
+        });
     });
 });
 
