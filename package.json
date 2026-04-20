@@ -8,17 +8,28 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "mkdir -p .emulator-data && firebase emulators:exec --only auth,firestore,functions --import=.emulator-data --export-on-exit=.emulator-data 'vite'",
+    "dev:app": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "deploy": "npm run build && firebase deploy --only hosting",
     "deploy:preview": "npm run build && firebase hosting:channel:deploy preview",
-    "firebase:open": "firebase open hosting:site"
+    "firebase:open": "firebase open hosting:site",
+    "emulators": "mkdir -p .emulator-data && firebase emulators:start --only auth,firestore,functions --import=.emulator-data --export-on-exit=.emulator-data",
+    "test:rules": "firebase emulators:exec --only firestore 'vitest run tests/rules'",
+    "test:functions": "firebase emulators:exec --only auth,firestore,functions 'npm --prefix functions test'",
+    "test": "npm run test:rules && npm run test:functions",
+    "bootstrap:owner": "tsx scripts/bootstrap-owner.ts"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "@types/node": "^20.14.0",
+    "firebase-admin": "^12.7.0",
     "terser": "^5.44.1",
+    "tsx": "^4.19.0",
     "typescript": "^5.9.3",
-    "vite": "^7.2.7"
+    "vite": "^7.2.7",
+    "vitest": "^2.1.0"
   }
 }

@@ -10,6 +10,12 @@
 *-debug.log
 firebase-debug.log
 
+# Service-account keys and other secrets (never commit)
+.secrets/
+
+# Firebase emulator data snapshot (created by `npm run dev` via --export-on-exit)
+.emulator-data/
+
 # Logs
 logs
 *.log
@@ -83,6 +89,8 @@ dist/
 .claude/settings.local.json
 .claude/user-*
 .claude/.history
+.claude/scheduled_tasks.lock
+.claude/worktrees/
 
 # But commit shared project commands
 !.claude/commands/

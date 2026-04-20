@@ -1,9 +1,19 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+import {
+    connectAuthEmulator,
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
 import { AuthHintModule } from './auth-hint.js';
+import { EMULATOR_HOSTS, isEmulatorMode } from '../infrastructure/emulator.js';
 
 export class AuthModule {
     constructor(firebaseApp) {
         this.auth = getAuth(firebaseApp);
+        if (isEmulatorMode()) {
+            connectAuthEmulator(this.auth, EMULATOR_HOSTS.auth, { disableWarnings: true });
+            console.info(`[auth] connected to emulator at ${EMULATOR_HOSTS.auth}`);
+        }
         this.provider = new GoogleAuthProvider();
         this.currentUser = null;
         this.authStateCallbacks = [];

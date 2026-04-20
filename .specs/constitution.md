@@ -1,9 +1,9 @@
 # Project Constitution: SalmonCow Web Application
 
-**Version:** 1.0.2
-**Last Updated:** 2026-01-31
+**Version:** 1.1.0
+**Last Updated:** 2026-04-20
 **Scope:** All development on the SalmonCow project
-**Review Frequency:** Quarterly (next review: 2026-03-11)
+**Review Frequency:** Quarterly (next review: 2026-07-20)
 
 ---
 
@@ -66,27 +66,31 @@ This constitutional spec establishes the governing principles, standards, and co
 
 ### II.1 Current Architectural State
 
-**Last Updated**: 2026-01-31
-**Last Architecture Review**: 2026-01-31
+**Last Updated**: 2026-04-20
+**Last Architecture Review**: 2026-04-20
 
 | Domain | Current Phase | Target Phase | Status |
 |--------|---------------|--------------|---------|
-| **UI Components** | Phase 1: Vanilla Web Components | Phase 2: Lit | Monitor component count (~3-4 currently) |
-| **Security** | Phase 1: Basic Auth + Rules | Phase 2: App Check + Custom Claims | Awaiting production launch |
-| **Data** | Phase 1: Simple Collections | Phase 2: Optimized NoSQL | Monitor query complexity |
-| **Testing** | Phase 1: Manual | Phase 2: Unit Tests | Approaching trigger (4 modules) |
+| **UI Components** | Phase 1: Vanilla Web Components | Phase 2: Lit | Monitor component count (~6 currently) |
+| **Security** | Phase 2: App Check + Custom Claims | Phase 3: Advanced (as needed) | Advanced 2026-04-20 as part of multi-user RBAC; see decision log |
+| **Data** | Phase 1: Simple Collections + Rules | Phase 2: Optimized NoSQL | Firestore adopted 2026-04-20; monitor query complexity |
+| **Testing** | Phase 1 + critical-path Phase 2 | Phase 2: Unit Tests (full) | Rules + Functions tests in place (55 unit tests); UI unit tests pending module-count trigger |
 | **Deployment** | Phase 2: GitHub Actions | Phase 3: Advanced CI/CD | Implemented |
 | **Monitoring** | Phase 1: Manual | Phase 2: Firebase Performance | Awaiting production launch |
-| **Cost** | Phase 1: Free Tier | Phase 2: Optimized Free Tier | Monitor usage growth |
+| **Cost** | Blaze pay-as-you-go (within free quotas) | Optimized Blaze | Plan tier upgraded 2026-04-20 to unlock Cloud Functions |
 | **Platform** | 2 platforms (Firebase + GitHub) | Maintain at 2 | Avoid additions |
 
-**Key Metrics** (as of 2026-01-31):
+**Key Metrics** (as of 2026-04-20):
 - **Active Users**: 0 (pre-launch)
-- **Components**: 3-4 (navigation, auth UI, loading states)
-- **Modules**: 4 (auth, ui, navigation, main)
-- **Routes**: 1 (homepage)
+- **Components**: 6 (LoadingSpinner, UserAvatar, StatusBadge, UserPortal, AdminPortal, ToastContainer)
+- **Modules**: 8 (auth, auth-hint, navigation, ui, router, user-portal, role, admin-portal)
+- **Services**: 2 (user-profile, admin-user)
+- **Repositories**: 1 (firestore-user-profile) + interface
+- **Infrastructure layer**: 4 (firestore, functions, appcheck, emulator)
+- **Cloud Functions**: 2 (setUserRole callable, onUserCreate auth trigger)
+- **Routes**: 3 (/, /profile, /admin)
 - **Team Size**: 1 developer
-- **Firebase Usage**: <100 reads/day (0.2% of limit), <10 writes/day (0.05% of limit)
+- **Firebase Usage**: negligible (pre-launch; Blaze free quotas)
 
 ### II.2 Evolution Triggers
 
@@ -416,27 +420,47 @@ Decision: Stay in Phase 1, revisit when component count reaches 10
 
 ## VI. Cost Constraints
 
-### VI.1 Firebase Free Tier Limits
+### VI.1 Firebase Plan Tier and Free Quotas
 
-**Spark Plan Quotas** (verified 2025-12-11):
+**Plan Tier**: Blaze (pay-as-you-go) as of 2026-04-20.
+
+The Blaze plan was adopted to unlock Cloud Functions for the multi-user
+RBAC feature (server-side custom-claim writes require the Admin SDK, which
+only runs in Cloud Functions). Blaze preserves the same monthly free
+quotas as the old Spark plan — we pay only for usage that exceeds them.
+
+**Blaze free quotas** (verified 2026-04-20):
 - **Firestore**:
   - Reads: 50,000/day
   - Writes: 20,000/day
   - Deletes: 20,000/day
-  - Storage: 1GB
-  - Network egress: 10GB/month
-- **Authentication**: Unlimited
+  - Storage: 1 GiB
+  - Network egress: 10 GiB/month
+- **Authentication**: Unlimited (including sign-ins, user records)
 - **Hosting**:
-  - Storage: 10GB
-  - Transfer: 360MB/day
-- **Cloud Functions**: Not available on free tier (requires Blaze plan)
+  - Storage: 10 GiB
+  - Transfer: 360 MB/day
+- **Cloud Functions**:
+  - Invocations: 2,000,000/month
+  - Compute: 400,000 GB-seconds/month + 200,000 CPU-seconds/month
+  - Outbound networking: 5 GB/month
+- **Cloud Build** (Functions deploy): 120 build-minutes/day
 
-**Hard Constraints**:
-- **MUST stay within free tier** for first 6 months
-- **MUST implement caching/optimization** before hitting 70% of any limit
-- **Functions deployment** requires explicit decision to upgrade to Blaze plan
+**Soft constraints** (cost discipline, not contractual):
+- Aim to stay within free quotas; every feature is designed with per-op
+  cost budgets (see each feature spec's Performance/Cost section).
+- Alert at **70%** of any quota → investigate top consumers.
+- Alert at **90%** → emergency optimization + consider phase evolution.
+- Blaze overage pricing is pennies per thousand reads/writes at hobby
+  scale; the goal is awareness, not austerity.
 
-**Reference**: [.prompts/platforms/firebase/firebase-finops.md](.prompts/platforms/firebase/firebase-finops.md)
+**Hard constraints**:
+- Service-account keys never committed (`.secrets/` gitignored; verified
+  in every PR).
+- App Check enabled for production on every callable that mutates
+  role/auth state (see `firebase-security` skill).
+
+**Reference**: `firebase-cost-resilience` skill; `firebase-monitoring` skill.
 
 ### VI.2 Cost Optimization Requirements
 
@@ -629,12 +653,12 @@ async function getCachedUser(uid) {
 
 ### IX.1 Quick Reference
 
-**Current State (as of 2026-01-31)**:
-- Phase 1 across all domains
-- 3-4 components, 4 modules, 1 route
-- 1 developer, 0 active users
+**Current State (as of 2026-04-20)**:
+- Phase 1 for UI/Data/Monitoring; Phase 2 for Security; partial Phase 2 for Testing (critical path); Blaze pay-as-you-go for Cost
+- 6 components, 8 modules, 3 routes, 2 Cloud Functions
+- 1 developer, 0 active users (pre-launch)
 - 2 platforms (Firebase + GitHub)
-- <1% of Firebase free tier usage
+- Negligible Firebase usage (pre-launch, within Blaze free quotas)
 
 **Key Thresholds**:
 - Unit testing: Trigger at 10 modules (currently 4)
@@ -710,3 +734,4 @@ This document is the living constitution for the SalmonCow project. It evolves w
 
 **Version History:**
 - 1.0.0 (2025-12-11): Initial constitutional spec created as part of spec-kit integration
+- 1.1.0 (2026-04-20): Security domain advanced to Phase 2 (App Check + Custom Claims) and Cost tier updated from Spark to Blaze pay-as-you-go, both landing with the multi-user RBAC feature. Metrics in §II.1 refreshed to reflect current component/module/route counts. See [architectural-decision-log.md](../.prompts/meta/architectural-decision-log.md) 2026-04-20 entry.

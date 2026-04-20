@@ -25,6 +25,7 @@ export class NavigationModule {
         this.dropdownEmail = null;
         this.navLogoutButton = null;
         this.navHomeButton = null;
+        this.navAdminLink = null;
 
         // State
         this.isDropdownOpen = false;
@@ -117,6 +118,20 @@ export class NavigationModule {
         this.dropdownEmail = document.getElementById('dropdownEmail');
         this.navLogoutButton = document.getElementById('navLogoutButton');
         this.navHomeButton = document.getElementById('navHome');
+        this.navAdminLink = document.getElementById('navAdminLink');
+    }
+
+    /**
+     * Show or hide the Admin dropdown link based on the current role.
+     * UX affordance only — the /admin route has its own guard in main.js,
+     * and Firestore rules are the security boundary.
+     *
+     * @param {'owner'|'admin'|'user'|null} role
+     */
+    setRole(role) {
+        if (!this.navAdminLink) return;
+        const shouldShow = role === 'owner' || role === 'admin';
+        this.navAdminLink.style.display = shouldShow ? '' : 'none';
     }
 
     /**

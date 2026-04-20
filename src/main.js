@@ -23,22 +23,31 @@ import { RouterModule } from './modules/router.js';
 import { AuthHintModule } from './modules/auth-hint.js';
 import { createRepositoryFactory } from './factories/repository-factory.js';
 import { UserProfileService } from './services/user-profile-service.js';
+import { AdminUserService } from './services/admin-user-service.js';
+import { AdminPortalModule } from './modules/admin-portal.js';
+import { initAppCheck } from './infrastructure/appcheck.js';
+import { RoleModule } from './modules/role.js';
+import { getDb } from './infrastructure/firestore.js';
 
 // Import Web Components
 import './components/LoadingSpinner.js';
 import './components/UserAvatar.js';
 import './components/StatusBadge.js';
 import './components/UserPortal.js';
+import './components/AdminPortal.js';
 import './components/ToastContainer.js';
 
 class App {
     constructor() {
         this.firebaseApp = null;
         this.auth = null;
+        this.role = null;
         this.ui = null;
         this.navigation = null;
         this.userPortal = null;
+        this.adminPortal = null;
         this.profileService = null;
+        this.adminUserService = null;
         this.router = null;
         this.toastContainer = null;
     }
@@ -57,7 +66,26 @@ class App {
 
             // Initialize Firebase (non-blocking)
             this.firebaseApp = initializeApp(firebaseConfig);
+            // App Check must initialize before any protected callable is invoked.
+            // Skipped automatically in emulator mode (see infrastructure/appcheck.js).
+            initAppCheck(this.firebaseApp);
             this.auth = new AuthModule(this.firebaseApp);
+
+            // Role state (custom claim + users/{uid}.roleChangedAt mirror listener)
+            this.role = new RoleModule(this.auth, getDb(this.firebaseApp));
+            this.role.init();
+
+            // If a role change demotes the user off /admin, bounce them to home.
+            this.role.onRoleChange((nextRole) => {
+                if (
+                    this.router?.getCurrentRoute() === '/admin' &&
+                    nextRole !== null &&
+                    nextRole !== 'owner' &&
+                    nextRole !== 'admin'
+                ) {
+                    this.router.navigate('/');
+                }
+            });
 
             // Initialize router
             this.router = new RouterModule();
@@ -65,6 +93,9 @@ class App {
 
             // Initialize user profile service and portal
             this.initializeUserPortal();
+
+            // Initialize admin portal (owner/admin only; UI guards shown/hidden by role)
+            this.initializeAdminPortal();
 
             // Setup event listeners and auth state monitoring
             this.setupEventListeners();
@@ -85,10 +116,13 @@ class App {
      * Setup routes for hash-based navigation
      */
     setupRoutes() {
-        this.router.register('/', () => this.showHome());
-        this.router.register('/profile', () => this.showProfile());
+        this.router.register('/', () => this.showView('homeView'));
+        this.router.register('/profile', () => this.showView('profileView'));
+        this.router.register('/admin', () => {
+            this.showView('adminView');
+            this.adminPortal?.show();
+        });
 
-        // Protect profile route
         this.router.onBeforeNavigate((newPath) => {
             if (newPath === '/profile') {
                 // Allow if authenticated or hint suggests authentication
@@ -98,35 +132,36 @@ class App {
                     return false;
                 }
             }
+            if (newPath === '/admin') {
+                // Security is enforced server-side by Firestore rules + the
+                // setUserRole callable. This guard is UX only: keep unprivileged
+                // users from landing on a page that would render nothing.
+                if (!this.auth?.isAuthenticated()) {
+                    this.router.navigate('/');
+                    return false;
+                }
+                const role = this.role?.getRole();
+                // role === null means the token hasn't loaded yet; let the user
+                // through and re-evaluate when onRoleChange fires (see init()).
+                if (role !== null && role !== 'owner' && role !== 'admin') {
+                    this.router.navigate('/');
+                    return false;
+                }
+            }
             return true;
         });
     }
 
     /**
-     * Show home view
+     * Show exactly one page view, hiding the others.
+     * @param {'homeView'|'profileView'|'adminView'} id
      */
-    showHome() {
-        const homeView = document.getElementById('homeView');
-        const profileView = document.getElementById('profileView');
-
-        if (homeView) homeView.style.display = 'block';
-        if (profileView) profileView.style.display = 'none';
-
-        // Close dropdown when navigating
-        this.navigation.closeDropdown();
-    }
-
-    /**
-     * Show profile view
-     */
-    showProfile() {
-        const homeView = document.getElementById('homeView');
-        const profileView = document.getElementById('profileView');
-
-        if (homeView) homeView.style.display = 'none';
-        if (profileView) profileView.style.display = 'block';
-
-        // Close dropdown when navigating
+    showView(id) {
+        const views = ['homeView', 'profileView', 'adminView'];
+        for (const v of views) {
+            const el = document.getElementById(v);
+            if (el) el.style.display = v === id ? 'block' : 'none';
+        }
         this.navigation.closeDropdown();
     }
 
@@ -134,11 +169,35 @@ class App {
      * Initialize user profile service and portal module
      */
     initializeUserPortal() {
-        const repositoryFactory = createRepositoryFactory();
-        const repository = repositoryFactory.getUserProfileRepository();
-        this.profileService = new UserProfileService(repository);
+        const repositoryFactory = createRepositoryFactory({ firebaseApp: this.firebaseApp });
+        this._userRepository = repositoryFactory.getUserProfileRepository();
+        this.profileService = new UserProfileService(this._userRepository);
         this.userPortal = new UserPortalModule(this.profileService);
         this.userPortal.init('userPortalContainer');
+    }
+
+    /**
+     * Initialize admin portal. Created unconditionally; the component is a
+     * no-op render until setRole('owner'|'admin') is called and users are
+     * loaded on first route match.
+     */
+    initializeAdminPortal() {
+        this.adminUserService = new AdminUserService({
+            firebaseApp: this.firebaseApp,
+            repository: this._userRepository,
+        });
+        this.adminPortal = new AdminPortalModule({
+            adminService: this.adminUserService,
+            role: this.role,
+            toast: {
+                show: (type, message, duration) =>
+                    this.showToast(type, message, duration),
+            },
+        });
+        this.adminPortal.init('adminPortalContainer');
+
+        // Keep navigation Admin link synced with the role observable.
+        this.role.onRoleChange((next) => this.navigation.setRole(next));
     }
 
     /**
@@ -227,9 +286,12 @@ class App {
                 this.userPortal.handleAuthStateChange(user);
             }
 
-            // If user signed out and on profile page, redirect to home
-            if (!user && this.router.getCurrentRoute() === '/profile') {
-                this.router.navigate('/');
+            // If user signed out while on a protected route, redirect home
+            if (!user) {
+                const current = this.router.getCurrentRoute();
+                if (current === '/profile' || current === '/admin') {
+                    this.router.navigate('/');
+                }
             }
 
         });

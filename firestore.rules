@@ -1,0 +1,71 @@
+rules_version = '2';
+
+// Role-based access control for Salmoncow.
+//
+// Roles live on the Firebase Auth custom claim `role` (set by the setUserRole
+// callable; seeded as 'user' by the onUserCreate auth trigger). These rules
+// read the claim directly via request.auth.token.role, never via get(), so
+// role checks cost zero Firestore reads.
+//
+// Spec: .specs/features/001-multi-user-rbac/spec.md §VI, §VII, §X.4
+service cloud.firestore {
+    match /databases/{database}/documents {
+
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        function roleOf() {
+            return request.auth.token.role;
+        }
+
+        function isOwner() {
+            return isSignedIn() && roleOf() == 'owner';
+        }
+
+        function isAdmin() {
+            return isSignedIn() && roleOf() == 'admin';
+        }
+
+        function isOwnerOrAdmin() {
+            return isOwner() || isAdmin();
+        }
+
+        function isSelf(uid) {
+            return isSignedIn() && request.auth.uid == uid;
+        }
+
+        // users/{uid} — profile doc. Role field is server-authoritative:
+        // the client may never create with a role field nor change an existing
+        // role. The onUserCreate trigger and setUserRole callable are the only
+        // writers of `role`.
+        match /users/{uid} {
+            allow read: if isSelf(uid) || isOwnerOrAdmin();
+            allow create: if isSelf(uid) && !('role' in request.resource.data);
+            allow update: if isSelf(uid)
+                          && request.resource.data.role == resource.data.role;
+            allow delete: if false;
+        }
+
+        // content/{id} — placeholder collection for the content management
+        // feature. Any signed-in user can read; only owner/admin can write.
+        match /content/{id} {
+            allow read: if isSignedIn();
+            allow write: if isOwnerOrAdmin();
+        }
+
+        // audit/{autoId} — append-only role-change audit trail. Owner-only
+        // read; Admin SDK (Cloud Function) is the sole writer.
+        match /audit/{id} {
+            allow read: if isOwner();
+            allow write: if false;
+        }
+
+        // rateLimits/{action}/actors/{actorUid} — Cloud Function rate-limit
+        // counters. Owner can read for visibility; only Admin SDK writes.
+        match /rateLimits/{action}/actors/{actorUid} {
+            allow read: if isOwner();
+            allow write: if false;
+        }
+    }
+}

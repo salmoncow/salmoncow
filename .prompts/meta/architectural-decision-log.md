@@ -57,6 +57,77 @@ The constitution is the single source of truth for current state. This log is an
 
 ## Decision Log Entries
 
+### 2026-04-20: Adopt Blaze plan and advance Security to Phase 2 for multi-user RBAC
+
+**Domains Affected**: Security, Cost, Data, Testing
+
+**Current Phase** → **New Phase**:
+- Security: Phase 1 (Basic Auth + Rules) → **Phase 2 (App Check + Custom Claims)**
+- Cost: Phase 1 (Spark Free Tier) → **Blaze pay-as-you-go (within free quotas)**
+- Data: Phase 1 (Simple Collections, no usage) → **Phase 1 (Simple Collections + Rules, in active use)**
+- Testing: Phase 1 (Manual) → **Phase 1 + critical-path Phase 2 (rules + functions unit tests)**
+
+**Decision**:
+Upgrade the Firebase project to the Blaze plan and implement three-role RBAC
+(`owner` / `admin` / `user`) using Firebase Auth custom claims as the primary
+security signal, a Firestore `users/{uid}` mirror as the source of truth for
+the admin UI, and a callable Cloud Function as the sole writer of the `role`
+claim. App Check (reCAPTCHA Enterprise) enforced on the callable in prod.
+
+**Rationale**:
+- **Feature necessity**: the RBAC feature (approved spec
+  `.specs/features/001-multi-user-rbac/spec.md`) requires server-side writes
+  via `setCustomUserClaims`, which is Admin-SDK-only and therefore Blaze-only.
+  No workaround preserves the security model on Spark.
+- **Security Phase 2 triggers met**: custom claims are now in use; App Check
+  is wired; rules are exercised under the emulator with a full permission
+  matrix; 55 unit tests cover the critical path.
+- **Cost impact**: Blaze preserves the same monthly free quotas. At hobby
+  scale the project will stay at $0/month; overages (if any) cost pennies
+  per thousand reads/writes. The security gain outweighs the billing risk.
+- **Dev/prod parity**: adopted emulator-only local dev (Firestore emulator
+  via `npm run dev` with import/export-on-exit) so rules and triggers are
+  exercised on every save.
+
+**Alternatives Considered**:
+1. **Stay on Spark, roles in Firestore only (no custom claims)**:
+   - Rejected: would force `get()` calls in every rule (1 read per check,
+     free tier impact), weaker perf, and every role change would happen via
+     a downloaded service-account key script rather than an in-app portal.
+2. **Upgrade to Blaze later, after launch**:
+   - Rejected: the RBAC feature has concrete near-term value for learning
+     Firebase, and the upgrade has zero cost at current usage.
+3. **Per-user role stored as a Firestore field only, enforced client-side**:
+   - Rejected outright: violates constitution §III.2 (server-side authz on
+     every protected op) — clients would be the security boundary.
+
+**Success Criteria**:
+- [x] All 20 acceptance criteria in the RBAC feature spec validated (via
+      unit tests + emulator E2E)
+- [x] Owner claim + Firestore mirror stay in sync (audit entry per change)
+- [x] No client path writes the `role` field (rules + defense-in-depth
+      strip in FirestoreUserProfileRepository)
+- [ ] Preview-channel E2E still to run (Group 10 of the rollout)
+- [ ] Post-launch: monitor Firestore + Functions usage weekly for the first
+      month; alert at 70% of any Blaze free quota
+- [ ] Next quarterly review: 2026-07-20
+
+**Implementation Notes**:
+- 11-group commit sequence on branch `feat/multi-user-rbac`
+- 55 unit tests (41 rules + 14 functions) run via `firebase emulators:exec`
+- Local dev moved to emulator-only (`npm run dev` boots Auth + Firestore +
+  Functions with state import/export to `.emulator-data/`)
+- Bootstrap runbook at `.specs/features/001-multi-user-rbac/bootstrap.md`
+- One known emulator caveat documented: `enforceAppCheck` relaxed under
+  `FUNCTIONS_EMULATOR` env var because the emulator doesn't mock the
+  App Check token exchange. Production enforcement unchanged. A separate
+  task (spawned 2026-04-20) captures this pattern in the `firebase-testing`
+  skill for reuse.
+
+**Review Date**: 2026-07-20 (quarterly review)
+
+---
+
 ### 2025-12-09: Establish Progressive Architecture Strategy
 
 **Domains Affected**: All
