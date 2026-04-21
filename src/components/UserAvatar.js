@@ -16,8 +16,13 @@
  * Architecture Note:
  *   Part of Phase 1 Web Components architecture.
  *   Follows asset reusability principles - single source for avatar fallback.
- *   See: .prompts/core/development/asset-reusability.md
  */
+
+// Imported (not referenced by string) so Vite includes it in the build
+// output. A string-literal path would be caught by the SPA rewrite and
+// served as index.html, breaking the fallback.
+import defaultAvatarUrl from '../assets/images/placeholders/default-avatar.svg';
+
 export class UserAvatar extends HTMLElement {
     static get observedAttributes() {
         return ['photo', 'alt', 'size'];
@@ -27,7 +32,12 @@ export class UserAvatar extends HTMLElement {
         this.render();
     }
 
-    attributeChangedCallback() {
+    attributeChangedCallback(name, oldValue, newValue) {
+        // Avoid unnecessary re-renders when a parent re-applies the same
+        // attributes (common when auth state fires multiple times). Each
+        // re-render destroys + recreates the <img>, forcing a fresh fetch
+        // and a brief flash of alt text.
+        if (oldValue === newValue) return;
         this.render();
     }
 
@@ -46,6 +56,9 @@ export class UserAvatar extends HTMLElement {
 
         const dimension = sizeMap[size] || sizeMap.medium;
 
+        // referrerpolicy=no-referrer helps Google's profile-photo CDN serve
+        // a cacheable response; sending a Referer header can trigger stricter
+        // caching behavior and intermittent failures.
         this.innerHTML = `
             <img
                 class="user-avatar"
@@ -54,6 +67,9 @@ export class UserAvatar extends HTMLElement {
                 width="${dimension}"
                 height="${dimension}"
                 data-size="${size}"
+                referrerpolicy="no-referrer"
+                loading="eager"
+                decoding="async"
             />
         `;
 
@@ -69,7 +85,7 @@ export class UserAvatar extends HTMLElement {
     }
 
     getDefaultAvatar() {
-        return '/assets/images/placeholders/default-avatar.svg';
+        return defaultAvatarUrl;
     }
 
     addStyles() {

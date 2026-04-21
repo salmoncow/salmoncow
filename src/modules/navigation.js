@@ -31,8 +31,9 @@ export class NavigationModule {
         this.isDropdownOpen = false;
         this.currentUser = null;
 
-        // Default avatar (reusable asset from placeholders)
-        this.defaultAvatarURL = '/assets/images/placeholders/default-avatar.svg';
+        // (Default avatar is handled internally by <user-avatar>; this
+        // module only sets the `photo` attribute. A prior string literal
+        // here was dead code — the fallback lives in UserAvatar.)
 
         // Event callbacks
         this.loginCallback = null;
