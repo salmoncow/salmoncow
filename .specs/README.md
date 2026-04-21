@@ -14,14 +14,24 @@ See [Spec-Kit Integration Guide](../.prompts/meta/speckit-integration-guide.md) 
 
 ```
 .specs/
-├── constitution.md          # Project constitutional spec (single source of truth)
-├── technical/               # Technical configurations
-│   ├── build-system.md     # Vite configuration and optimization
-│   ├── cicd-pipeline.md    # GitHub Actions CI/CD workflows
-│   └── firebase-deployment.md  # Firebase Hosting deployment process
-└── features/                # Per-feature specifications (ephemeral)
-    └── <feature-name>.md   # Created via /speckit-specify
+├── constitution.md          # Project constitutional spec (single source of truth) — portable
+├── technical/               # Technical configurations — portable scaffolding
+│   ├── build-system.md
+│   ├── cicd-pipeline.md
+│   └── firebase-deployment.md
+├── features/                # Active feature specs (in-flight) — normally empty between features
+│   └── <feature-name>/      # Created via /speckit-specify
+└── archive/                 # Shipped-feature specs (historical) — PROJECT-SPECIFIC, do not copy
+    └── <feature-name>/      # Moved here after merge
 ```
+
+### Portability rule
+
+When migrating `.specs/` as starter scaffolding to a new project:
+- **Copy**: `constitution.md` (adapt content), `technical/` (adapt content), empty `features/`
+- **Skip**: `archive/` — it's this project's history, not generic guidance
+
+Archive is a peer of `features/` (not nested inside it) specifically to make this rule unambiguous.
 
 ### Constitution
 
@@ -49,7 +59,7 @@ Ephemeral specifications for individual features, created via `/speckit-specify`
 - Task breakdowns
 - Testing checklists
 
-**Lifecycle**: Created → Implemented → Archived to `features/archive/` after merge
+**Lifecycle**: Created in `features/` → Implemented → Moved to `archive/` after merge
 
 ---
 
