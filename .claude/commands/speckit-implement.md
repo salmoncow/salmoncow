@@ -122,7 +122,7 @@ Execute the implementation plan following the task breakdown.
 
 7. **Post-Implementation**:
    - [ ] Update feature spec status to "Implemented"
-   - [ ] Archive feature spec to `.specs/features/archive/` after merge
+   - [ ] Archive feature spec: `git mv .specs/features/<name>/ .specs/archive/<name>/` after merge (archive is a peer of features/, not nested, to keep features/ portable)
    - [ ] Update `architectural-decision-log.md` if phase transition occurred
    - [ ] Update `.specs/constitution.md` if constraints changed
 

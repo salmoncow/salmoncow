@@ -220,7 +220,7 @@ Global skills (`~/.claude/skills/`) contain foundational patterns applicable to 
 - Task breakdown
 - Testing checklist
 
-**Lifecycle**: Created → Implemented → Archived to `.specs/features/archive/`
+**Lifecycle**: Created in `.specs/features/<name>/` → Implemented → Moved to `.specs/archive/<name>/` after merge (archive is a peer of features/, not nested, so features/ stays portable across projects)
 
 **Exclude**:
 - Long-lived documentation (goes in README)
@@ -303,11 +303,16 @@ Project-specific requirements (security-principles skill provides universal patt
 
 **Archive Process**:
 ```bash
-# After feature merged
-mkdir -p .specs/features/archive
-git mv .specs/features/user-profile.md .specs/features/archive/
-git commit -m "docs: archive user-profile spec (feature completed)"
+# After feature merged — move to .specs/archive/ (peer of features/, not nested)
+mkdir -p .specs/archive
+git mv .specs/features/001-user-profile .specs/archive/001-user-profile
+git commit -m "chore(specs): archive user-profile spec (feature completed)"
 ```
+
+The archive is a peer of `features/` rather than nested inside it so that
+`.specs/features/` stays portable: when copying `.specs/` to a new project
+as scaffolding, leave `archive/` behind — it's this project's history, not
+generic guidance.
 
 ---
 

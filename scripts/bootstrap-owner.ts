@@ -27,7 +27,7 @@
  *   TARGET_UID=<uid-from-emulator> \
  *   npm run bootstrap:owner
  *
- * Full runbook: .specs/features/001-multi-user-rbac/bootstrap.md
+ * Full runbook: .specs/archive/001-multi-user-rbac/bootstrap.md
  */
 import { readFileSync } from 'node:fs';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
