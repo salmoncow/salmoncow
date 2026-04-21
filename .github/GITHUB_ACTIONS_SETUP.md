@@ -4,17 +4,40 @@ This guide explains how to configure GitHub Actions for automated Firebase Hosti
 
 ## Overview
 
-This project uses GitHub Actions for continuous deployment with three workflows:
+This project uses GitHub Actions for continuous deployment with four workflows:
 
-1. **Production Deployment** (`deploy-production.yml`) - Deploys to production on push to `main`
+1. **Production Deployment** (`deploy-production.yml`) - Deploys hosting to production on push to `main`
 2. **Preview Deployments** (`deploy-preview.yml`) - Creates preview channels for pull requests
-3. **Cleanup Previews** (`cleanup-previews.yml`) - Manages expired preview channels (optional, manual/scheduled)
+3. **Backend Deployment** (`deploy-backend.yml`) - Deploys Firestore rules, indexes, and Cloud Functions (manual `workflow_dispatch` only as of initial rollout)
+4. **Cleanup Previews** (`cleanup-previews.yml`) - Manages expired preview channels (optional, manual/scheduled)
 
 ## Prerequisites
 
 - Firebase project created and configured (`salmoncow`)
 - GitHub repository with admin access
 - Google Cloud Console access (for creating service account)
+- Required Google Cloud APIs enabled on the project (see Step 0)
+
+### Step 0: Enable Required Google Cloud APIs
+
+Firebase and Cloud Functions rely on several Google Cloud APIs. Most are auto-enabled by `firebase-tools` on first deploy, but **`cloudbilling.googleapis.com` must be enabled manually** — `firebase-tools` uses it to verify Blaze billing for 2nd-gen Cloud Functions and will fail the deploy with a 403 ("Cloud Billing API has not been used in project ... before or it is disabled") if it is off.
+
+```bash
+PROJECT=salmoncow
+gcloud services enable cloudbilling.googleapis.com --project=$PROJECT
+
+# Verify
+gcloud services list --enabled --project=$PROJECT \
+  --filter="config.name:cloudbilling" --format="value(config.name)"
+# Expect: cloudbilling.googleapis.com
+```
+
+APIs auto-enabled by `firebase-tools` during deploys (no manual action needed):
+- `cloudfunctions.googleapis.com`, `cloudbuild.googleapis.com`, `artifactregistry.googleapis.com`
+- `run.googleapis.com`, `eventarc.googleapis.com`, `pubsub.googleapis.com`, `storage.googleapis.com`
+- `firestore.googleapis.com`, `firebaseextensions.googleapis.com`
+
+> **Note:** the deploy service account needs `serviceusage.services.use` to *call* these APIs, but enabling them requires project-admin rights. API enablement is a one-time project prerequisite, not a per-deploy action.
 
 ## Setup Instructions
 
@@ -47,12 +70,59 @@ Follow these steps:
 
 #### 1.3 Grant Permissions
 
-Add these roles to the service account:
-- **Firebase Hosting Admin** - Required for deploying to Firebase Hosting
-- **API Keys Viewer** - Required for accessing Firebase config
-- **Service Account User** - Required for acting as the service account
+**For hosting-only deploys (`deploy-production.yml` / `deploy-preview.yml`):**
+- **Firebase Hosting Admin** (`roles/firebasehosting.admin`) - deploy to Firebase Hosting
+- **API Keys Viewer** (`roles/serviceusage.apiKeysViewer`) - access Firebase config
+- **Service Account User** (`roles/iam.serviceAccountUser`) - act as other service accounts
 
-Click **"CONTINUE"** then **"DONE"**
+**Additional roles required by `deploy-backend.yml`** (Firestore + Cloud Functions):
+- **Firebase Rules Admin** (`roles/firebaserules.admin`) - deploy `firestore.rules`
+- **Cloud Datastore Index Admin** (`roles/datastore.indexAdmin`) - deploy `firestore.indexes.json`
+- **Cloud Functions Developer** (`roles/cloudfunctions.developer`) - deploy functions
+- **Cloud Run Developer** (`roles/run.developer`) - update 2nd-gen function Cloud Run services
+- **Artifact Registry Writer** (`roles/artifactregistry.writer`) on repo `us-central1/gcf-artifacts` - push function images (scope this at the repo level, not project-wide)
+- **Storage Object Admin** (`roles/storage.objectAdmin`) on the three Cloud Functions source/upload buckets (scope this at the bucket level, not project-wide):
+  - `gs://gcf-sources-<project-number>-us-central1`
+  - `gs://gcf-v2-sources-<project-number>-us-central1`
+  - `gs://gcf-v2-uploads-<project-number>.us-central1.cloudfunctions.appspot.com`
+
+**Apply the additional backend roles via gcloud:**
+
+```bash
+PROJECT=salmoncow
+SA=github-actions-deploy@${PROJECT}.iam.gserviceaccount.com
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
+REGION=us-central1
+
+# Project-level
+gcloud projects add-iam-policy-binding $PROJECT --member=serviceAccount:$SA --role=roles/firebaserules.admin    --condition=None
+gcloud projects add-iam-policy-binding $PROJECT --member=serviceAccount:$SA --role=roles/datastore.indexAdmin   --condition=None
+gcloud projects add-iam-policy-binding $PROJECT --member=serviceAccount:$SA --role=roles/cloudfunctions.developer --condition=None
+gcloud projects add-iam-policy-binding $PROJECT --member=serviceAccount:$SA --role=roles/run.developer          --condition=None
+
+# Repo-scoped Artifact Registry
+gcloud artifacts repositories add-iam-policy-binding gcf-artifacts \
+  --location=$REGION --project=$PROJECT \
+  --member=serviceAccount:$SA --role=roles/artifactregistry.writer
+
+# Bucket-scoped Storage (3 buckets)
+for BUCKET in \
+  gcf-sources-${PROJECT_NUMBER}-${REGION} \
+  gcf-v2-sources-${PROJECT_NUMBER}-${REGION} \
+  gcf-v2-uploads-${PROJECT_NUMBER}.${REGION}.cloudfunctions.appspot.com ; do
+  gcloud storage buckets add-iam-policy-binding gs://$BUCKET \
+    --member=serviceAccount:$SA --role=roles/storage.objectAdmin
+done
+```
+
+> **Known limitation — callable function `run.invoker` grant:** `roles/run.developer` (chosen over `roles/run.admin` for least-privilege) does **not** include `run.setIamPolicy`. `firebase-tools` cannot auto-grant `allUsers → roles/run.invoker` on new callable 2nd-gen functions. After the first deploy of any **new** callable, run this once as a maintainer:
+> ```bash
+> gcloud run services add-iam-policy-binding <service-name> \
+>   --region=us-central1 --member=allUsers --role=roles/run.invoker
+> ```
+> Existing callables (`setuserrole`) already have this binding; this only applies when a new callable function is added.
+
+Click **"CONTINUE"** then **"DONE"** for the hosting roles in the console; apply backend roles via the gcloud block above.
 
 #### 1.4 Create and Download Key
 
@@ -229,6 +299,25 @@ No modifications should be needed if you're using the default Firebase project.
 **Output:** Preview site at `https://<project-id>--pr-<number>-<hash>.web.app`
 **Expiration:** 7 days
 
+### Backend Deployment Workflow
+
+**Trigger:** Manual (`workflow_dispatch`) only, as of initial rollout. A `push: main` path-filtered trigger is staged as a commented block in the workflow and tracked as a follow-up.
+**Runtime:** ~40–60 s (no changes) / ~2–4 min (with rebuild)
+**Targets input:** comma-separated subset of `firestore,functions` (default: both)
+**Steps:**
+1. Checkout code
+2. Setup Node.js 20 with npm caching for root + `functions/`
+3. `npm ci --prefix functions` + `npm run build --prefix functions` (predeploy is also wired in `firebase.json`)
+4. Install `firebase-tools@15.15.0` (pinned exact)
+5. Write `FIREBASE_SERVICE_ACCOUNT` to `$RUNNER_TEMP` with `chmod 600`
+6. `firebase deploy --project salmoncow --only <targets> --force --non-interactive`
+7. Remove the service-account key file
+
+**Manual trigger:**
+```bash
+gh workflow run deploy-backend.yml --ref main -f targets=firestore,functions
+```
+
 ### Cleanup Preview Workflow
 
 **Trigger:** Manual or weekly schedule (Sundays at midnight UTC)
@@ -270,6 +359,18 @@ These workflows are optimized for GitHub Actions free tier:
    - Firebase Hosting Admin
    - API Keys Viewer
    - Service Account User
+4. For `deploy-backend.yml` failures, verify the additional backend roles from Step 1.3 are also present.
+
+### `deploy-backend.yml` fails with "Cloud Billing API has not been used in project ... before or it is disabled"
+
+**Cause:** `firebase-tools` calls `cloudbilling.googleapis.com` during 2nd-gen Cloud Function preparation to verify Blaze is active. The API is not enabled by default on new projects, even when the project itself is on Blaze.
+
+**Solution:**
+```bash
+gcloud services enable cloudbilling.googleapis.com --project=salmoncow
+# Wait ~30-60 seconds for propagation, then re-run the workflow
+```
+Full context in the "Step 0: Enable Required Google Cloud APIs" section above.
 
 ### Build fails with "Environment variable not found"
 
@@ -373,6 +474,6 @@ For issues or questions:
 
 ---
 
-**Last Updated:** 2025-11-08
-**Workflow Version:** 1.0.0
+**Last Updated:** 2026-04-20
+**Workflow Version:** 1.1.0
 **Maintained by:** Project team
