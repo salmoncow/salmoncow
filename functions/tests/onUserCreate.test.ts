@@ -26,6 +26,7 @@ describe('onUserCreate auth trigger', () => {
             uid,
             `${uid}@example.com`,
             'New User',
+            'https://example.com/avatar.png',
         );
         const userRecord = ft.auth.makeUserRecord({
             uid,

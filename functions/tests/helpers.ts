@@ -39,17 +39,25 @@ export function nextUid(prefix = 'u'): string {
 /**
  * Create a Firebase Auth user in the emulator. Idempotent — swallows the
  * "uid-already-exists" error so helpers can be called multiple times safely.
+ *
+ * In CI the real onUserCreate trigger is loaded in the Functions emulator
+ * and auto-fires on createUser. That trigger races with the test's direct
+ * `wrapped(userRecord)` invocation. To keep the resulting users/{uid} doc
+ * deterministic regardless of which write lands last, callers that also
+ * pass a userRecord to `wrapped` must mirror its fields here.
  */
 export async function ensureAuthUser(
     uid: string,
     email?: string,
     displayName?: string,
+    photoURL?: string,
 ): Promise<void> {
     try {
         await auth.createUser({
             uid,
             email: email ?? `${uid}@example.com`,
             displayName: displayName ?? uid,
+            ...(photoURL ? { photoURL } : {}),
         });
     } catch (e) {
         const err = e as { code?: string; errorInfo?: { code?: string } };
