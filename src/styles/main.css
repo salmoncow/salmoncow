@@ -4,9 +4,55 @@
     box-sizing: border-box;
 }
 
+/* ===== THEME TOKENS =====
+ * Semantic surface/text tokens shared across all light-DOM components.
+ * Brand tokens (--brand-*) live in navigation.css and stay constant in both themes.
+ * Dark overrides live in the [data-theme="dark"] block below.
+ */
+:root {
+    --surface-bg:        #f3f4f6;
+    --surface-elevated:  #ffffff;
+    --surface-border:    #e5e7eb;
+    --surface-muted:     #f3f4f6;
+
+    --text-primary:      #1f2937;
+    --text-secondary:    #6b7280;
+    --text-tertiary:     #9ca3af;
+    --text-inverse:      #ffffff;
+
+    --focus-ring:        rgba(214, 110, 79, 0.2);
+    --shadow-card:       0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-elevated:   0 10px 25px rgba(0, 0, 0, 0.15);
+
+    --error-fg:          #c62828;
+    --toggle-track:      #d1d5db;
+}
+
+[data-theme="dark"] {
+    color-scheme: light dark;
+
+    --surface-bg:        #0b1220;
+    --surface-elevated:  #111827;
+    --surface-border:    #1f2937;
+    --surface-muted:     #1f2937;
+
+    --text-primary:      #f3f4f6;
+    --text-secondary:    #9ca3af;
+    --text-tertiary:     #6b7280;
+    /* --text-inverse stays white — it's the on-brand-primary text */
+
+    --focus-ring:        rgba(214, 110, 79, 0.35);
+    --shadow-card:       0 4px 20px rgba(0, 0, 0, 0.45);
+    --shadow-elevated:   0 10px 25px rgba(0, 0, 0, 0.6);
+
+    --error-fg:          #f87171;
+    --toggle-track:      #374151;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    background: #f3f4f6;
+    background: var(--surface-bg);
+    color: var(--text-primary);
     min-height: 100vh;
 }
 
