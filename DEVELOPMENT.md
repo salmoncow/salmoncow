@@ -2,9 +2,18 @@
 
 ## Prerequisites
 
-- Node.js 24.x or higher
+- Node.js — see [Node version](#node-version) below
 - Firebase CLI (`npm install -g firebase-tools`)
 - Modern web browser
+
+### Node version
+
+This repo intentionally uses two different Node versions, pinned via `.nvmrc`:
+
+- Repo root: Node 24 (for Vite, Vitest, and other build/test tooling — see root `.nvmrc` and `engines.node` in [package.json](package.json)).
+- `functions/`: Node 22 (matches the Cloud Functions deployed runtime — see [functions/.nvmrc](functions/.nvmrc) and `engines.node` in [functions/package.json](functions/package.json)).
+
+If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm use` in each directory before running tests or starting the Firebase emulators. Running with the wrong host Node version will surface a `functions: Your requested "node" version "22" doesn't match your global version ...` warning from the Firebase CLI — the emulator falls back to your host Node, which can mask runtime differences that only appear once deployed. Don't unify the two versions.
 
 ## Local Development
 
