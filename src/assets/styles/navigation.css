@@ -5,7 +5,12 @@
  * Responsive design with dropdown user profile menu
  */
 
-/* ===== CSS CUSTOM PROPERTIES ===== */
+/* ===== CSS CUSTOM PROPERTIES =====
+ * Brand tokens stay constant across themes. Surface tokens (--surface-*,
+ * --text-*, etc.) are defined in styles/main.css and overridden under
+ * [data-theme="dark"]; the dropdown mappings below consume those so the
+ * menu automatically picks up the dark palette.
+ */
 :root {
     /* Brand Colors - Extracted from logo.svg */
     --brand-primary: #D66E4F;        /* Salmon - main brand color */
@@ -13,18 +18,18 @@
     --brand-accent: #B7BCBC;         /* Gray - neutral accent */
     --brand-light: #F9FAF8;          /* Cream - light backgrounds */
 
-    /* Semantic Colors for Navigation */
+    /* Semantic Colors for Navigation — nav bar is branded (salmon) in both themes */
     --nav-bg: var(--brand-primary);
     --nav-text: #ffffff;
     --nav-hover-bg: rgba(255, 255, 255, 0.15);
     --nav-active-bg: rgba(255, 255, 255, 0.2);
 
-    /* Dropdown Colors */
-    --dropdown-bg: #ffffff;
-    --dropdown-text: #333333;
-    --dropdown-text-secondary: #6b7280;
-    --dropdown-border: #e5e7eb;
-    --dropdown-hover-bg: #f3f4f6;
+    /* Dropdown Colors — consume shared surface/text tokens so dark mode flips automatically */
+    --dropdown-bg: var(--surface-elevated);
+    --dropdown-text: var(--text-primary);
+    --dropdown-text-secondary: var(--text-secondary);
+    --dropdown-border: var(--surface-border);
+    --dropdown-hover-bg: var(--surface-bg);
 
     /* Layout Dimensions */
     --nav-height: 64px;
@@ -33,7 +38,7 @@
 
     /* Shadows */
     --nav-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --dropdown-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --dropdown-shadow: var(--shadow-elevated);
 
     /* Transitions */
     --transition-speed: 0.2s;

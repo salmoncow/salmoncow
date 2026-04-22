@@ -5,10 +5,39 @@ name: Deploy Preview
 # - Changes to this file require review from CODEOWNERS
 # - Service account follows least privilege principle (limited to necessary permissions only)
 
+# Triggers:
+# - pull_request: main → path-filtered so only changes that actually affect
+#   the built site spawn a preview channel. Spec/docs/test-only PRs skip the
+#   preview (and its 7-day-expiring channel + service-account roundtrip).
+#
+# The allowlist below mirrors what Vite bakes into `dist/`:
+#   - src/**              — entry HTML, JS modules, CSS, component assets
+#   - public/**           — served verbatim (vite.config.js publicDir)
+#   - package.json, lock  — dep bumps that change what builds
+#   - vite.config.js      — build config
+#   - firebase.json       — hosting rewrites/headers
+#   - .firebaserc         — project alias (if ever repointed)
+#   - THIS workflow file  — so changes to the trigger itself get validated
+#
+# Deliberately NOT in the allowlist:
+#   - .specs/**, .prompts/**, *.md at root → docs
+#   - tests/**, vitest*.config.*           → CI-only, not shipped
+#   - functions/**, firestore.rules/.indexes.json → backend (deploy-backend.yml)
+#   - scripts/**, tsconfig.json, .nvmrc    → dev tooling, not build inputs
+
 on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/deploy-preview.yml'
 
 permissions:
   checks: write

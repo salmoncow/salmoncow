@@ -57,7 +57,8 @@ export class LoadingSpinner extends HTMLElement {
                         cy="25"
                         r="20"
                         fill="none"
-                        stroke="#e5e7eb"
+                        stroke="currentColor"
+                        stroke-opacity="0.15"
                         stroke-width="4"
                     />
                     <circle
@@ -66,7 +67,7 @@ export class LoadingSpinner extends HTMLElement {
                         cy="25"
                         r="20"
                         fill="none"
-                        stroke="#3b82f6"
+                        stroke="var(--brand-primary, #D66E4F)"
                         stroke-width="4"
                         stroke-linecap="round"
                         stroke-dasharray="31.4 31.4"
@@ -110,8 +111,12 @@ export class LoadingSpinner extends HTMLElement {
                 stroke-linecap: round;
             }
 
+            .loading-spinner-container {
+                color: var(--text-secondary);
+            }
+
             .loading-spinner-message {
-                color: #6b7280;
+                color: inherit;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                 text-align: center;
             }
@@ -144,7 +149,8 @@ export class LoadingSpinner extends HTMLElement {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(255, 255, 255, 0.95);
+                background: var(--surface-elevated);
+                opacity: 0.95;
                 display: flex;
                 align-items: center;
                 justify-content: center;

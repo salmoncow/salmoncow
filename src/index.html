@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salmoncow</title>
+    <!-- Pre-paint theme: set <html data-theme> before stylesheets to prevent FOUC.
+         Kept inline + synchronous and hand-written; do NOT import a module here. -->
+    <script>
+        (function () {
+            try {
+                var v = localStorage.getItem('salmoncow.theme');
+                if (v !== 'light' && v !== 'dark' && v !== 'system') v = 'system';
+                var resolved = v === 'system'
+                    ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : v;
+                document.documentElement.dataset.theme = resolved;
+            } catch (_) { /* storage disabled or pre-paint query failed — accept default */ }
+        })();
+    </script>
 </head>
 <body>
     <!-- Navigation Bar -->

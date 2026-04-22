@@ -101,8 +101,8 @@ export class UserAvatar extends HTMLElement {
                 border-radius: 50%;
                 object-fit: cover;
                 display: inline-block;
-                background-color: #f3f4f6;
-                border: 1px solid #e5e7eb;
+                background-color: var(--surface-muted);
+                border: 1px solid var(--surface-border);
             }
 
             .user-avatar[data-size="small"] {

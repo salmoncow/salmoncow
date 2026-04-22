@@ -256,27 +256,32 @@ ${footer}`;
         const style = document.createElement('style');
         style.id = 'admin-portal-styles';
         style.textContent = `
-.admin-portal { padding: 2rem 1rem; max-width: 1100px; margin: 0 auto; }
+.admin-portal { padding: 2rem 1rem; max-width: 1100px; margin: 0 auto; color: var(--text-primary); }
 .admin-portal__header { margin-bottom: 1.5rem; }
 .admin-portal__header h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
-.admin-portal__subtitle { margin: 0; color: var(--text-muted, #666); }
-.admin-portal__status { padding: 3rem 1rem; text-align: center; color: var(--text-muted, #666); }
-.admin-portal__status--error { color: var(--error, #c0392b); }
-.admin-portal__table-wrap { overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; }
+.admin-portal__subtitle { margin: 0; color: var(--text-secondary); }
+.admin-portal__status { padding: 3rem 1rem; text-align: center; color: var(--text-secondary); }
+.admin-portal__status--error { color: var(--error-fg); }
+.admin-portal__table-wrap { overflow-x: auto; border: 1px solid var(--surface-border); border-radius: 8px; background: var(--surface-elevated); }
 .admin-portal__table { width: 100%; border-collapse: collapse; }
 .admin-portal__table th,
-.admin-portal__table td { padding: .75rem 1rem; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
-.admin-portal__table th { background: #f8f8f8; font-weight: 600; font-size: .875rem; }
+.admin-portal__table td { padding: .75rem 1rem; text-align: left; border-bottom: 1px solid var(--surface-border); vertical-align: middle; color: var(--text-primary); }
+.admin-portal__table th { background: var(--surface-muted); font-weight: 600; font-size: .875rem; color: var(--text-secondary); }
 .admin-portal__table tr:last-child td { border-bottom: none; }
 .admin-portal__user-cell { display: flex; align-items: center; gap: .75rem; }
 .admin-portal__display-name { font-weight: 500; }
-.admin-portal__role-badge { display: inline-block; padding: .25rem .5rem; border-radius: 4px; font-size: .875rem; background: #eee; color: #333; }
+.admin-portal__role-badge { display: inline-block; padding: .25rem .5rem; border-radius: 4px; font-size: .875rem; background: var(--surface-muted); color: var(--text-primary); }
 .admin-portal__role-badge--owner { background: #fef3c7; color: #92400e; }
 .admin-portal__role-badge--admin { background: #dbeafe; color: #1e40af; }
 .admin-portal__role-badge--user { background: #f3f4f6; color: #4b5563; }
-.admin-portal__role-select { padding: .35rem .5rem; border-radius: 4px; border: 1px solid #ccc; background: white; }
-.admin-portal__load-more { margin-top: 1rem; padding: .5rem 1rem; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px; }
+.admin-portal__role-select { padding: .35rem .5rem; border-radius: 4px; border: 1px solid var(--surface-border); background: var(--surface-elevated); color: var(--text-primary); }
+.admin-portal__load-more { margin-top: 1rem; padding: .5rem 1rem; cursor: pointer; border: 1px solid var(--surface-border); background: var(--surface-elevated); color: var(--text-primary); border-radius: 4px; }
 .admin-portal__load-more:disabled { opacity: .6; cursor: wait; }
+
+/* Role badges — dark palette overrides */
+[data-theme="dark"] .admin-portal__role-badge--owner { background: #422006; color: #fde68a; }
+[data-theme="dark"] .admin-portal__role-badge--admin { background: #172554; color: #bfdbfe; }
+[data-theme="dark"] .admin-portal__role-badge--user  { background: #1f2937; color: #d1d5db; }
 `;
         document.head.appendChild(style);
     }

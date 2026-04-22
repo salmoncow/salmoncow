@@ -21,6 +21,7 @@ import { NavigationModule } from './modules/navigation.js';
 import { UserPortalModule } from './modules/user-portal.js';
 import { RouterModule } from './modules/router.js';
 import { AuthHintModule } from './modules/auth-hint.js';
+import { ThemeModule } from './modules/theme.js';
 import { createRepositoryFactory } from './factories/repository-factory.js';
 import { UserProfileService } from './services/user-profile-service.js';
 import { AdminUserService } from './services/admin-user-service.js';
@@ -50,11 +51,20 @@ class App {
         this.adminUserService = null;
         this.router = null;
         this.toastContainer = null;
+        this.theme = null;
     }
 
     async init() {
         try {
-            // Initialize UI and navigation modules first
+            // Theme first: the inline pre-paint script in index.html already set
+            // <html data-theme> from localStorage; ThemeModule.init() re-applies
+            // using the same cache and wires the system-preference watcher if the
+            // preference is 'system'. Firestore value takes over once the profile
+            // loads (see setupAuthStateListener → profileService.onStateChange).
+            this.theme = new ThemeModule();
+            this.theme.init();
+
+            // Initialize UI and navigation modules
             this.ui = new UIModule();
             this.navigation = new NavigationModule();
             this.ui.init();
@@ -172,7 +182,13 @@ class App {
         const repositoryFactory = createRepositoryFactory({ firebaseApp: this.firebaseApp });
         this._userRepository = repositoryFactory.getUserProfileRepository();
         this.profileService = new UserProfileService(this._userRepository);
-        this.userPortal = new UserPortalModule(this.profileService);
+        // Authoritative theme apply: whenever the cached profile changes
+        // (sign-in, successful preference update, or post-revert reload),
+        // re-apply the stored theme preference to the DOM.
+        this._themeProfileUnsub = this.profileService.onStateChange((profile) =>
+            this.theme?.onProfileLoaded(profile),
+        );
+        this.userPortal = new UserPortalModule(this.profileService, { theme: this.theme });
         this.userPortal.init('userPortalContainer');
     }
 
