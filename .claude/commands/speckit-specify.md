@@ -21,7 +21,9 @@ Create a feature requirement specification using spec-driven development princip
    - Check `.prompts/core/security/` for security requirements
    - Review `.prompts/platforms/firebase/` for Firebase implementation guidance
 
-4. **Create Feature Spec** at `.specs/features/<feature-name>.md`:
+4. **Create Feature Directory + Spec** at `.specs/features/<NNN-feature-name>/spec.md`
+   (three-digit numeric prefix keeps features sorted chronologically;
+    see `.specs/features/README.md` for the full directory convention):
    ```markdown
    # Feature Specification: <Feature Name>
 

@@ -4,14 +4,14 @@ Generate a detailed technical implementation plan for a feature specification.
 
 ## Prerequisites
 
-- Feature specification exists at `.specs/features/<feature-name>.md`
+- Feature specification exists at `.specs/features/<NNN-feature-name>/spec.md`
 - Constitutional constraints reviewed
 - Foundational patterns identified
 
 ## Workflow
 
 1. **Review Feature Spec**:
-   - Read `.specs/features/<feature-name>.md`
+   - Read `.specs/features/<NNN-feature-name>/spec.md`
    - Understand requirements and acceptance criteria
    - Identify constitutional constraints cited
 
