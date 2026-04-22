@@ -182,7 +182,13 @@ class App {
         const repositoryFactory = createRepositoryFactory({ firebaseApp: this.firebaseApp });
         this._userRepository = repositoryFactory.getUserProfileRepository();
         this.profileService = new UserProfileService(this._userRepository);
-        this.userPortal = new UserPortalModule(this.profileService);
+        // Authoritative theme apply: whenever the cached profile changes
+        // (sign-in, successful preference update, or post-revert reload),
+        // re-apply the stored theme preference to the DOM.
+        this._themeProfileUnsub = this.profileService.onStateChange((profile) =>
+            this.theme?.onProfileLoaded(profile),
+        );
+        this.userPortal = new UserPortalModule(this.profileService, { theme: this.theme });
         this.userPortal.init('userPortalContainer');
     }
 

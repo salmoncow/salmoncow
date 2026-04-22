@@ -18,12 +18,17 @@ export class UserPortalModule {
     /**
      * Create UserPortalModule
      * @param {import('../services/user-profile-service.js').UserProfileService} profileService
+     * @param {{ theme?: import('./theme.js').ThemeModule }} [options] Optional DI:
+     *   - theme: apply theme changes optimistically for instant UI response.
+     *     The authoritative apply happens via profileService.onStateChange()
+     *     wired in main.js, so this module only needs to fire-and-forget.
      */
-    constructor(profileService) {
+    constructor(profileService, { theme = null } = {}) {
         if (!profileService) {
             throw new Error('ProfileService is required');
         }
         this.profileService = profileService;
+        this.theme = theme;
         this.container = null;
         this.portal = null;
         this.currentUser = null;
@@ -104,6 +109,14 @@ export class UserPortalModule {
      */
     async handlePreferenceChange(key, value) {
         if (!this.currentUser) return;
+
+        // Optimistic apply for instant UI response. On failure, the profile
+        // reload below re-fires ThemeModule.onProfileLoaded via the
+        // profileService.onStateChange subscription registered in main.js,
+        // so the reverted value automatically re-applies.
+        if (key === 'theme' && this.theme) {
+            this.theme.applyPreference(value);
+        }
 
         const preferences = { [key]: value };
         const result = await this.profileService.updatePreferences(
