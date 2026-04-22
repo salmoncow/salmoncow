@@ -239,9 +239,10 @@ export class UserPortal extends HTMLElement {
         style.id = 'user-portal-styles';
         style.textContent = `
             .user-portal {
-                background: white;
+                background: var(--surface-elevated);
+                color: var(--text-primary);
                 border-radius: 12px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                box-shadow: var(--shadow-card);
                 padding: 1.5rem;
                 max-width: 480px;
                 width: 100%;
@@ -258,7 +259,7 @@ export class UserPortal extends HTMLElement {
             /* Error State */
             .portal-error {
                 text-align: center;
-                color: #c62828;
+                color: var(--error-fg);
             }
 
             .portal-error-icon {
@@ -277,7 +278,7 @@ export class UserPortal extends HTMLElement {
                 align-items: center;
                 gap: 1rem;
                 padding-bottom: 1.25rem;
-                border-bottom: 1px solid #e5e7eb;
+                border-bottom: 1px solid var(--surface-border);
             }
 
             .portal-user-info {
@@ -288,7 +289,7 @@ export class UserPortal extends HTMLElement {
             .portal-name {
                 font-size: 1.25rem;
                 font-weight: 600;
-                color: #1f2937;
+                color: var(--text-primary);
                 margin: 0 0 0.25rem 0;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -297,7 +298,7 @@ export class UserPortal extends HTMLElement {
 
             .portal-email {
                 font-size: 0.875rem;
-                color: #6b7280;
+                color: var(--text-secondary);
                 margin: 0 0 0.25rem 0;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -306,7 +307,7 @@ export class UserPortal extends HTMLElement {
 
             .portal-member-since {
                 font-size: 0.75rem;
-                color: #9ca3af;
+                color: var(--text-tertiary);
                 margin: 0;
             }
 
@@ -318,7 +319,7 @@ export class UserPortal extends HTMLElement {
             .portal-section-title {
                 font-size: 0.875rem;
                 font-weight: 600;
-                color: #6b7280;
+                color: var(--text-secondary);
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
                 margin: 0 0 1rem 0;
@@ -331,7 +332,7 @@ export class UserPortal extends HTMLElement {
                 justify-content: space-between;
                 gap: 1rem;
                 padding: 0.75rem 0;
-                border-bottom: 1px solid #f3f4f6;
+                border-bottom: 1px solid var(--surface-muted);
             }
 
             .portal-preference:last-child {
@@ -347,37 +348,37 @@ export class UserPortal extends HTMLElement {
                 display: block;
                 font-size: 0.9375rem;
                 font-weight: 500;
-                color: #1f2937;
+                color: var(--text-primary);
             }
 
             .preference-description {
                 display: block;
                 font-size: 0.8125rem;
-                color: #9ca3af;
+                color: var(--text-tertiary);
                 margin-top: 0.125rem;
             }
 
             /* Select */
             .portal-select {
                 padding: 0.5rem 2rem 0.5rem 0.75rem;
-                border: 1px solid #d1d5db;
+                border: 1px solid var(--surface-border);
                 border-radius: 6px;
                 font-size: 0.875rem;
-                color: #374151;
-                background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
+                color: var(--text-primary);
+                background: var(--surface-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
                 appearance: none;
                 cursor: pointer;
                 min-width: 120px;
             }
 
             .portal-select:hover {
-                border-color: #9ca3af;
+                border-color: var(--text-tertiary);
             }
 
             .portal-select:focus {
                 outline: none;
                 border-color: var(--brand-primary, #D66E4F);
-                box-shadow: 0 0 0 3px rgba(214, 110, 79, 0.1);
+                box-shadow: 0 0 0 3px var(--focus-ring);
             }
 
             /* Toggle Switch */
@@ -402,7 +403,7 @@ export class UserPortal extends HTMLElement {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background-color: #d1d5db;
+                background-color: var(--toggle-track);
                 transition: 0.2s;
                 border-radius: 24px;
             }
@@ -414,7 +415,7 @@ export class UserPortal extends HTMLElement {
                 width: 18px;
                 left: 3px;
                 bottom: 3px;
-                background-color: white;
+                background-color: #ffffff;
                 transition: 0.2s;
                 border-radius: 50%;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -429,7 +430,7 @@ export class UserPortal extends HTMLElement {
             }
 
             .portal-toggle input:focus + .portal-toggle-slider {
-                box-shadow: 0 0 0 3px rgba(214, 110, 79, 0.2);
+                box-shadow: 0 0 0 3px var(--focus-ring);
             }
 
             /* Responsive */

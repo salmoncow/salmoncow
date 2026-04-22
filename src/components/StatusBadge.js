@@ -169,7 +169,7 @@ export class StatusBadge extends HTMLElement {
                 opacity: 1;
             }
 
-            /* Type variants */
+            /* Type variants (light) */
             .status-badge-success {
                 background-color: #f0fdf4;
                 border-color: #86efac;
@@ -198,6 +198,37 @@ export class StatusBadge extends HTMLElement {
                 background-color: #f8fafc;
                 border-color: #cbd5e1;
                 color: #475569;
+            }
+
+            /* Type variants (dark) — inverted palette for readability on dark surfaces */
+            [data-theme="dark"] .status-badge-success {
+                background-color: #052e16;
+                border-color: #166534;
+                color: #bbf7d0;
+            }
+
+            [data-theme="dark"] .status-badge-error {
+                background-color: #450a0a;
+                border-color: #991b1b;
+                color: #fecaca;
+            }
+
+            [data-theme="dark"] .status-badge-warning {
+                background-color: #451a03;
+                border-color: #92400e;
+                color: #fde68a;
+            }
+
+            [data-theme="dark"] .status-badge-info {
+                background-color: #172554;
+                border-color: #1e40af;
+                color: #bfdbfe;
+            }
+
+            [data-theme="dark"] .status-badge-loading {
+                background-color: #1e293b;
+                border-color: #475569;
+                color: #cbd5e1;
             }
 
             /* Loading spinner animation */
