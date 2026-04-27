@@ -21,12 +21,14 @@
     "test:functions": "firebase emulators:exec --only auth,firestore,functions 'npm --prefix functions test'",
     "test:unit": "vitest run --config vitest.unit.config.ts",
     "test": "npm run test:unit && npm run test:rules && npm run test:functions",
+    "optimize:logo": "svgo src/assets/images/branding/logo.source.svg -o src/assets/images/branding/logo.svg",
     "bootstrap:owner": "tsx scripts/bootstrap-owner.ts"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",
     "@types/node": "^20.14.0",
     "firebase-admin": "^12.7.0",
+    "svgo": "^4.0.1",
     "terser": "^5.44.1",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3",
