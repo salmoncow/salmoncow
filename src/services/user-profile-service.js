@@ -127,7 +127,14 @@ export class UserProfileService {
             return failure('Preferences object is required', 'INVALID_PREFERENCES');
         }
 
-        const result = await this.repository.update(uid, { preferences });
+        // Flatten to Firestore dotted-path keys so each named sub-field merges
+        // into the existing `preferences` map. Passing `{ preferences }` would
+        // replace the whole map and silently drop sibling fields (issue #42).
+        const updates = Object.fromEntries(
+            Object.entries(preferences).map(([key, value]) => [`preferences.${key}`, value]),
+        );
+
+        const result = await this.repository.update(uid, updates);
 
         if (result.success) {
             // Update cache
