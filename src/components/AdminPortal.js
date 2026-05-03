@@ -56,6 +56,7 @@ export class AdminPortal extends HTMLElement {
         this.error = null;
         this.hasMore = false;
         this.loadingMore = false;
+        this.query = '';
     }
 
     connectedCallback() {
@@ -115,22 +116,10 @@ export class AdminPortal extends HTMLElement {
     }
 
     render() {
-        if (this.loading) {
-            this.innerHTML = this.renderShell(this.renderLoading());
-            return;
-        }
-        if (this.error) {
-            this.innerHTML = this.renderShell(this.renderError());
-            return;
-        }
-        if (this.users.length === 0) {
-            this.innerHTML = this.renderShell(this.renderEmpty());
-            return;
-        }
-        this.innerHTML = this.renderShell(this.renderTable());
+        this.innerHTML = this.renderShell();
     }
 
-    renderShell(inner) {
+    renderShell() {
         return `
 <section class="admin-portal">
   <header class="admin-portal__header">
@@ -141,8 +130,37 @@ export class AdminPortal extends HTMLElement {
             : 'View users (role changes require owner privileges)'}
     </p>
   </header>
-  ${inner}
+  ${this.renderSearchBar()}
+  <div class="admin-portal__results">${this.renderInner()}</div>
 </section>`;
+    }
+
+    renderInner() {
+        if (this.loading) return this.renderLoading();
+        if (this.error) return this.renderError();
+        if (this.users.length === 0) return this.renderEmpty();
+        return this.renderTable();
+    }
+
+    renderSearchBar() {
+        if (this.loading || this.error || this.users.length === 0) return '';
+        return `
+<div class="admin-portal__search-bar">
+  <input type="search" class="admin-portal__search"
+    placeholder="Search by name or email"
+    aria-label="Search users by name or email"
+    value="${escapeHtml(this.query)}" />
+</div>`;
+    }
+
+    filteredUsers() {
+        const q = this.query.trim().toLowerCase();
+        if (!q) return this.users;
+        return this.users.filter((u) => {
+            const name = (u.displayName || '').toLowerCase();
+            const email = (u.email || '').toLowerCase();
+            return name.includes(q) || email.includes(q);
+        });
     }
 
     renderLoading() {
@@ -162,13 +180,21 @@ export class AdminPortal extends HTMLElement {
     }
 
     renderTable() {
-        const rows = this.users.map((u) => this.renderRow(u)).join('');
+        const filtered = this.filteredUsers();
         const footer = this.hasMore
             ? `<button type="button" class="admin-portal__load-more"
                  data-action="load-more" ${this.loadingMore ? 'disabled' : ''}>
                  ${this.loadingMore ? 'Loading…' : 'Load more'}
                </button>`
             : '';
+        if (filtered.length === 0) {
+            return `
+<div class="admin-portal__status">
+  <p>No users match "${escapeHtml(this.query.trim())}".</p>
+</div>
+${footer}`;
+        }
+        const rows = filtered.map((u) => this.renderRow(u)).join('');
         return `
 <div class="admin-portal__table-wrap">
   <table class="admin-portal__table">
@@ -197,10 +223,10 @@ ${footer}`;
     <user-avatar photo="${photo}" alt="${displayName}'s avatar" size="small"></user-avatar>
     <span class="admin-portal__display-name">${displayName}</span>
   </td>
-  <td>${email}</td>
-  <td>${formatDate(u.createdAt)}</td>
-  <td>${formatDate(u.lastSignInAt)}</td>
-  <td>${this.renderRoleCell(u)}</td>
+  <td data-label="Email">${email}</td>
+  <td data-label="Joined">${formatDate(u.createdAt)}</td>
+  <td data-label="Last sign-in">${formatDate(u.lastSignInAt)}</td>
+  <td data-label="Role">${this.renderRoleCell(u)}</td>
 </tr>`;
     }
 
@@ -249,6 +275,13 @@ ${footer}`;
                 }),
             );
         });
+
+        this.addEventListener('input', (e) => {
+            if (!e.target?.classList?.contains('admin-portal__search')) return;
+            this.query = e.target.value;
+            const container = this.querySelector('.admin-portal__results');
+            if (container) container.innerHTML = this.renderInner();
+        });
     }
 
     addStyles() {
@@ -277,11 +310,57 @@ ${footer}`;
 .admin-portal__role-select { padding: .35rem .5rem; border-radius: 4px; border: 1px solid var(--surface-border); background: var(--surface-elevated); color: var(--text-primary); }
 .admin-portal__load-more { margin-top: 1rem; padding: .5rem 1rem; cursor: pointer; border: 1px solid var(--surface-border); background: var(--surface-elevated); color: var(--text-primary); border-radius: 4px; }
 .admin-portal__load-more:disabled { opacity: .6; cursor: wait; }
+.admin-portal__search-bar { margin-bottom: 1rem; }
+.admin-portal__search { width: 100%; max-width: 400px; padding: .5rem .75rem; border: 1px solid var(--surface-border); border-radius: 6px; background: var(--surface-elevated); color: var(--text-primary); font-size: 1rem; box-sizing: border-box; }
+.admin-portal__search:focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
 /* Role badges — dark palette overrides */
 [data-theme="dark"] .admin-portal__role-badge--owner { background: #422006; color: #fde68a; }
 [data-theme="dark"] .admin-portal__role-badge--admin { background: #172554; color: #bfdbfe; }
 [data-theme="dark"] .admin-portal__role-badge--user  { background: #1f2937; color: #d1d5db; }
+
+@media (max-width: 640px) {
+  .admin-portal { padding: 1rem .75rem; }
+  .admin-portal__table-wrap { border: none; background: transparent; overflow-x: visible; }
+  .admin-portal__table,
+  .admin-portal__table tbody,
+  .admin-portal__table tr,
+  .admin-portal__table td { display: block; width: 100%; }
+  .admin-portal__table thead { position: absolute; left: -9999px; }
+  .admin-portal__table tr {
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    background: var(--surface-elevated);
+    margin-bottom: .75rem;
+    padding: .75rem 1rem;
+  }
+  .admin-portal__table td {
+    border-bottom: none;
+    padding: .35rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+  }
+  .admin-portal__table td::before {
+    content: attr(data-label);
+    color: var(--text-secondary);
+    font-size: .8125rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .admin-portal__table td.admin-portal__user-cell {
+    justify-content: flex-start;
+    padding-bottom: .5rem;
+    margin-bottom: .25rem;
+    border-bottom: 1px solid var(--surface-border);
+  }
+  .admin-portal__table td.admin-portal__user-cell::before { content: none; }
+  .admin-portal__display-name { font-weight: 600; font-size: 1rem; }
+  .admin-portal__role-select { min-height: 40px; padding: .5rem .75rem; font-size: 1rem; }
+  .admin-portal__load-more { width: 100%; min-height: 44px; }
+  .admin-portal__search { max-width: none; min-height: 40px; }
+}
 `;
         document.head.appendChild(style);
     }
