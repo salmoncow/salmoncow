@@ -197,10 +197,10 @@ ${footer}`;
     <user-avatar photo="${photo}" alt="${displayName}'s avatar" size="small"></user-avatar>
     <span class="admin-portal__display-name">${displayName}</span>
   </td>
-  <td>${email}</td>
-  <td>${formatDate(u.createdAt)}</td>
-  <td>${formatDate(u.lastSignInAt)}</td>
-  <td>${this.renderRoleCell(u)}</td>
+  <td data-label="Email">${email}</td>
+  <td data-label="Joined">${formatDate(u.createdAt)}</td>
+  <td data-label="Last sign-in">${formatDate(u.lastSignInAt)}</td>
+  <td data-label="Role">${this.renderRoleCell(u)}</td>
 </tr>`;
     }
 
@@ -282,6 +282,48 @@ ${footer}`;
 [data-theme="dark"] .admin-portal__role-badge--owner { background: #422006; color: #fde68a; }
 [data-theme="dark"] .admin-portal__role-badge--admin { background: #172554; color: #bfdbfe; }
 [data-theme="dark"] .admin-portal__role-badge--user  { background: #1f2937; color: #d1d5db; }
+
+@media (max-width: 640px) {
+  .admin-portal { padding: 1rem .75rem; }
+  .admin-portal__table-wrap { border: none; background: transparent; overflow-x: visible; }
+  .admin-portal__table,
+  .admin-portal__table tbody,
+  .admin-portal__table tr,
+  .admin-portal__table td { display: block; width: 100%; }
+  .admin-portal__table thead { position: absolute; left: -9999px; }
+  .admin-portal__table tr {
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    background: var(--surface-elevated);
+    margin-bottom: .75rem;
+    padding: .75rem 1rem;
+  }
+  .admin-portal__table td {
+    border-bottom: none;
+    padding: .35rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+  }
+  .admin-portal__table td::before {
+    content: attr(data-label);
+    color: var(--text-secondary);
+    font-size: .8125rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .admin-portal__table td.admin-portal__user-cell {
+    justify-content: flex-start;
+    padding-bottom: .5rem;
+    margin-bottom: .25rem;
+    border-bottom: 1px solid var(--surface-border);
+  }
+  .admin-portal__table td.admin-portal__user-cell::before { content: none; }
+  .admin-portal__display-name { font-weight: 600; font-size: 1rem; }
+  .admin-portal__role-select { min-height: 40px; padding: .5rem .75rem; font-size: 1rem; }
+  .admin-portal__load-more { width: 100%; min-height: 44px; }
+}
 `;
         document.head.appendChild(style);
     }
