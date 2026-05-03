@@ -4,7 +4,7 @@
  * Constructs repository instances wired to Firestore. The localStorage
  * implementation was retired when the project adopted Firestore as the
  * source of truth for the users collection — see
- * .specs/archive/001-multi-user-rbac/spec.md §X.1, §X.2.
+ * .specs/archive/001-multi-user-rbac/spec.md §XI.1, §XI.2.
  *
  * Local dev uses the Firestore emulator (wired automatically by
  * src/infrastructure/firestore.js). Developer setup: run `npm run dev`

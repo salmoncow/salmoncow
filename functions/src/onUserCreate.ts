@@ -12,7 +12,7 @@ import { auth, db } from './lib/admin.js';
  * Idempotent: if a users/{uid} doc already exists (rare re-create edge case),
  * the write is a merge that won't stomp an existing role.
  *
- * Spec §VI, §X.4; AC-1.
+ * Spec §VII, §XI.4; AC-1.
  */
 export const onUserCreate = functionsV1.auth.user().onCreate(async (user) => {
     const { uid, email, displayName, photoURL } = user;

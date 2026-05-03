@@ -17,7 +17,7 @@
  *   - role-change: { detail: { targetUid, toRole } }
  *   - page-request: fired when "Load more" is clicked
  *
- * Spec §X.3 (UI), AC-3, AC-4, AC-15
+ * Spec §XI.3 (UI), AC-3, AC-4, AC-15
  */
 
 const ROLE_LABEL = Object.freeze({

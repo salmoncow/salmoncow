@@ -8,7 +8,7 @@
  *   under FUNCTIONS_EMULATOR (see functions/src/setUserRole.ts).
  * - In prod: initializes reCAPTCHA Enterprise using the site key from env.
  *
- * Spec §VI, §X.4 (App Check enforcement on setUserRole)
+ * Spec §VII, §XI.4 (App Check enforcement on setUserRole)
  */
 import {
     initializeAppCheck,

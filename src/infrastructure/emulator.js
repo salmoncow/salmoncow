@@ -6,7 +6,7 @@
  * Firebase project. Detection is purely env-based, no runtime hostname
  * sniffing, so the behavior is predictable in CI and tests.
  *
- * Spec §X.1, §X.4
+ * Spec §XI.1, §XI.4
  */
 
 const isDev = import.meta.env.DEV === true;
