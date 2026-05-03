@@ -13,7 +13,7 @@
  * onUserCreate fires, or a token that never got a claim). Matches Firestore
  * rules, which treat missing role as least-privilege.
  *
- * Spec §X.1 (application layer), AC-2, AC-9
+ * Spec §XI.1 (application layer), AC-2, AC-9
  */
 import {
     doc,

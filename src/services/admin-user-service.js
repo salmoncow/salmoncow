@@ -10,7 +10,7 @@
  * 2. Translate callable HttpsError codes into the Result shape the rest of
  *    the client uses, so the UI can render friendly messages.
  *
- * Spec §X.3, §X.4; AC-3, AC-15
+ * Spec §XI.3, §XI.4; AC-3, AC-15
  */
 
 import { callable } from '../infrastructure/functions.js';

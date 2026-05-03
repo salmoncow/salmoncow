@@ -9,7 +9,7 @@
  * field out of incoming update payloads as defense in depth so failures
  * happen before the network round-trip.
  *
- * Spec §VI (security), §X.2 (data layer), §X.4
+ * Spec §VII (security), §XI.2 (data layer), §XI.4
  */
 import {
     collection,

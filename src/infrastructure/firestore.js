@@ -5,7 +5,7 @@
  * the raw `db` for repositories + an `onSnapshotDoc` helper that returns
  * an unsubscribe function (for predictable cleanup).
  *
- * Spec §X.1 (infrastructure layer)
+ * Spec §XI.1 (infrastructure layer)
  */
 import {
     connectFirestoreEmulator,

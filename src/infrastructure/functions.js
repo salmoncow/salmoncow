@@ -5,7 +5,7 @@
  * `callable(name)` helper returns a pre-configured httpsCallable function
  * tied to the default region (us-central1 unless overridden in firebase.json).
  *
- * Spec §X.1, §X.4 (callable entry)
+ * Spec §XI.1, §XI.4 (callable entry)
  */
 import {
     connectFunctionsEmulator,

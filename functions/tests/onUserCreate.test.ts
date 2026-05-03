@@ -4,7 +4,7 @@ import { auth, db } from '../src/lib/admin.js';
 import { clearFirestore, ensureAuthUser, ft, nextUid } from './helpers.js';
 
 // Acceptance criteria: AC-1, AC-12
-// Spec §X.4 (trigger shape)
+// Spec §XI.4 (trigger shape)
 
 const wrapped = ft.wrap(onUserCreate);
 

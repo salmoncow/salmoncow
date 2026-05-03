@@ -7,7 +7,7 @@ import { auth, db } from '../src/lib/admin.js';
 import { clearFirestore, ensureAuthUser, ft, nextUid } from './helpers.js';
 
 // Acceptance criteria: AC-5, AC-6, AC-7, AC-8, AC-12
-// Spec §VI (security), §X.4 (callable shape)
+// Spec §VII (security), §XI.4 (callable shape)
 
 const wrapped = ft.wrap(setUserRole);
 

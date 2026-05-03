@@ -9,7 +9,7 @@
  *   - Role-observable subscription so the component re-renders when the
  *     current user's own role changes (e.g. owner gets demoted)
  *
- * Spec §X.3, §X.7 Group 7; AC-3, AC-4, AC-9, AC-15
+ * Spec §XI.3, §XI.7 Group 7; AC-3, AC-4, AC-9, AC-15
  */
 
 export class AdminPortalModule {

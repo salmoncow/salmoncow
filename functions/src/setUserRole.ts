@@ -1,8 +1,8 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { auth, db, type Role } from './lib/admin.js';
-import { assertNotLastOwnerDemotion } from './lib/lastOwnerGuard.js';
-import { checkAndIncrementRateLimit } from './lib/rateLimit.js';
+import { assertNotLastOwner } from './lib/lastOwnerGuard.js';
+import { checkAndBumpInTransaction } from './lib/rateLimit.js';
 import { setUserRoleInput } from './lib/validate.js';
 
 // Production posture: App Check enforced.
@@ -16,21 +16,43 @@ if (process.env.FUNCTIONS_EMULATOR) {
 }
 
 /**
- * setUserRole — owner-only callable that changes a user's role claim + mirror.
+ * setUserRole — owner-only callable that writes a user's role.
  *
- * Defense in depth (spec §VI, §X.4):
- *   1. App Check enforced at the transport layer
- *   2. Auth entry check: context.auth.token.role === 'owner'
- *   3. Zod input validation
- *   4. Rate limit (20 calls / hour / actor)
- *   5. Last-owner guard (no self-lockout)
- *   6. Atomic Firestore TX for doc update + audit entry
+ * Defense in depth (in order):
+ *   1. App Check enforced in production (relaxed under FUNCTIONS_EMULATOR
+ *      so the emulator E2E walkthrough works).
+ *   2. Caller must be authenticated AND have role:'owner' in their
+ *      Firebase ID-token claim.
+ *   3. zod-validated inputs ({ targetUid, role }).
+ *   4. Inside a single Firestore transaction:
+ *      - Target user doc exists.
+ *      - Last-owner guard: cannot demote the only `owner`.
+ *      - Rate limit: ≤20 calls/hour/actor (fixed-window). Counter
+ *        write is queued in this same TX so a failed commit doesn't
+ *        bump the count.
+ *      - **setCustomUserClaims (Auth API)** — called BEFORE the queued
+ *        Firestore writes. The claim is the security boundary that
+ *        Firestore rules read; ordering it ahead of the mirror+audit
+ *        commit gives fail-closed-on-revocation semantics if the TX
+ *        commit later fails. See spec.md §VI Design Decisions for the
+ *        full failure-mode table and rationale.
+ *      - Queued writes: update users/{targetUid} (role + roleChangedAt
+ *        + updatedAt), create audit/{auto}, bump rateLimits counter.
+ *   5. TX commits → all four Firestore writes apply atomically.
+ *
+ * Failure modes (HttpsError codes):
+ *   - permission-denied: caller missing or not owner
+ *   - invalid-argument: bad input
+ *   - not-found: target user doc doesn't exist
+ *   - failed-precondition: would demote last owner
+ *   - resource-exhausted: rate limit hit
+ *
+ * TX retry note: Firestore retries the TX function on contention.
+ * setCustomUserClaims is therefore called once per attempt with the
+ * same payload — idempotent, no security impact, marginal extra Auth
+ * API cost only on contention.
  *
  * Client contract (AC-5, AC-6, AC-7, AC-8):
- *   - permission-denied if caller is not owner
- *   - invalid-argument for malformed input
- *   - resource-exhausted when rate-limited
- *   - failed-precondition when demoting the last owner
  *   - { ok: true, fromRole, toRole } on success
  */
 export const setUserRole = onCall(
@@ -53,40 +75,45 @@ export const setUserRole = onCall(
         }
         const { targetUid, role: toRole } = parsed.data;
 
-        // 3. Rate limit (charges the actor, not the target)
-        await checkAndIncrementRateLimit('setUserRole', callerAuth.uid);
+        const userRef = db.doc(`users/${targetUid}`);
 
-        // 4. Last-owner guard
-        await assertNotLastOwnerDemotion(targetUid, toRole);
+        // 3. Single TX: reads → checks → claim → queued writes.
+        const result = await db.runTransaction(async (tx) => {
+            // Reads first (Firestore TX rule: all reads before any writes).
+            const userSnap = await tx.get(userRef);
+            if (!userSnap.exists) {
+                throw new HttpsError('not-found', `users/${targetUid} not found`);
+            }
+            const fromRole = (userSnap.data()?.role as Role | undefined) ?? null;
 
-        // 5. Read current role for audit metadata
-        const targetSnap = await db.doc(`users/${targetUid}`).get();
-        const fromRole = (targetSnap.data()?.role as Role | undefined) ?? null;
+            await assertNotLastOwner(tx, db, fromRole, toRole);
+            await checkAndBumpInTransaction(tx, db, callerAuth.uid);
 
-        // 6. Set custom claim (propagates on next ID-token refresh)
-        await auth.setCustomUserClaims(targetUid, { role: toRole });
+            // Claim-first: see spec §VI.1 for the full failure-mode rationale.
+            //   - Throws here → queued writes never apply (TX returns
+            //     pre-commit). Safe.
+            //   - Succeeds here, commit fails later → claim is the
+            //     rules-engine source of truth and has already taken
+            //     effect. Fail-closed for revocation. Mirror+audit drift
+            //     is recoverable on retry.
+            await auth.setCustomUserClaims(targetUid, { role: toRole });
 
-        // 7. Atomic mirror update + audit entry
-        await db.runTransaction(async (tx) => {
-            tx.set(
-                db.doc(`users/${targetUid}`),
-                {
-                    role: toRole,
-                    roleChangedAt: FieldValue.serverTimestamp(),
-                    updatedAt: FieldValue.serverTimestamp(),
-                },
-                { merge: true },
-            );
-            const auditRef = db.collection('audit').doc();
-            tx.set(auditRef, {
+            tx.update(userRef, {
+                role: toRole,
+                roleChangedAt: FieldValue.serverTimestamp(),
+                updatedAt: FieldValue.serverTimestamp(),
+            });
+            tx.create(db.collection('audit').doc(), {
                 actorUid: callerAuth.uid,
                 targetUid,
                 fromRole,
                 toRole,
                 at: FieldValue.serverTimestamp(),
             });
+
+            return { fromRole, toRole };
         });
 
-        return { ok: true, fromRole, toRole };
+        return { ok: true, ...result };
     },
 );
