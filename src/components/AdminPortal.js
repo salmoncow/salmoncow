@@ -20,6 +20,8 @@
  * Spec §XI.3 (UI), AC-3, AC-4, AC-15
  */
 
+import { escapeHtml } from '../utils/escape-html.js';
+
 const ROLE_LABEL = Object.freeze({
     owner: 'Owner',
     admin: 'Admin',
@@ -35,16 +37,6 @@ function formatDate(value) {
         month: 'short',
         day: 'numeric',
     });
-}
-
-function escapeHtml(s) {
-    if (s == null) return '';
-    return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
 }
 
 export class AdminPortal extends HTMLElement {

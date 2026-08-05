@@ -16,6 +16,8 @@
  *   evolution strategy (Phase 1: Vanilla Web Components).
  *   See: .prompts/meta/architectural-evolution-strategy.md
  */
+import { escapeHtml } from '../utils/escape-html.js';
+
 export class LoadingSpinner extends HTMLElement {
     static get observedAttributes() {
         return ['message', 'size'];
@@ -75,7 +77,7 @@ export class LoadingSpinner extends HTMLElement {
                     />
                 </svg>
                 <div class="loading-spinner-message" style="font-size: ${dimensions.fontSize}">
-                    ${message}
+                    ${escapeHtml(message)}
                 </div>
             </div>
         `;
