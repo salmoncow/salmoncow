@@ -25,6 +25,8 @@
  *   Part of Phase 1 Web Components architecture.
  *   Can replace UIModule.showStatus() for better reusability.
  */
+import { escapeHtml } from '../utils/escape-html.js';
+
 export class StatusBadge extends HTMLElement {
     static get observedAttributes() {
         return ['type', 'message', 'dismissible'];
@@ -49,7 +51,7 @@ export class StatusBadge extends HTMLElement {
         this.innerHTML = `
             <div class="status-badge ${typeClass}" role="alert">
                 <div class="status-badge-icon">${icon}</div>
-                <div class="status-badge-message">${message}</div>
+                <div class="status-badge-message">${escapeHtml(message)}</div>
                 ${dismissible ? '<button class="status-badge-close" aria-label="Dismiss">&times;</button>' : ''}
             </div>
         `;

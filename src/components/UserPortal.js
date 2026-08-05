@@ -20,6 +20,8 @@
  * Architecture Reference:
  * - .prompts/core/architecture/code-structure.md (Web Components)
  */
+import { escapeHtml } from '../utils/escape-html.js';
+
 export class UserPortal extends HTMLElement {
     constructor() {
         super();
@@ -113,7 +115,7 @@ export class UserPortal extends HTMLElement {
                         <line x1="12" y1="8" x2="12" y2="12"></line>
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
-                    <p class="portal-error-text">${this.escapeHtml(this.error)}</p>
+                    <p class="portal-error-text">${escapeHtml(this.error)}</p>
                 </div>
             </div>
         `;
@@ -129,13 +131,13 @@ export class UserPortal extends HTMLElement {
             <div class="user-portal">
                 <div class="portal-header">
                     <user-avatar
-                        photo="${photoURL || ''}"
-                        alt="${this.escapeHtml(displayName)}'s avatar"
+                        photo="${escapeHtml(photoURL || '')}"
+                        alt="${escapeHtml(displayName)}'s avatar"
                         size="xlarge"
                     ></user-avatar>
                     <div class="portal-user-info">
-                        <h2 class="portal-name">${this.escapeHtml(displayName)}</h2>
-                        <p class="portal-email">${this.escapeHtml(email)}</p>
+                        <h2 class="portal-name">${escapeHtml(displayName)}</h2>
+                        <p class="portal-email">${escapeHtml(email)}</p>
                         <p class="portal-member-since">Member since ${memberSince}</p>
                     </div>
                 </div>
@@ -216,18 +218,6 @@ export class UserPortal extends HTMLElement {
             year: 'numeric',
             month: 'long'
         });
-    }
-
-    /**
-     * Escape HTML to prevent XSS
-     * @param {string} str
-     * @returns {string}
-     */
-    escapeHtml(str) {
-        if (!str) return '';
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
     }
 
     addStyles() {

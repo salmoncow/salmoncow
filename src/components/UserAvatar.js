@@ -22,6 +22,7 @@
 // output. A string-literal path would be caught by the SPA rewrite and
 // served as index.html, breaking the fallback.
 import defaultAvatarUrl from '../assets/images/placeholders/default-avatar.svg';
+import { safeImageUrl } from '../utils/escape-html.js';
 
 export class UserAvatar extends HTMLElement {
     static get observedAttributes() {
@@ -42,9 +43,14 @@ export class UserAvatar extends HTMLElement {
     }
 
     render() {
-        const photo = this.getAttribute('photo') || this.getDefaultAvatar();
+        // Built with DOM APIs rather than an innerHTML template on purpose.
+        // Callers escape these values before setting them as attributes, but
+        // the parser decodes entities on the way in — so getAttribute() hands
+        // back the raw string. Re-interpolating it into innerHTML would undo
+        // the caller's escaping and turn a stored profile field into markup.
         const alt = this.getAttribute('alt') || 'User Avatar';
         const size = this.getAttribute('size') || 'medium';
+        const photo = safeImageUrl(this.getAttribute('photo')) || this.getDefaultAvatar();
 
         // Size variants (matches design system)
         const sizeMap = {
@@ -56,30 +62,28 @@ export class UserAvatar extends HTMLElement {
 
         const dimension = sizeMap[size] || sizeMap.medium;
 
+        const img = document.createElement('img');
+        img.className = 'user-avatar';
+        img.src = photo;
+        img.alt = alt;
+        img.width = Number(dimension);
+        img.height = Number(dimension);
+        img.dataset.size = size;
         // referrerpolicy=no-referrer helps Google's profile-photo CDN serve
         // a cacheable response; sending a Referer header can trigger stricter
         // caching behavior and intermittent failures.
-        this.innerHTML = `
-            <img
-                class="user-avatar"
-                src="${photo}"
-                alt="${alt}"
-                width="${dimension}"
-                height="${dimension}"
-                data-size="${size}"
-                referrerpolicy="no-referrer"
-                loading="eager"
-                decoding="async"
-            />
-        `;
+        img.referrerPolicy = 'no-referrer';
+        img.loading = 'eager';
+        img.decoding = 'async';
 
         // Add error handler for fallback
-        const img = this.querySelector('img');
         img.addEventListener('error', () => {
             if (img.src !== this.getDefaultAvatar()) {
                 img.src = this.getDefaultAvatar();
             }
         });
+
+        this.replaceChildren(img);
 
         this.addStyles();
     }
