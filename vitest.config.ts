@@ -8,5 +8,14 @@ export default defineConfig({
         testTimeout: 15_000, // emulator round-trips can be slow on cold start
         hookTimeout: 30_000,
         pool: 'forks',       // rules-unit-testing spawns its own fetch; isolate per-file
+        poolOptions: {
+            forks: {
+                // Force serial execution. Every rules file shares one emulator
+                // and calls env.clearFirestore() in beforeEach, which wipes the
+                // whole database — so a parallel file can delete another file's
+                // seeded docs mid-test. Mirrors functions/vitest.config.ts.
+                singleFork: true,
+            },
+        },
     },
 });
