@@ -43,10 +43,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Gate. Firestore rules have no console rollback, so shipping them on a red
+  # suite is the most expensive mistake this repo can make — the 41 rules tests
+  # exist precisely to catch it. Applies to workflow_dispatch too: if the suite
+  # is broken during an incident, revert on main (which re-enters this gated
+  # path on a known-good commit) rather than deploying around the tests.
+  test:
+    name: Test
+    uses: ./.github/workflows/test-suite.yml
+
   deploy:
     name: Deploy Firestore + Functions
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: test
 
     env:
       FIREBASE_CLI_VERSION: '15.15.0'

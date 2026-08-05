@@ -14,11 +14,26 @@ permissions:
   checks: write
   contents: read
 
+# Two pushes landing close together would otherwise race to publish to the
+# live channel, and the later-finishing build wins regardless of commit order.
+# Queue instead of cancelling: a superseded deploy is still a deploy someone
+# may be watching, and hosting releases are cheap.
+concurrency:
+  group: deploy-production-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  # Gate. The deploy job below will not start unless this succeeds, so a red
+  # suite blocks the release instead of racing alongside it.
+  test:
+    name: Test
+    uses: ./.github/workflows/test-suite.yml
+
   deploy:
     name: Deploy to Firebase Hosting
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: test
 
     steps:
       - name: Checkout code
