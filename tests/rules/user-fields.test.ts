@@ -162,3 +162,45 @@ describe('users/{uid} legitimate client payloads still succeed', () => {
         await assertSucceeds(selfDoc().update({ 'preferences.theme': 'light' }));
     });
 });
+
+describe('users/{uid} real production document shapes', () => {
+    /**
+     * These mirror the field sets actually present in the production `users`
+     * collection, checked before this rules change shipped. Both carry
+     * server-owned fields the client never touches — the trigger-seeded
+     * `lastSignInAt`, and `roleChangedAt` written by setUserRole. The update
+     * rule uses diff().affectedKeys(), so those may sit on the document
+     * without being re-listed in the writable allowlist; if that ever changes
+     * to a whole-document hasOnly(), these two cases fail loudly instead of
+     * locking real users out of their own profiles.
+     */
+
+    it('allows a preference update on a trigger-seeded profile (lastSignInAt present)', async () => {
+        await seedUser(env, USER_UID, 'user', { lastSignInAt: null });
+        await assertSucceeds(
+            selfDoc().update({ 'preferences.theme': 'dark', updatedAt: new Date() }),
+        );
+    });
+
+    it('allows a preference update on a promoted profile (roleChangedAt present)', async () => {
+        await seedUser(env, USER_UID, 'user', { roleChangedAt: new Date() });
+        await assertSucceeds(
+            selfDoc().update({ 'preferences.emailNotifications': true, updatedAt: new Date() }),
+        );
+    });
+
+    it('still refuses to let that profile alter its own server-owned fields', async () => {
+        await seedUser(env, USER_UID, 'user', { roleChangedAt: new Date(), lastSignInAt: null });
+        await assertFails(selfDoc().update({ roleChangedAt: new Date() }));
+    });
+
+    it('accepts a real Google profile photo URL', async () => {
+        await seedUser(env, USER_UID, 'user');
+        await assertSucceeds(
+            selfDoc().update({
+                photoURL:
+                    'https://lh3.googleusercontent.com/a/ACg8ocIr1yjFfB0Qjbs-ZTezrfg-7VjX8xFQPgEpE8b0avIw5-24qC7U=s96-c',
+            }),
+        );
+    });
+});
