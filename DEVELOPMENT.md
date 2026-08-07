@@ -92,6 +92,76 @@ firebase use salmoncow
 - Security headers (XSS protection, clickjacking prevention)
 - SPA routing (all routes serve `index.html`)
 
+## Rollback
+
+Deploys to `main` are gated on the test suite (see
+[.github/workflows/test-suite.yml](.github/workflows/test-suite.yml)), so a red
+suite blocks a release. That does not help once something bad is already live.
+The three surfaces roll back very differently, and only one of them is easy.
+
+### Hosting — easy, one click
+
+Firebase Console → Hosting → release history → **Rollback** on the previous
+release. Takes about a minute and needs no repo change. Do this first for
+anything visual or client-side; it buys time to fix forward calmly.
+
+### Firestore rules — no one-click rollback
+
+**This is the sharpest edge in the project.** The console shows previous
+rulesets, but there is no restore button — recovering means deploying the old
+rules again. A bad ruleset is live until you do.
+
+```bash
+git revert --no-edit <bad-commit>
+git push origin main    # blocked on a direct push; open a PR (see below)
+```
+
+`main` is protected by a ruleset requiring a PR, so a revert goes through the
+normal PR flow. Merging re-enters the gated path: `deploy-backend.yml` is
+path-filtered on `firestore.rules`, so the revert triggers a redeploy
+automatically once tests pass.
+
+Before merging a rules revert, check whether the rules are *too permissive*
+(leaking data) or *too strict* (locking users out). Too-permissive is an
+incident — take the fastest correct path. Too-strict is visible but contained;
+tests plus a preview verification are worth the extra few minutes.
+
+### Cloud Functions — revert and redeploy
+
+Same shape as rules: no console rollback. Revert the commit touching
+`functions/**` and let `deploy-backend.yml` redeploy. Note that
+`setUserRole` writes custom claims *before* mirroring to Firestore
+(deliberately — it fails closed on revocation), so a mid-flight failure can
+leave a claim set with no matching `users/{uid}.role`. Check the `audit`
+collection to see which role changes actually committed.
+
+### Escape hatch when CI itself is broken
+
+The deploy workflows are gated on tests, and `workflow_dispatch` on
+`deploy-backend.yml` is gated too — deliberately, so nobody routinely deploys
+around the suite. If the suite is broken *and* you have a live incident, deploy
+from a clean checkout of a known-good commit:
+
+```bash
+git checkout <known-good-sha>
+npm ci && npm ci --prefix functions && npm run build --prefix functions
+firebase deploy --only firestore:rules --project salmoncow
+```
+
+Prefer reverting on `main` over this — it keeps the deployed state and the repo
+in agreement. A local deploy makes production diverge from `main`, which is its
+own problem to clean up.
+
+### After any rollback
+
+1. Confirm the live behaviour is actually restored (not just that the deploy
+   went green).
+2. For rules, verify a real user write path still works — signing in and
+   changing a theme preference exercises read, write, and the rules validators
+   in one go.
+3. Re-run `npm test` locally against the reverted tree so the regression is
+   captured before fixing forward.
+
 ## Project Structure
 
 ```
