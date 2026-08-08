@@ -107,12 +107,42 @@ reports per page session, so a component throwing every frame cannot flood.
 Reports carry message, stack, source, route, timestamp, and explicit context
 only — no email, displayName, or photoURL (constitution §III.2).
 
-**Today the only sink is the console.** That is a real improvement over
-scattered `console.error` calls — errors are now catchable in one place and the
-user sees a degraded state instead of a dead page — but it is not remote
-collection. Adding a remote sink is a one-file change: call `addSink(fn)` with
-a function that ships the report wherever you want. Until that exists, a
-production error is still only visible to the user who hit it.
+There are two sinks: the console (always), and a remote sink that ships reports
+to the `logClientError` callable, which writes them to **Cloud Logging**.
+
+#### Reading production errors
+
+Cloud Logging → Logs Explorer, on project `salmoncow`:
+
+```
+jsonPayload.clientError = true
+```
+
+Useful fields: `clientMessage`, `clientStack`, `source`, `route`,
+`clientSeverity`, `uid` (null unless the caller was signed in), and `context`.
+
+To alert on them, build a log-based alert on that same filter — Logging →
+Logs-based Metrics, then an alerting policy on the metric.
+
+> The structured payload deliberately avoids a `message` key.
+> `firebase-functions/logger` treats `message` as the entry's own log text and
+> overwrites it, which silently destroyed the client's message until it was
+> caught against the emulator. Use `clientMessage`.
+
+#### Coverage
+
+The remote sink attaches once App Check has initialized, so remote coverage
+begins from that point in the bootstrap sequence. Anything earlier is still
+surfaced locally by the console sink and by the degraded-state banner — which is
+why `renderBootstrapFailure()` is built to depend on nothing Firebase provides.
+
+Practical consequence for triage: a quiet period in Cloud Logging is not by
+itself proof that nothing failed. Read it alongside Hosting traffic and
+Performance data.
+
+The sink is off under the emulator by default, since local development produces
+plenty of deliberate errors. Set `VITE_REMOTE_ERRORS=true` to exercise the real
+path locally against the functions emulator.
 
 ### Performance Monitoring
 
