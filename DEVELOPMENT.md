@@ -107,18 +107,27 @@ gating on it.
 
 Nothing is emitted; Vite still owns the build.
 
-### Firebase types
+### Firebase modules
 
 Firebase is loaded from the gstatic CDN and marked external in
 `vite.config.js`, so TypeScript cannot resolve those `https://` specifiers.
-`src/types/firebase-cdn.d.ts` maps each CDN URL onto the matching entry point of
-the `firebase` package, installed as a **devDependency for types only**. Nothing
-about the shipped bundle changes.
+`src/types/firebase-cdn.d.ts` declares them so the imports resolve. The
+declarations are **untyped** — Firebase exports are `any`.
 
-A side benefit: the SDK version used to live only inside URL strings, invisible
-to `npm audit` and Dependabot. It is now a real dependency entry those tools can
-see. **The version in `firebase-cdn.d.ts` and in the `src/` import URLs must stay
-in step** — a mismatch surfaces as an unresolved module rather than silently.
+Real types would be better, and the reason they aren't here is worth knowing:
+`@firebase/rules-unit-testing@4.x` declares a peer dependency on
+`firebase@^11`, while the runtime is pinned to `10.13.2`. Installing
+`firebase@10.13.2` for its types makes `npm ci` fail with `ERESOLVE`. The test
+tooling and the runtime are a major version apart.
+
+That skew is the concrete argument for the SDK upgrade. Once the runtime moves
+to a version whose peers line up, replace each declaration body with
+`export * from 'firebase/<entry>'` and the app gains genuine Firebase types —
+which, while briefly in place during this work, already caught a miscast
+query-constraint array in `listPaginated`.
+
+**The version in `firebase-cdn.d.ts` must match the `src/` import URLs**; a
+mismatch resurfaces as an unresolved module rather than failing silently.
 
 ### Staged strictness
 

@@ -146,9 +146,10 @@ export class FirestoreUserProfileRepository extends UserProfileRepository {
         try {
             const coll = collection(this.db, USERS);
             // Annotated because the array would otherwise be inferred from its
-            // first element as QueryOrderByConstraint[], rejecting the
-            // startAfter and limit constraints pushed below.
-            /** @type {import('firebase/firestore').QueryConstraint[]} */
+            // first element and reject the startAfter and limit constraints
+            // pushed below. Becomes QueryConstraint[] once the CDN modules are
+            // typed — see src/types/firebase-cdn.d.ts.
+            /** @type {any[]} */
             const parts = [orderBy('createdAt', 'desc')];
             if (cursor instanceof Date) {
                 parts.push(startAfter(Timestamp.fromDate(cursor)));

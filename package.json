@@ -28,7 +28,6 @@
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",
     "@types/node": "^20.14.0",
-    "firebase": "10.13.2",
     "firebase-admin": "^12.7.0",
     "svgo": "^4.0.1",
     "terser": "^5.44.1",
