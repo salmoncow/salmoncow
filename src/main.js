@@ -197,12 +197,18 @@ class App {
             this.adminPortal?.show();
         });
 
+        // Returning false is the only cancellation mechanism here. These
+        // guards used to also call navigate('/'), which raced: navigate() sets
+        // the hash, then `return false` immediately replaceState'd the old
+        // route back over it, so the outcome depended on ordering. The router
+        // now handles both cases correctly on its own — a blocked cold
+        // deep-link lands on home, and a blocked in-app navigation restores
+        // the route the user was already on.
         this.router?.onBeforeNavigate((newPath) => {
             if (newPath === '/profile') {
                 // Allow if authenticated or hint suggests authentication
                 const hint = AuthHintModule.getHint();
                 if (!this.auth?.isAuthenticated() && !hint?.isAuthenticated) {
-                    this.router?.navigate('/');
                     return false;
                 }
             }
@@ -211,14 +217,12 @@ class App {
                 // setUserRole callable. This guard is UX only: keep unprivileged
                 // users from landing on a page that would render nothing.
                 if (!this.auth?.isAuthenticated()) {
-                    this.router?.navigate('/');
                     return false;
                 }
                 const role = this.role?.getRole();
                 // role === null means the token hasn't loaded yet; let the user
                 // through and re-evaluate when onRoleChange fires (see init()).
                 if (role !== null && role !== 'owner' && role !== 'admin') {
-                    this.router?.navigate('/');
                     return false;
                 }
             }
