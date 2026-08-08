@@ -32,7 +32,7 @@
  */
 export const DEFAULT_PREFERENCES = Object.freeze({
     theme: 'system',
-    emailNotifications: true
+    emailNotifications: true,
 });
 
 /**
@@ -56,7 +56,7 @@ export function createUserProfileFromAuth(authUser) {
         photoURL: authUser.photoURL || null,
         createdAt: now,
         updatedAt: now,
-        preferences: { ...DEFAULT_PREFERENCES }
+        preferences: { ...DEFAULT_PREFERENCES },
     };
 }
 
@@ -101,12 +101,10 @@ export function validateUserProfile(profile) {
 export function serializeUserProfile(profile) {
     return {
         ...profile,
-        createdAt: profile.createdAt instanceof Date
-            ? profile.createdAt.toISOString()
-            : profile.createdAt,
-        updatedAt: profile.updatedAt instanceof Date
-            ? profile.updatedAt.toISOString()
-            : profile.updatedAt
+        createdAt:
+            profile.createdAt instanceof Date ? profile.createdAt.toISOString() : profile.createdAt,
+        updatedAt:
+            profile.updatedAt instanceof Date ? profile.updatedAt.toISOString() : profile.updatedAt,
     };
 }
 
@@ -121,6 +119,6 @@ export function deserializeUserProfile(data) {
     return {
         ...data,
         createdAt: new Date(data.createdAt),
-        updatedAt: new Date(data.updatedAt)
+        updatedAt: new Date(data.updatedAt),
     };
 }

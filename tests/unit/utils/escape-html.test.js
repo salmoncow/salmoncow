@@ -36,8 +36,9 @@ describe('safeImageUrl', () => {
     });
 
     it('accepts same-origin relative paths (the bundled default avatar)', () => {
-        expect(safeImageUrl('/assets/images/default-avatar.svg'))
-            .toBe('http://localhost/assets/images/default-avatar.svg');
+        expect(safeImageUrl('/assets/images/default-avatar.svg')).toBe(
+            'http://localhost/assets/images/default-avatar.svg',
+        );
     });
 
     it.each([

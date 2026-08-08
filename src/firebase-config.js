@@ -9,7 +9,7 @@ export const firebaseConfig = {
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Development environment check
@@ -18,11 +18,20 @@ export const isProduction = import.meta.env.PROD;
 
 // Validation function to check if config is properly set
 export function validateFirebaseConfig() {
-    const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
-    const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
+    const requiredFields = [
+        'apiKey',
+        'authDomain',
+        'projectId',
+        'storageBucket',
+        'messagingSenderId',
+        'appId',
+    ];
+    const missingFields = requiredFields.filter((field) => !firebaseConfig[field]);
 
     if (missingFields.length > 0) {
-        throw new Error(`Firebase configuration incomplete. Missing values for: ${missingFields.join(', ')}`);
+        throw new Error(
+            `Firebase configuration incomplete. Missing values for: ${missingFields.join(', ')}`,
+        );
     }
 
     return true;

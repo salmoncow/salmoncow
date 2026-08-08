@@ -39,9 +39,7 @@ function selfDoc() {
 
 describe('users/{uid} field allowlist', () => {
     it('denies creating with a field outside the allowlist', async () => {
-        await assertFails(
-            selfDoc().set({ uid: USER_UID, email: 'u@example.com', isAdmin: true }),
-        );
+        await assertFails(selfDoc().set({ uid: USER_UID, email: 'u@example.com', isAdmin: true }));
     });
 
     it('denies adding an arbitrary field on update', async () => {

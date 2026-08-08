@@ -11,10 +11,7 @@ import { auth } from '../src/lib/admin.js';
 // clearFirestore calls another, silently leaking data across tests.
 
 // Read project ID from whatever emulators:exec set.
-export const PROJECT_ID =
-    process.env.GCLOUD_PROJECT ??
-    process.env.GCP_PROJECT ??
-    'salmoncow';
+export const PROJECT_ID = process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT ?? 'salmoncow';
 
 // firebase-functions-test harness (wrap for v2 callables + v1 auth triggers)
 export const ft = firebaseFunctionsTest({ projectId: PROJECT_ID });

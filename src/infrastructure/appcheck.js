@@ -30,7 +30,7 @@ export function initAppCheck(firebaseApp) {
     if (!siteKey) {
         console.warn(
             '[app-check] VITE_RECAPTCHA_ENTERPRISE_SITE_KEY is not set; ' +
-            'protected callables (setUserRole) will be rejected in production.',
+                'protected callables (setUserRole) will be rejected in production.',
         );
         return null;
     }

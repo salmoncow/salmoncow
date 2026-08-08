@@ -1,9 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-    initializeTestEnvironment,
-    type RulesTestEnvironment,
-} from '@firebase/rules-unit-testing';
+import { initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
 
 /**
  * Shared test environment and context helpers for Firestore rules tests.
@@ -59,24 +56,24 @@ export async function seedUser(
     extra: Record<string, unknown> = {},
 ): Promise<void> {
     await env.withSecurityRulesDisabled(async (ctx) => {
-        await ctx.firestore().doc(`users/${uid}`).set({
-            uid,
-            email: `${uid}@example.com`,
-            displayName: uid,
-            photoURL: null,
-            role,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            preferences: { theme: 'system', emailNotifications: false },
-            ...extra,
-        });
+        await ctx
+            .firestore()
+            .doc(`users/${uid}`)
+            .set({
+                uid,
+                email: `${uid}@example.com`,
+                displayName: uid,
+                photoURL: null,
+                role,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                preferences: { theme: 'system', emailNotifications: false },
+                ...extra,
+            });
     });
 }
 
-export async function seedContent(
-    env: RulesTestEnvironment,
-    id: string = 'post-1',
-): Promise<void> {
+export async function seedContent(env: RulesTestEnvironment, id: string = 'post-1'): Promise<void> {
     await env.withSecurityRulesDisabled(async (ctx) => {
         await ctx.firestore().doc(`content/${id}`).set({
             title: 'Seed',
@@ -88,10 +85,7 @@ export async function seedContent(
     });
 }
 
-export async function seedAudit(
-    env: RulesTestEnvironment,
-    id: string = 'audit-1',
-): Promise<void> {
+export async function seedAudit(env: RulesTestEnvironment, id: string = 'audit-1'): Promise<void> {
     await env.withSecurityRulesDisabled(async (ctx) => {
         await ctx.firestore().doc(`audit/${id}`).set({
             actorUid: OWNER_UID,
@@ -108,12 +102,9 @@ export async function seedRateLimit(
     actorUid: string = OWNER_UID,
 ): Promise<void> {
     await env.withSecurityRulesDisabled(async (ctx) => {
-        await ctx
-            .firestore()
-            .doc(`rateLimits/setUserRole/actors/${actorUid}`)
-            .set({
-                windowStart: new Date(),
-                count: 0,
-            });
+        await ctx.firestore().doc(`rateLimits/setUserRole/actors/${actorUid}`).set({
+            windowStart: new Date(),
+            count: 0,
+        });
     });
 }

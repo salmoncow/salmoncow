@@ -68,10 +68,7 @@ export const setUserRole = onCall(
         // 2. Input validation
         const parsed = setUserRoleInput.safeParse(data);
         if (!parsed.success) {
-            throw new HttpsError(
-                'invalid-argument',
-                `invalid input: ${parsed.error.message}`,
-            );
+            throw new HttpsError('invalid-argument', `invalid input: ${parsed.error.message}`);
         }
         const { targetUid, role: toRole } = parsed.data;
 

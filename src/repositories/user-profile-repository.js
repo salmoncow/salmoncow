@@ -27,7 +27,7 @@
 export function success(data) {
     return {
         success: true,
-        data
+        data,
     };
 }
 
@@ -41,7 +41,7 @@ export function failure(error, code = 'UNKNOWN_ERROR') {
     return {
         success: false,
         error,
-        code
+        code,
     };
 }
 

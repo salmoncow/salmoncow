@@ -40,7 +40,7 @@ const ERROR_MESSAGES = Object.freeze({
     'invalid-argument': 'Invalid role or user id.',
     'failed-precondition': 'Cannot demote the last owner. Promote another owner first.',
     'resource-exhausted': 'Rate limit reached (20 role changes/hour). Try again soon.',
-    'unauthenticated': 'App Check verification failed. Refresh and try again.',
+    unauthenticated: 'App Check verification failed. Refresh and try again.',
 });
 
 export class AdminUserService {

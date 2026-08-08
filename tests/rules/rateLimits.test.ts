@@ -1,23 +1,10 @@
-import {
-    afterAll,
-    beforeAll,
-    beforeEach,
-    describe,
-    it,
-} from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import {
     assertFails,
     assertSucceeds,
     type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import {
-    adminCtx,
-    anonCtx,
-    createTestEnv,
-    ownerCtx,
-    seedRateLimit,
-    userCtx,
-} from './helpers.js';
+import { adminCtx, anonCtx, createTestEnv, ownerCtx, seedRateLimit, userCtx } from './helpers.js';
 
 // Acceptance criteria: AC-11
 // Rate-limit counters: Cloud Function-only writes (Admin SDK); owner-readable

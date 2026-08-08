@@ -47,7 +47,7 @@ export const AuthHintModule = {
             const hint = {
                 isAuthenticated: true,
                 displayName: user.displayName || null,
-                photoURL: user.photoURL || null
+                photoURL: user.photoURL || null,
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(hint));
         } catch {
@@ -64,5 +64,5 @@ export const AuthHintModule = {
         } catch {
             // localStorage unavailable, fail silently
         }
-    }
+    },
 };

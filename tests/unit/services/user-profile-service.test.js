@@ -37,7 +37,9 @@ function makeFakeRepo(initialDoc = null) {
                 if (key.includes('.')) {
                     const [head, ...rest] = key.split('.');
                     if (rest.length !== 1) {
-                        throw new Error(`fake supports single-level dotted paths only, got "${key}"`);
+                        throw new Error(
+                            `fake supports single-level dotted paths only, got "${key}"`,
+                        );
                     }
                     doc[head] = { ...(doc[head] ?? {}), [rest[0]]: value };
                 } else {

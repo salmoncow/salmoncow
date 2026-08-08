@@ -17,9 +17,7 @@ vi.mock('../../../src/infrastructure/emulator.js', () => ({
     isEmulatorMode: () => false,
 }));
 
-const { createRemoteErrorSink } = await import(
-    '../../../src/infrastructure/remote-error-sink.js'
-);
+const { createRemoteErrorSink } = await import('../../../src/infrastructure/remote-error-sink.js');
 
 const baseReport = {
     message: 'boom',
@@ -87,9 +85,7 @@ describe('createRemoteErrorSink', () => {
         const send = vi.fn(() => Promise.resolve({}));
         callableMock.mockReturnValue(send);
 
-        const context = Object.fromEntries(
-            Array.from({ length: 50 }, (_, i) => [`k${i}`, 'v']),
-        );
+        const context = Object.fromEntries(Array.from({ length: 50 }, (_, i) => [`k${i}`, 'v']));
         createRemoteErrorSink({})({ ...baseReport, context });
 
         expect(Object.keys(send.mock.calls[0][0].context).length).toBeLessThanOrEqual(20);
@@ -128,7 +124,12 @@ describe('createRemoteErrorSink', () => {
 
     it('does not block: the sink returns before the send settles', () => {
         let settle;
-        callableMock.mockReturnValue(() => new Promise((r) => { settle = r; }));
+        callableMock.mockReturnValue(
+            () =>
+                new Promise((r) => {
+                    settle = r;
+                }),
+        );
 
         const before = Date.now();
         createRemoteErrorSink({})(baseReport);

@@ -1,23 +1,10 @@
-import {
-    afterAll,
-    beforeAll,
-    beforeEach,
-    describe,
-    it,
-} from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import {
     assertFails,
     assertSucceeds,
     type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import {
-    adminCtx,
-    anonCtx,
-    createTestEnv,
-    ownerCtx,
-    seedAudit,
-    userCtx,
-} from './helpers.js';
+import { adminCtx, anonCtx, createTestEnv, ownerCtx, seedAudit, userCtx } from './helpers.js';
 
 // Acceptance criteria: AC-11
 // Audit entries are append-only and owner-readable. Admin SDK (Cloud

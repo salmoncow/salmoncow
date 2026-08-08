@@ -13,10 +13,10 @@
  */
 :root {
     /* Brand Colors - Extracted from logo.svg */
-    --brand-primary: #D66E4F;        /* Salmon - main brand color */
-    --brand-secondary: #0F2536;      /* Dark navy - supporting color */
-    --brand-accent: #B7BCBC;         /* Gray - neutral accent */
-    --brand-light: #F9FAF8;          /* Cream - light backgrounds */
+    --brand-primary: #d66e4f; /* Salmon - main brand color */
+    --brand-secondary: #0f2536; /* Dark navy - supporting color */
+    --brand-accent: #b7bcbc; /* Gray - neutral accent */
+    --brand-light: #f9faf8; /* Cream - light backgrounds */
 
     /* Semantic Colors for Navigation — nav bar is branded (salmon) in both themes */
     --nav-bg: var(--brand-primary);
@@ -323,20 +323,20 @@
     }
 
     .logo-text {
-        display: none;  /* Hide text on mobile, show only logo image */
+        display: none; /* Hide text on mobile, show only logo image */
     }
 
     .nav-username {
-        display: none;  /* Hide username on mobile, show only avatar */
+        display: none; /* Hide username on mobile, show only avatar */
     }
 
     .nav-dropdown {
         min-width: 260px;
-        right: -0.5rem;  /* Adjust positioning on small screens */
+        right: -0.5rem; /* Adjust positioning on small screens */
     }
 
     .logo-image {
-        height: 36px;  /* Slightly smaller logo on mobile */
+        height: 36px; /* Slightly smaller logo on mobile */
     }
 
     .nav-avatar {

@@ -1,23 +1,10 @@
-import {
-    afterAll,
-    beforeAll,
-    beforeEach,
-    describe,
-    it,
-} from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import {
     assertFails,
     assertSucceeds,
     type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import {
-    adminCtx,
-    anonCtx,
-    createTestEnv,
-    ownerCtx,
-    seedContent,
-    userCtx,
-} from './helpers.js';
+import { adminCtx, anonCtx, createTestEnv, ownerCtx, seedContent, userCtx } from './helpers.js';
 
 // Acceptance criteria: AC-11
 // Content collection is a placeholder so rules have something concrete to
@@ -62,15 +49,11 @@ describe('content/{id} rules', () => {
 
     describe('write', () => {
         it('denies anonymous writes', async () => {
-            await assertFails(
-                anonCtx(env).firestore().doc('content/new').set({ title: 'x' }),
-            );
+            await assertFails(anonCtx(env).firestore().doc('content/new').set({ title: 'x' }));
         });
 
         it('denies plain user writes', async () => {
-            await assertFails(
-                userCtx(env).firestore().doc('content/new').set({ title: 'x' }),
-            );
+            await assertFails(userCtx(env).firestore().doc('content/new').set({ title: 'x' }));
         });
 
         it('allows admin writes', async () => {

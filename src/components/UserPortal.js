@@ -204,10 +204,12 @@ export class UserPortal extends HTMLElement {
      * @param {*} value - New value
      */
     emitPreferenceChange(key, value) {
-        this.dispatchEvent(new CustomEvent('preference-change', {
-            bubbles: true,
-            detail: { key, value }
-        }));
+        this.dispatchEvent(
+            new CustomEvent('preference-change', {
+                bubbles: true,
+                detail: { key, value },
+            }),
+        );
     }
 
     /**
@@ -219,7 +221,7 @@ export class UserPortal extends HTMLElement {
         const d = date instanceof Date ? date : new Date(date);
         return d.toLocaleDateString('en-US', {
             year: 'numeric',
-            month: 'long'
+            month: 'long',
         });
     }
 
