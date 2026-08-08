@@ -30,7 +30,11 @@ import { initAppCheck } from './infrastructure/appcheck.js';
 import { RoleModule } from './modules/role.js';
 import { getDb } from './infrastructure/firestore.js';
 import { initPerformance } from './infrastructure/performance.js';
-import { installGlobalHandlers, reportError } from './infrastructure/error-reporter.js';
+import { addSink, installGlobalHandlers, reportError } from './infrastructure/error-reporter.js';
+import {
+    createRemoteErrorSink,
+    shouldAttachRemoteSink,
+} from './infrastructure/remote-error-sink.js';
 
 // Import Web Components
 import './components/LoadingSpinner.js';
@@ -85,6 +89,17 @@ class App {
             // App Check must initialize before any protected callable is invoked.
             // Skipped automatically in emulator mode (see infrastructure/appcheck.js).
             initAppCheck(this.firebaseApp);
+
+            // Remote error sink, attached as soon as Functions is reachable.
+            // Must come after initAppCheck: the callable enforces App Check, so
+            // reports sent before it initializes would be rejected. Errors
+            // thrown earlier than this still reach the console sink and the
+            // degraded-state UI — that gap is why renderBootstrapFailure()
+            // exists and does not depend on Firebase.
+            if (shouldAttachRemoteSink()) {
+                addSink(createRemoteErrorSink(this.firebaseApp));
+            }
+
             // Real-user performance data for the §III.3 p95 targets. Never
             // throws; skipped under the emulator.
             initPerformance(this.firebaseApp);
