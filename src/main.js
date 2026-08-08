@@ -16,7 +16,6 @@ import './styles/main.css';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
 import { firebaseConfig, validateFirebaseConfig } from './firebase-config.js';
 import { AuthModule } from './modules/auth.js';
-import { UIModule } from './modules/ui.js';
 import { NavigationModule } from './modules/navigation.js';
 import { UserPortalModule } from './modules/user-portal.js';
 import { RouterModule } from './modules/router.js';
@@ -49,7 +48,6 @@ class App {
         this.firebaseApp = null;
         this.auth = null;
         this.role = null;
-        this.ui = null;
         this.navigation = null;
         this.userPortal = null;
         this.adminPortal = null;
@@ -74,10 +72,8 @@ class App {
             this.theme = new ThemeModule();
             this.theme?.init();
 
-            // Initialize UI and navigation modules
-            this.ui = new UIModule();
+            // Initialize navigation
             this.navigation = new NavigationModule();
-            this.ui.init();
             this.navigation?.init();
 
             // Apply auth hint immediately (no blocking wait)
@@ -136,13 +132,13 @@ class App {
             this.setupAuthStateListener();
 
             // Initialize toast container
-            this.toastContainer = /** @type {import('./components/ToastContainer.js').ToastContainer|null} */ (
-                document.getElementById('toastContainer')
-            );
+            this.toastContainer =
+                /** @type {import('./components/ToastContainer.js').ToastContainer|null} */ (
+                    document.getElementById('toastContainer')
+                );
 
             // Initialize router (handles initial route)
             this.router?.init();
-
         } catch (error) {
             // Previously this was a bare console.error, which left the user
             // looking at a half-rendered page with no indication anything was
@@ -278,8 +274,7 @@ class App {
             adminService: this.adminUserService,
             role: this.role,
             toast: {
-                show: (type, message, duration) =>
-                    this.showToast(type, message, duration),
+                show: (type, message, duration) => this.showToast(type, message, duration),
             },
         });
         this.adminPortal?.init('adminPortalContainer');
@@ -323,7 +318,11 @@ class App {
                 loadingToast?.dismiss();
 
                 if (error.message && error.message.includes('Firebase configuration incomplete')) {
-                    this.showToast('error', 'Please update firebase-config.js with your Firebase project details.', 5000);
+                    this.showToast(
+                        'error',
+                        'Please update firebase-config.js with your Firebase project details.',
+                        5000,
+                    );
                 } else {
                     this.showToast('error', `Error: ${error.message}`, 5000);
                 }
@@ -369,7 +368,6 @@ class App {
     setupAuthStateListener() {
         this.auth?.onAuthStateChanged((user) => {
             // Update both UI module and navigation module
-            this.ui?.updateLoginButton(user);
             this.navigation?.updateAuthState(user);
 
             // Update user portal state
@@ -384,7 +382,6 @@ class App {
                     this.router?.navigate('/');
                 }
             }
-
         });
     }
 }

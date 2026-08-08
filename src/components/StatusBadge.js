@@ -23,7 +23,7 @@
  *
  * Architecture Note:
  *   Part of Phase 1 Web Components architecture.
- *   Can replace UIModule.showStatus() for better reusability.
+ *   Rendered via ToastContainer.show(); see src/components/ToastContainer.js.
  */
 import { escapeHtml } from '../utils/escape-html.js';
 
@@ -92,7 +92,7 @@ export class StatusBadge extends HTMLElement {
                     <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2" opacity="0.25"/>
                     <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 2a8 8 0 018 8"/>
                 </svg>
-            `
+            `,
         };
 
         return icons[type] || icons.info;
@@ -100,10 +100,12 @@ export class StatusBadge extends HTMLElement {
 
     dismiss() {
         // Dispatch custom event
-        this.dispatchEvent(new CustomEvent('dismiss', {
-            bubbles: true,
-            composed: true
-        }));
+        this.dispatchEvent(
+            new CustomEvent('dismiss', {
+                bubbles: true,
+                composed: true,
+            }),
+        );
 
         // Fade out and remove
         this.style.opacity = '0';

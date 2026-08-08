@@ -88,7 +88,10 @@ export class NavigationModule {
             if (this.dropdownAvatar && hint.photoURL) {
                 const dropdownAvatarComponent = document.createElement('user-avatar');
                 dropdownAvatarComponent.setAttribute('photo', hint.photoURL);
-                dropdownAvatarComponent.setAttribute('alt', `${hint.displayName || 'User'}'s avatar`);
+                dropdownAvatarComponent.setAttribute(
+                    'alt',
+                    `${hint.displayName || 'User'}'s avatar`,
+                );
                 dropdownAvatarComponent.setAttribute('size', 'large');
                 this.dropdownAvatar.innerHTML = '';
                 this.dropdownAvatar.appendChild(dropdownAvatarComponent);
@@ -160,7 +163,7 @@ export class NavigationModule {
 
         // Home button click (navigation event for future routing)
         if (this.navHomeButton) {
-            this.navHomeButton.addEventListener('click', (e) => {
+            this.navHomeButton.addEventListener('click', () => {
                 // Don't prevent default - allow native link behavior
                 // But emit navigation event for future client-side routing
                 this.emitNavigationEvent('home');
@@ -350,7 +353,7 @@ export class NavigationModule {
      * @param {string} destination - Navigation destination
      */
     emitNavigationEvent(destination) {
-        this.navigationCallbacks.forEach(callback => {
+        this.navigationCallbacks.forEach((callback) => {
             try {
                 callback(destination);
             } catch (error) {
