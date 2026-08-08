@@ -5,3 +5,8 @@
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
 #
 # Formatting-only commits (no behaviour change) go here, newest last.
+
+# style: apply Prettier across the codebase (2026-08-08)
+# Formatting only — lint, typecheck, both builds, and all 165 tests passed
+# identically before and after.
+2199e4b0507baf1882d898ba28ca9a3f2d357df5
