@@ -99,7 +99,7 @@ export class AuthModule {
      * This prevents the "flash of unauthenticated content" (FOUC)
      * by ensuring we know the auth state before showing any content
      *
-     * @returns {Promise<import('firebase/auth').User|null>} Resolves with user object or null
+     * @returns {Promise<object|null>} Resolves with the Firebase User, or null
      */
     async waitForAuthInitialization() {
         return this.initializationPromise;
