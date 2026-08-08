@@ -1,7 +1,4 @@
-import {
-    type Firestore,
-    type Transaction,
-} from 'firebase-admin/firestore';
+import { type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { type Role } from './admin.js';
 
@@ -33,9 +30,7 @@ export async function assertNotLastOwner(
         return;
     }
 
-    const ownersSnap = await tx.get(
-        db.collection('users').where('role', '==', 'owner'),
-    );
+    const ownersSnap = await tx.get(db.collection('users').where('role', '==', 'owner'));
 
     if (ownersSnap.size <= 1) {
         throw new HttpsError(

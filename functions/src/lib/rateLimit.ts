@@ -1,9 +1,4 @@
-import {
-    FieldValue,
-    Timestamp,
-    type Firestore,
-    type Transaction,
-} from 'firebase-admin/firestore';
+import { FieldValue, Timestamp, type Firestore, type Transaction } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 
 /**

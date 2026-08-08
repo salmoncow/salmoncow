@@ -123,7 +123,7 @@ export class UserPortalModule {
         const preferences = { [key]: value };
         const result = await this.profileService.updatePreferences(
             this.currentUser.uid,
-            preferences
+            preferences,
         );
 
         if (!result.success) {

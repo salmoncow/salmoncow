@@ -77,7 +77,9 @@ describe('CSP App Check / reCAPTCHA requirements', () => {
 describe('CSP inline-script hashes', () => {
     it('never allows unsafe-inline in script-src', () => {
         // Independent of the build, so it runs even without dist/.
-        const scriptSrc = cspValue().split(';').find((d) => d.trim().startsWith('script-src'));
+        const scriptSrc = cspValue()
+            .split(';')
+            .find((d) => d.trim().startsWith('script-src'));
         expect(scriptSrc).toBeDefined();
         expect(scriptSrc).not.toContain("'unsafe-inline'");
     });
@@ -89,7 +91,8 @@ describe('CSP inline-script hashes', () => {
             const csp = cspValue();
 
             const hashes = [...html.matchAll(INLINE_SCRIPT)].map(
-                ([, body]) => `sha256-${createHash('sha256').update(body, 'utf8').digest('base64')}`,
+                ([, body]) =>
+                    `sha256-${createHash('sha256').update(body, 'utf8').digest('base64')}`,
             );
 
             // Guards against the regex silently matching nothing after a

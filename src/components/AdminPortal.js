@@ -117,9 +117,11 @@ export class AdminPortal extends HTMLElement {
   <header class="admin-portal__header">
     <h1>Admin Portal</h1>
     <p class="admin-portal__subtitle">
-      ${this.role === 'owner'
-            ? 'Manage users and change roles'
-            : 'View users (role changes require owner privileges)'}
+      ${
+          this.role === 'owner'
+              ? 'Manage users and change roles'
+              : 'View users (role changes require owner privileges)'
+      }
     </p>
   </header>
   ${this.renderSearchBar()}

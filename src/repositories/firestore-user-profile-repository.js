@@ -122,7 +122,10 @@ export class FirestoreUserProfileRepository extends UserProfileRepository {
             await deleteDoc(doc(this.db, USERS, uid));
             return success({ uid, deleted: true });
         } catch (err) {
-            return failure(`delete failed (rules deny): ${err.message}`, 'FIRESTORE_PERMISSION_DENIED');
+            return failure(
+                `delete failed (rules deny): ${err.message}`,
+                'FIRESTORE_PERMISSION_DENIED',
+            );
         }
     }
 
@@ -156,11 +159,9 @@ export class FirestoreUserProfileRepository extends UserProfileRepository {
             }
             parts.push(fsLimit(pageSize));
             const snap = await getDocs(query(coll, ...parts));
-            const users = snap.docs.map((d) =>
-                normalizeTimestamps({ uid: d.id, ...d.data() }),
-            );
+            const users = snap.docs.map((d) => normalizeTimestamps({ uid: d.id, ...d.data() }));
             const last = snap.docs[snap.docs.length - 1];
-            const nextCursor = last ? last.data().createdAt?.toDate?.() ?? null : null;
+            const nextCursor = last ? (last.data().createdAt?.toDate?.() ?? null) : null;
             return success({
                 users,
                 nextCursor,

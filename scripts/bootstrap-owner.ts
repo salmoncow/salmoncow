@@ -32,15 +32,10 @@
 import { readFileSync } from 'node:fs';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import {
-    FieldValue,
-    getFirestore,
-    type Firestore,
-} from 'firebase-admin/firestore';
+import { FieldValue, getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 const isEmulator =
-    !!process.env.FIREBASE_AUTH_EMULATOR_HOST ||
-    !!process.env.FIRESTORE_EMULATOR_HOST;
+    !!process.env.FIREBASE_AUTH_EMULATOR_HOST || !!process.env.FIRESTORE_EMULATOR_HOST;
 
 type ServiceAccount = {
     project_id: string;
@@ -67,10 +62,7 @@ async function main(): Promise<void> {
     if (isEmulator) {
         // Emulator accepts any Admin SDK call without credentials. Use the
         // project id Firebase emulators:exec provisioned (GCLOUD_PROJECT).
-        projectId =
-            process.env.GCLOUD_PROJECT ??
-            process.env.GCP_PROJECT ??
-            'salmoncow';
+        projectId = process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT ?? 'salmoncow';
     } else {
         const keyPath = requireEnv('FIREBASE_SA_KEY');
         let sa: ServiceAccount;

@@ -39,7 +39,7 @@ export class LoadingSpinner extends HTMLElement {
         const sizeMap = {
             small: { spinner: '24', fontSize: '0.875rem' },
             medium: { spinner: '40', fontSize: '1rem' },
-            large: { spinner: '56', fontSize: '1.125rem' }
+            large: { spinner: '56', fontSize: '1.125rem' },
         };
 
         const dimensions = sizeMap[size] || sizeMap.medium;

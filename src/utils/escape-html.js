@@ -43,9 +43,10 @@ export function safeImageUrl(value) {
     // Falls back to a placeholder origin outside the browser so this stays
     // unit-testable; only relative paths resolve against it, and those are
     // same-origin by definition.
-    const origin = typeof window !== 'undefined' && window.location
-        ? window.location.origin
-        : 'http://localhost';
+    const origin =
+        typeof window !== 'undefined' && window.location
+            ? window.location.origin
+            : 'http://localhost';
 
     let url;
     try {

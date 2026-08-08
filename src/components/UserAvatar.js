@@ -57,7 +57,7 @@ export class UserAvatar extends HTMLElement {
             small: '24',
             medium: '32',
             large: '48',
-            xlarge: '64'
+            xlarge: '64',
         };
 
         const dimension = sizeMap[size] || sizeMap.medium;

@@ -32,7 +32,7 @@ export class AuthModule {
                 }
 
                 // Notify all callbacks
-                this.authStateCallbacks.forEach(callback => callback(user));
+                this.authStateCallbacks.forEach((callback) => callback(user));
             });
         });
     }
@@ -45,13 +45,13 @@ export class AuthModule {
             return {
                 success: true,
                 user: result.user,
-                message: `Welcome, ${result.user.displayName}!`
+                message: `Welcome, ${result.user.displayName}!`,
             };
         } catch (error) {
             return {
                 success: false,
                 error: error,
-                message: error.message
+                message: error.message,
             };
         }
     }
@@ -63,13 +63,13 @@ export class AuthModule {
             AuthHintModule.clearHint();
             return {
                 success: true,
-                message: 'Signed out successfully'
+                message: 'Signed out successfully',
             };
         } catch (error) {
             return {
                 success: false,
                 error: error,
-                message: error.message
+                message: error.message,
             };
         }
     }

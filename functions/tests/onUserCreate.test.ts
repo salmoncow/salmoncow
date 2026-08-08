@@ -80,10 +80,7 @@ describe('onUserCreate auth trigger', () => {
         const secondSnap = await db.doc(`users/${uid}`).get();
         expect(secondSnap.exists).toBe(true);
         // Doc count per uid should still be 1 — we're not creating duplicates
-        const byUid = await db
-            .collection('users')
-            .where('uid', '==', uid)
-            .get();
+        const byUid = await db.collection('users').where('uid', '==', uid).get();
         expect(byUid.size).toBe(1);
     });
 

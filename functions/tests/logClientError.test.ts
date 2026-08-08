@@ -71,9 +71,7 @@ describe('logClientErrorInput validation', () => {
     });
 
     it('caps the number of context keys', () => {
-        const context = Object.fromEntries(
-            Array.from({ length: 21 }, (_, i) => [`k${i}`, 'v']),
-        );
+        const context = Object.fromEntries(Array.from({ length: 21 }, (_, i) => [`k${i}`, 'v']));
         expect(logClientErrorInput.safeParse({ ...valid, context }).success).toBe(false);
     });
 
@@ -92,10 +90,7 @@ describe('logClientErrorInput validation', () => {
 });
 
 describe('logClientError source-level posture guards', () => {
-    const source = readFileSync(
-        resolve(__dirname, '../src/logClientError.ts'),
-        'utf8',
-    );
+    const source = readFileSync(resolve(__dirname, '../src/logClientError.ts'), 'utf8');
 
     it('enforces App Check by default', () => {
         expect(source).toMatch(/enforceAppCheck:\s*true/);

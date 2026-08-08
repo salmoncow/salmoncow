@@ -1,10 +1,4 @@
-import {
-    afterAll,
-    beforeAll,
-    beforeEach,
-    describe,
-    it,
-} from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import {
     assertFails,
     assertSucceeds,
@@ -56,16 +50,12 @@ describe('users/{uid} rules', () => {
     describe('role: user', () => {
         it('allows reading own user doc', async () => {
             await seedUser(env, USER_UID, 'user');
-            await assertSucceeds(
-                userCtx(env).firestore().doc(`users/${USER_UID}`).get(),
-            );
+            await assertSucceeds(userCtx(env).firestore().doc(`users/${USER_UID}`).get());
         });
 
         it("denies reading another user's doc", async () => {
             await seedUser(env, OTHER_UID, 'user');
-            await assertFails(
-                userCtx(env).firestore().doc(`users/${OTHER_UID}`).get(),
-            );
+            await assertFails(userCtx(env).firestore().doc(`users/${OTHER_UID}`).get());
         });
 
         it('allows creating own doc without a role field', async () => {
@@ -108,124 +98,89 @@ describe('users/{uid} rules', () => {
         it('denies updating own role field', async () => {
             await seedUser(env, USER_UID, 'user');
             await assertFails(
-                userCtx(env)
-                    .firestore()
-                    .doc(`users/${USER_UID}`)
-                    .update({ role: 'admin' }),
+                userCtx(env).firestore().doc(`users/${USER_UID}`).update({ role: 'admin' }),
             );
         });
 
         it("denies updating another user's doc", async () => {
             await seedUser(env, OTHER_UID, 'user');
             await assertFails(
-                userCtx(env)
-                    .firestore()
-                    .doc(`users/${OTHER_UID}`)
-                    .update({ displayName: 'Hax' }),
+                userCtx(env).firestore().doc(`users/${OTHER_UID}`).update({ displayName: 'Hax' }),
             );
         });
 
         it('denies deleting own doc', async () => {
             await seedUser(env, USER_UID, 'user');
-            await assertFails(
-                userCtx(env).firestore().doc(`users/${USER_UID}`).delete(),
-            );
+            await assertFails(userCtx(env).firestore().doc(`users/${USER_UID}`).delete());
         });
     });
 
     describe('role: admin', () => {
         it('allows reading own doc', async () => {
             await seedUser(env, 'admin-uid', 'admin');
-            await assertSucceeds(
-                adminCtx(env).firestore().doc('users/admin-uid').get(),
-            );
+            await assertSucceeds(adminCtx(env).firestore().doc('users/admin-uid').get());
         });
 
         it("allows reading another user's doc", async () => {
             await seedUser(env, OTHER_UID, 'user');
-            await assertSucceeds(
-                adminCtx(env).firestore().doc(`users/${OTHER_UID}`).get(),
-            );
+            await assertSucceeds(adminCtx(env).firestore().doc(`users/${OTHER_UID}`).get());
         });
 
         it('denies updating own role field', async () => {
             await seedUser(env, 'admin-uid', 'admin');
             await assertFails(
-                adminCtx(env)
-                    .firestore()
-                    .doc('users/admin-uid')
-                    .update({ role: 'owner' }),
+                adminCtx(env).firestore().doc('users/admin-uid').update({ role: 'owner' }),
             );
         });
 
         it("denies updating another user's any field", async () => {
             await seedUser(env, OTHER_UID, 'user');
             await assertFails(
-                adminCtx(env)
-                    .firestore()
-                    .doc(`users/${OTHER_UID}`)
-                    .update({ displayName: 'Hax' }),
+                adminCtx(env).firestore().doc(`users/${OTHER_UID}`).update({ displayName: 'Hax' }),
             );
         });
 
         it("denies updating another user's role field", async () => {
             await seedUser(env, OTHER_UID, 'user');
             await assertFails(
-                adminCtx(env)
-                    .firestore()
-                    .doc(`users/${OTHER_UID}`)
-                    .update({ role: 'admin' }),
+                adminCtx(env).firestore().doc(`users/${OTHER_UID}`).update({ role: 'admin' }),
             );
         });
 
         it('denies deleting any user doc', async () => {
             await seedUser(env, OTHER_UID, 'user');
-            await assertFails(
-                adminCtx(env).firestore().doc(`users/${OTHER_UID}`).delete(),
-            );
+            await assertFails(adminCtx(env).firestore().doc(`users/${OTHER_UID}`).delete());
         });
     });
 
     describe('role: owner', () => {
         it('allows reading own doc', async () => {
             await seedUser(env, OWNER_UID, 'owner');
-            await assertSucceeds(
-                ownerCtx(env).firestore().doc(`users/${OWNER_UID}`).get(),
-            );
+            await assertSucceeds(ownerCtx(env).firestore().doc(`users/${OWNER_UID}`).get());
         });
 
         it("allows reading another user's doc", async () => {
             await seedUser(env, OTHER_UID, 'user');
-            await assertSucceeds(
-                ownerCtx(env).firestore().doc(`users/${OTHER_UID}`).get(),
-            );
+            await assertSucceeds(ownerCtx(env).firestore().doc(`users/${OTHER_UID}`).get());
         });
 
         it('denies updating own role field', async () => {
             await seedUser(env, OWNER_UID, 'owner');
             await assertFails(
-                ownerCtx(env)
-                    .firestore()
-                    .doc(`users/${OWNER_UID}`)
-                    .update({ role: 'user' }),
+                ownerCtx(env).firestore().doc(`users/${OWNER_UID}`).update({ role: 'user' }),
             );
         });
 
         it("denies updating another user's role field", async () => {
             await seedUser(env, OTHER_UID, 'user');
             await assertFails(
-                ownerCtx(env)
-                    .firestore()
-                    .doc(`users/${OTHER_UID}`)
-                    .update({ role: 'admin' }),
+                ownerCtx(env).firestore().doc(`users/${OTHER_UID}`).update({ role: 'admin' }),
             );
         });
 
         it('denies deleting any user doc (delete disabled)', async () => {
             await seedUser(env, OTHER_UID, 'user');
-            await assertFails(
-                ownerCtx(env).firestore().doc(`users/${OTHER_UID}`).delete(),
-            );
+            await assertFails(ownerCtx(env).firestore().doc(`users/${OTHER_UID}`).delete());
         });
     });
 
@@ -234,9 +189,7 @@ describe('users/{uid} rules', () => {
             await seedUser(env, OTHER_UID, 'user');
             const ctx = env.authenticatedContext('stranger-uid', {}); // no role claim
             // Stranger can read their own (but there is none)
-            await assertFails(
-                ctx.firestore().doc(`users/${OTHER_UID}`).get(),
-            );
+            await assertFails(ctx.firestore().doc(`users/${OTHER_UID}`).get());
         });
     });
 });

@@ -7,7 +7,7 @@ export default defineConfig({
         include: ['tests/rules/**/*.test.ts'],
         testTimeout: 15_000, // emulator round-trips can be slow on cold start
         hookTimeout: 30_000,
-        pool: 'forks',       // rules-unit-testing spawns its own fetch; isolate per-file
+        pool: 'forks', // rules-unit-testing spawns its own fetch; isolate per-file
         poolOptions: {
             forks: {
                 // Force serial execution. Every rules file shares one emulator

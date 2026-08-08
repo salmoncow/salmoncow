@@ -29,7 +29,10 @@ export const logClientErrorInput = z
         // Values are constrained to primitives so nested objects can't be used
         // to smuggle a large payload past the per-field caps.
         context: z
-            .record(z.string().max(64), z.union([z.string().max(500), z.number(), z.boolean(), z.null()]))
+            .record(
+                z.string().max(64),
+                z.union([z.string().max(500), z.number(), z.boolean(), z.null()]),
+            )
             .refine((c) => Object.keys(c).length <= 20, {
                 message: 'context may not exceed 20 keys',
             })

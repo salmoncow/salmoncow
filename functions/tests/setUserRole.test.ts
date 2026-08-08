@@ -131,10 +131,7 @@ describe('setUserRole callable', () => {
         expect(doc.data()?.roleChangedAt).toBeDefined();
 
         // Audit entry written with correct fields
-        const auditSnap = await db
-            .collection('audit')
-            .where('targetUid', '==', targetUid)
-            .get();
+        const auditSnap = await db.collection('audit').where('targetUid', '==', targetUid).get();
         expect(auditSnap.size).toBe(1);
         const audit = auditSnap.docs[0].data();
         expect(audit).toMatchObject({
@@ -183,12 +180,10 @@ describe('setUserRole callable', () => {
         await seedOwner(ownerUid);
 
         // Pre-seed the counter at 20 to avoid executing 20 real calls.
-        await db
-            .doc(`rateLimits/setUserRole/actors/${ownerUid}`)
-            .set({
-                windowStart: Timestamp.now(),
-                count: 20,
-            });
+        await db.doc(`rateLimits/setUserRole/actors/${ownerUid}`).set({
+            windowStart: Timestamp.now(),
+            count: 20,
+        });
 
         const targetUid = nextUid('t');
         await seedUserDoc(targetUid, 'user');
@@ -210,12 +205,10 @@ describe('setUserRole callable', () => {
 
         // Counter at 20, but window is 2 hours old.
         const twoHoursAgo = Timestamp.fromMillis(Date.now() - 2 * 60 * 60 * 1000);
-        await db
-            .doc(`rateLimits/setUserRole/actors/${ownerUid}`)
-            .set({
-                windowStart: twoHoursAgo,
-                count: 20,
-            });
+        await db.doc(`rateLimits/setUserRole/actors/${ownerUid}`).set({
+            windowStart: twoHoursAgo,
+            count: 20,
+        });
 
         const targetUid = nextUid('t');
         await seedUserDoc(targetUid, 'user');
@@ -229,9 +222,7 @@ describe('setUserRole callable', () => {
         );
         expect(result.ok).toBe(true);
 
-        const counter = await db
-            .doc(`rateLimits/setUserRole/actors/${ownerUid}`)
-            .get();
+        const counter = await db.doc(`rateLimits/setUserRole/actors/${ownerUid}`).get();
         expect(counter.data()?.count).toBe(1);
     });
 
@@ -254,18 +245,14 @@ describe('setUserRole callable', () => {
     //   - Extra assignment sneaked in          → "exactly two assignments"
     //   - False assignment moved out of block  → "false lives inside guard"
     describe('App Check enforcement (source-level regression guards)', () => {
-        const src = readFileSync(
-            resolve(process.cwd(), 'src/setUserRole.ts'),
-            'utf8',
-        );
+        const src = readFileSync(resolve(process.cwd(), 'src/setUserRole.ts'), 'utf8');
 
         it('declares enforceAppCheck: true as the default', () => {
             expect(src).toMatch(/enforceAppCheck:\s*true\b/);
         });
 
         it('has exactly one FUNCTIONS_EMULATOR-gated override and it uses the positive form', () => {
-            const ifHeaders =
-                src.match(/if\s*\([^)]*FUNCTIONS_EMULATOR[^)]*\)/g) ?? [];
+            const ifHeaders = src.match(/if\s*\([^)]*FUNCTIONS_EMULATOR[^)]*\)/g) ?? [];
             expect(ifHeaders).toHaveLength(1);
             // A `!` here would disable App Check in prod — the exact failure
             // mode this guard exists to prevent.
@@ -278,8 +265,7 @@ describe('setUserRole callable', () => {
         });
 
         it('has exactly two enforceAppCheck assignments: default true and emulator override false', () => {
-            const mentions =
-                src.match(/enforceAppCheck\s*[:=]\s*(true|false)\b/g) ?? [];
+            const mentions = src.match(/enforceAppCheck\s*[:=]\s*(true|false)\b/g) ?? [];
             const normalized = mentions.map((m) => m.replace(/\s+/g, ''));
             expect(normalized.sort()).toEqual(
                 ['enforceAppCheck:true', 'enforceAppCheck=false'].sort(),
@@ -310,10 +296,7 @@ async function seedOwner(uid: string): Promise<void> {
  * Both are required: setUserRole calls setCustomUserClaims(target), which
  * fails if the Auth user doesn't exist.
  */
-async function seedUserDoc(
-    uid: string,
-    role: 'owner' | 'admin' | 'user',
-): Promise<void> {
+async function seedUserDoc(uid: string, role: 'owner' | 'admin' | 'user'): Promise<void> {
     await ensureAuthUser(uid);
     await db.doc(`users/${uid}`).set({
         uid,

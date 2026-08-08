@@ -199,7 +199,7 @@ export class UserProfileService {
      * @param {import('../types/user-profile.js').UserProfile|null} profile
      */
     notifyStateChange(profile) {
-        this.stateCallbacks.forEach(callback => {
+        this.stateCallbacks.forEach((callback) => {
             try {
                 callback(profile);
             } catch (error) {
@@ -236,7 +236,7 @@ export class UserProfileService {
     setCache(uid, profile) {
         this.cache.set(uid, {
             profile,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
     }
 
