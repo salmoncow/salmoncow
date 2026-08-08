@@ -29,6 +29,8 @@ import { AdminPortalModule } from './modules/admin-portal.js';
 import { initAppCheck } from './infrastructure/appcheck.js';
 import { RoleModule } from './modules/role.js';
 import { getDb } from './infrastructure/firestore.js';
+import { initPerformance } from './infrastructure/performance.js';
+import { installGlobalHandlers, reportError } from './infrastructure/error-reporter.js';
 
 // Import Web Components
 import './components/LoadingSpinner.js';
@@ -56,6 +58,10 @@ class App {
 
     async init() {
         try {
+            // Before anything that can throw: uncaught exceptions and rejected
+            // promises during bootstrap are otherwise invisible.
+            installGlobalHandlers();
+
             // Theme first: the inline pre-paint script in index.html already set
             // <html data-theme> from localStorage; ThemeModule.init() re-applies
             // using the same cache and wires the system-preference watcher if the
@@ -79,6 +85,9 @@ class App {
             // App Check must initialize before any protected callable is invoked.
             // Skipped automatically in emulator mode (see infrastructure/appcheck.js).
             initAppCheck(this.firebaseApp);
+            // Real-user performance data for the §III.3 p95 targets. Never
+            // throws; skipped under the emulator.
+            initPerformance(this.firebaseApp);
             this.auth = new AuthModule(this.firebaseApp);
 
             // Role state (custom claim + users/{uid}.roleChangedAt mirror listener)
@@ -118,7 +127,49 @@ class App {
             this.router.init();
 
         } catch (error) {
-            console.error('Failed to initialize app:', error);
+            // Previously this was a bare console.error, which left the user
+            // looking at a half-rendered page with no indication anything was
+            // wrong and left the maintainer with no signal at all.
+            reportError(error, { source: 'bootstrap' });
+            this.renderBootstrapFailure();
+        }
+    }
+
+    /**
+     * Degraded state for a failed bootstrap.
+     *
+     * Deliberately depends on nothing the app sets up: no toast container (it
+     * is initialized at the end of init() and may not exist), no components, no
+     * Firebase. Built with DOM APIs and textContent so a message derived from
+     * an error can never be parsed as markup — same rule as UserAvatar.
+     */
+    renderBootstrapFailure() {
+        try {
+            if (document.getElementById('bootstrapFailure')) return;
+
+            const banner = document.createElement('div');
+            banner.id = 'bootstrapFailure';
+            banner.setAttribute('role', 'alert');
+
+            const heading = document.createElement('h2');
+            heading.textContent = 'Something went wrong';
+
+            const detail = document.createElement('p');
+            detail.textContent =
+                'Salmoncow could not finish loading. Reloading the page usually fixes it. ' +
+                'If it keeps happening, the service may be temporarily unavailable.';
+
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.textContent = 'Reload';
+            retry.addEventListener('click', () => window.location.reload());
+
+            banner.append(heading, detail, retry);
+
+            const main = document.querySelector('.main-content') || document.body;
+            main.prepend(banner);
+        } catch {
+            // If even this fails there is nothing useful left to do.
         }
     }
 
