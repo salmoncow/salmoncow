@@ -12,6 +12,10 @@
     "dev:app": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,mjs,ts,json,yml,yaml,css}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,ts,json,yml,yaml,css}\"",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "deploy": "npm run build && firebase deploy --only hosting",
@@ -26,13 +30,19 @@
     "bootstrap:owner": "tsx scripts/bootstrap-owner.ts"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@firebase/rules-unit-testing": "^4.0.1",
     "@types/node": "^20.14.0",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
     "firebase-admin": "^12.7.0",
+    "globals": "^17.9.0",
+    "prettier": "^3.9.6",
     "svgo": "^4.0.1",
     "terser": "^5.44.1",
     "tsx": "^4.19.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.66.0",
     "vite": "^7.2.7",
     "vitest": "^3.2.4"
   }

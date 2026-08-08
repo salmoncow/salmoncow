@@ -1,0 +1,14 @@
+dist/
+node_modules/
+functions/lib/
+functions/node_modules/
+.emulator-data/
+package-lock.json
+functions/package-lock.json
+src/assets/images/
+public/
+
+# Markdown is excluded deliberately: reformatting the specs, prompts, and docs
+# would be a large diff with no correctness benefit, and would bury real changes
+# in future reviews. Prose formatting stays a human judgement call.
+*.md
