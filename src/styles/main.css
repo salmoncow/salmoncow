@@ -62,3 +62,53 @@ body {
     height: auto;
     display: block;
 }
+
+/* ===== BOOTSTRAP FAILURE =====
+ * Degraded state shown when App.init() throws. Styled here rather than
+ * injected from JS because the failure path must not depend on any component
+ * having loaded. Uses the same theme tokens, so it renders correctly in both
+ * themes even though the app never finished starting.
+ */
+#bootstrapFailure {
+    max-width: 32rem;
+    margin: 3rem auto;
+    padding: 1.5rem;
+    background: var(--surface-elevated);
+    border: 1px solid var(--surface-border);
+    border-left: 4px solid var(--error-fg);
+    border-radius: 8px;
+    box-shadow: var(--shadow-card);
+    text-align: left;
+}
+
+#bootstrapFailure h2 {
+    color: var(--error-fg);
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+}
+
+#bootstrapFailure p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+#bootstrapFailure button {
+    font: inherit;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 6px;
+    background: var(--surface-muted);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+#bootstrapFailure button:hover {
+    background: var(--surface-border);
+}
+
+#bootstrapFailure button:focus-visible {
+    outline: 2px solid var(--error-fg);
+    outline-offset: 2px;
+}
