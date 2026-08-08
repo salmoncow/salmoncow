@@ -1,0 +1,7 @@
+# Revisions to skip in `git blame`, so a whole-repo reformat does not make
+# every line look like it was last touched by the formatting commit.
+#
+# Configure once per clone:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Formatting-only commits (no behaviour change) go here, newest last.

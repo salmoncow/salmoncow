@@ -60,6 +60,15 @@ jobs:
       - name: Install root dependencies
         run: npm ci --prefer-offline
 
+      - name: Lint
+        # Steps, not separate jobs: each job becomes its own required status
+        # check, and adding one without updating the branch ruleset silently
+        # stops gating on it.
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
       - name: Type-check
         # Verifies the JSDoc across src/ via tsc. Deliberately a step in this
         # job rather than a job of its own: each job becomes its own required
