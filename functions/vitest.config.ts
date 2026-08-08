@@ -13,5 +13,17 @@ export default defineConfig({
                 singleFork: true,
             },
         },
+        coverage: {
+            provider: 'v8',
+            all: true,
+            include: ['src/**/*.ts'],
+            exclude: [
+                // Barrel file: re-exports only, nothing to execute.
+                'src/index.ts',
+            ],
+            reporter: ['text-summary', 'text', 'html', 'json-summary'],
+            reportsDirectory: './coverage',
+            // No thresholds yet — see the note in the root unit config.
+        },
     },
 });

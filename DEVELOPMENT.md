@@ -147,6 +147,52 @@ annotations resolved to nothing.
 To tighten later, flip `noImplicitAny` back on and work through the backlog
 file by file; nothing else needs to change.
 
+## Coverage
+
+```bash
+npm run test:coverage             # src/ via the unit lane
+npm run test:coverage:functions   # functions/src/ (starts the emulator)
+```
+
+HTML reports land in `coverage/unit/` and `functions/coverage/` (both
+gitignored). CI runs both and prints the summary; **nothing is enforced yet**.
+
+### Baseline (2026-08-08)
+
+| target | lines | notes |
+|---|---:|---|
+| `functions/src/` | **79.6%** | effectively at the §III.1 bar |
+| `src/` | **17.9%** | 653 / 3640 lines |
+
+Both configs set `all: true` deliberately. Without it, coverage only counts
+files a test happens to import, so untested modules vanish from the report
+instead of counting as 0% — which flatters the number badly here.
+
+### What the baseline says
+
+Well covered: `escape-html.js`, `error-reporter.js`, `remote-error-sink.js`
+(96–97%), `theme.js` (91%), `firestore-user-profile-repository.js` (89%).
+
+At **0%**: every web component, plus `auth.js`, `router.js`, `navigation.js`,
+`admin-portal.js`, `user-portal.js`, `admin-user-service.js`, and the
+infrastructure singletons.
+
+Two gaps worth naming:
+
+- **`role.js` is 0%.** It is the client-side authorization state machine, and
+  §III.1 asks for 100% on auth paths. This is the single most valuable place to
+  add tests.
+- **`logClientError.ts` is 0%** despite having tests. Its suite exercises the
+  Zod schema and asserts on source text, but never invokes the handler — a case
+  where test *count* looked healthy and execution was zero. Coverage is what
+  surfaced it.
+
+### Why no thresholds
+
+A gate at the constitution's ≥80% would fail on day one, and a gate that fails
+on day one gets deleted. Measure, raise coverage where it matters, then ratchet
+a threshold up behind the progress rather than ahead of it.
+
 ## Observability
 
 ### Error reporting
