@@ -73,8 +73,14 @@ export class RouterModule {
         for (const callback of this.beforeNavigateCallbacks) {
             const result = callback(path, this.currentRoute);
             if (result === false) {
-                // Navigation cancelled, restore previous hash
-                if (this.currentRoute === '/') {
+                // Navigation cancelled — put the address bar back.
+                //
+                // currentRoute is null until the first route resolves, which is
+                // the case for a cold deep-link (a shared or bookmarked
+                // /#/admin opened while signed out). Treating null like '/'
+                // matters: the old code fell through to the else branch and
+                // wrote the literal string "#null".
+                if (this.currentRoute === null || this.currentRoute === '/') {
                     window.history.replaceState(null, '', window.location.pathname);
                 } else {
                     window.history.replaceState(null, '', `#${this.currentRoute}`);
@@ -83,19 +89,25 @@ export class RouterModule {
             }
         }
 
-        this.currentRoute = path;
-
         // Find and execute handler
         const handler = this.routes.get(path);
         if (handler) {
+            this.currentRoute = path;
             handler();
-        } else {
-            // Route not found, fallback to home
-            const homeHandler = this.routes.get('/');
-            if (homeHandler) {
-                homeHandler();
-            }
+            return;
         }
+
+        // Unknown path: render home, and say so. Previously currentRoute kept
+        // the unmatched path, so getCurrentRoute() reported '/nonsense' while
+        // the home view was on screen — and main.js branches on that value.
+        const homeHandler = this.routes.get('/');
+        if (!homeHandler) {
+            this.currentRoute = path;
+            return;
+        }
+        this.currentRoute = '/';
+        window.history.replaceState(null, '', window.location.pathname);
+        homeHandler();
     }
 
     /**
