@@ -15,7 +15,7 @@
  *
  * Spec §XI.1 (application layer), AC-2, AC-9
  */
-import { doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { doc, onSnapshot } from '../infrastructure/firebase-sdk.js';
 
 const ROLES = Object.freeze(['owner', 'admin', 'user']);
 const DEFAULT_ROLE = 'user';

@@ -10,10 +10,7 @@
  *
  * Spec §VII, §XI.4 (App Check enforcement on setUserRole)
  */
-import {
-    initializeAppCheck,
-    ReCaptchaEnterpriseProvider,
-} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app-check.js';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from './firebase-sdk.js';
 import { isEmulatorMode } from './emulator.js';
 
 let appCheckInstance = null;

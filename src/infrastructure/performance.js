@@ -17,7 +17,7 @@
  * Skipped under the emulator: local page loads are not representative and would
  * pollute production percentiles.
  */
-import { getPerformance } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-performance.js';
+import { getPerformance } from './firebase-sdk.js';
 import { isEmulatorMode } from './emulator.js';
 import { reportError } from './error-reporter.js';
 

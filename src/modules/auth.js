@@ -3,7 +3,7 @@ import {
     getAuth,
     GoogleAuthProvider,
     signInWithPopup,
-} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+} from '../infrastructure/firebase-sdk.js';
 import { AuthHintModule } from './auth-hint.js';
 import { EMULATOR_HOSTS, isEmulatorMode } from '../infrastructure/emulator.js';
 
@@ -99,7 +99,7 @@ export class AuthModule {
      * This prevents the "flash of unauthenticated content" (FOUC)
      * by ensuring we know the auth state before showing any content
      *
-     * @returns {Promise<object|null>} Resolves with the Firebase User, or null
+     * @returns {Promise<import('firebase/auth').User|null>} Resolves with the user, or null
      */
     async waitForAuthInitialization() {
         return this.initializationPromise;

@@ -7,11 +7,7 @@
  *
  * Spec §XI.1, §XI.4 (callable entry)
  */
-import {
-    connectFunctionsEmulator,
-    getFunctions,
-    httpsCallable,
-} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-functions.js';
+import { connectFunctionsEmulator, getFunctions, httpsCallable } from './firebase-sdk.js';
 import { EMULATOR_HOSTS, isEmulatorMode } from './emulator.js';
 
 let functionsInstance = null;
