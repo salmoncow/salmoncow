@@ -184,6 +184,28 @@ Logs-based Metrics, then an alerting policy on the metric.
 > overwrites it, which silently destroyed the client's message until it was
 > caught against the emulator. Use `clientMessage`.
 
+#### If Cloud Logging goes quiet, check App Check first
+
+App Check gates the callable, so anything that breaks attestation silently
+stops all remote error reporting — and takes `setUserRole` with it.
+
+The failure mode has no user-visible symptom: callables are never reached, and
+the sink swallows the rejection by design. The tell is in the browser console:
+
+```
+@firebase/app-check: AppCheck: Requests throttled due to 403 error.
+Attempts allowed again after 23h:59m:30s (appCheck/throttled).
+```
+
+After a 403 the SDK **throttles itself for 24 hours**, so a brief
+misconfiguration causes a long outage, and fixing the cause does not clear the
+throttle for browsers already in it (clearing site data does).
+
+This happened once already: `https://www.google.com` was in `script-src` but
+missing from `connect-src`, so reCAPTCHA Enterprise could load but not complete
+its challenge. `tests/unit/csp-inline-script-hash.test.js` now pins the origins
+App Check needs.
+
 #### Coverage
 
 The remote sink attaches once App Check has initialized, so remote coverage
