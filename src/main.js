@@ -6,14 +6,14 @@
  * - No build complexity
  * - Vanilla JavaScript approach
  *
- * Firebase Version: 10.13.2 (latest stable v10.x)
+ * Firebase SDK version is centralized in infrastructure/firebase-sdk.js.
  */
 
 // Import styles
 import './assets/styles/navigation.css';
 import './styles/main.css';
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+import { initializeApp } from './infrastructure/firebase-sdk.js';
 import { firebaseConfig, validateFirebaseConfig } from './firebase-config.js';
 import { AuthModule } from './modules/auth.js';
 import { NavigationModule } from './modules/navigation.js';

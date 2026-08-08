@@ -7,10 +7,7 @@
  *
  * Spec §XI.1 (infrastructure layer)
  */
-import {
-    connectFirestoreEmulator,
-    getFirestore,
-} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+import { connectFirestoreEmulator, getFirestore } from './firebase-sdk.js';
 import { EMULATOR_HOSTS, isEmulatorMode } from './emulator.js';
 
 let dbInstance = null;

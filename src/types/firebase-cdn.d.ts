@@ -1,36 +1,49 @@
 /**
- * Module declarations for the Firebase SDK loaded from the gstatic CDN.
+ * Type declarations for the Firebase SDK loaded from the gstatic CDN.
  *
  * The app imports Firebase by absolute URL and `vite.config.js` marks those
  * URLs external, so the SDK is never bundled — the browser fetches it from
- * gstatic at runtime. TypeScript cannot resolve an http(s) specifier, so every
- * Firebase import was an unresolved module (TS2307).
+ * gstatic at runtime. TypeScript cannot resolve an `https:` specifier, so
+ * without these declarations every Firebase import is an unresolved module and
+ * every Firebase value degrades to an error type.
  *
- * These are **untyped** declarations: they tell TypeScript the modules exist,
- * and their exports are `any`. That silences the unresolved-module errors
- * without pulling in a types package.
+ * Each URL maps onto the matching entry point of the `firebase` package,
+ * installed as a **devDependency for types only** — nothing about the shipped
+ * bundle changes.
  *
- * Why not install `firebase` for real types? Because it currently cannot be
- * installed alongside the test tooling:
+ * These were previously untyped (`declare module '...'`, exports as `any`),
+ * because `@firebase/rules-unit-testing@4.x` peered `firebase@^11` while the
+ * runtime was pinned to 10.13.2, so the package could not be installed at all
+ * without breaking `npm ci`. Aligning both on v12 is what made real types
+ * possible.
  *
- *   @firebase/rules-unit-testing@4.x declares a peer dependency on
- *   firebase@^11, while the runtime here is pinned to 10.13.2. Adding
- *   firebase@10.13.2 makes `npm ci` fail with ERESOLVE.
- *
- * That skew — test tooling on v11, runtime on v10 — is a real finding, and it
- * is the concrete reason to do the SDK upgrade. Once the runtime moves to a
- * version whose peers line up, replace each declaration body below with
- * `export * from 'firebase/<entry>';` and the app gains genuine Firebase types
- * (which, while briefly in place, already caught a miscast query-constraint
- * array in listPaginated).
- *
- * The version in these specifiers must match the URLs used in `src/`; a
- * mismatch resurfaces as TS2307 rather than failing silently.
+ * Only these six URLs should appear anywhere in `src/` — they all live in
+ * `src/infrastructure/firebase-sdk.js`, which is the single place the version
+ * is written. `tests/unit/firebase-sdk-version.test.js` asserts that the URLs
+ * here, the URLs there, and the `firebase` devDependency all agree; a mismatch
+ * would mean type-checking against a different SDK than ships.
  */
 
-declare module 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
-declare module 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
-declare module 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
-declare module 'https://www.gstatic.com/firebasejs/10.13.2/firebase-functions.js';
-declare module 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app-check.js';
-declare module 'https://www.gstatic.com/firebasejs/10.13.2/firebase-performance.js';
+declare module 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js' {
+    export * from 'firebase/app';
+}
+
+declare module 'https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js' {
+    export * from 'firebase/auth';
+}
+
+declare module 'https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js' {
+    export * from 'firebase/firestore';
+}
+
+declare module 'https://www.gstatic.com/firebasejs/12.17.1/firebase-functions.js' {
+    export * from 'firebase/functions';
+}
+
+declare module 'https://www.gstatic.com/firebasejs/12.17.1/firebase-app-check.js' {
+    export * from 'firebase/app-check';
+}
+
+declare module 'https://www.gstatic.com/firebasejs/12.17.1/firebase-performance.js' {
+    export * from 'firebase/performance';
+}

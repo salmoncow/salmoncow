@@ -107,27 +107,36 @@ gating on it.
 
 Nothing is emitted; Vite still owns the build.
 
-### Firebase modules
+### Firebase modules and the SDK version
 
 Firebase is loaded from the gstatic CDN and marked external in
-`vite.config.js`, so TypeScript cannot resolve those `https://` specifiers.
-`src/types/firebase-cdn.d.ts` declares them so the imports resolve. The
-declarations are **untyped** — Firebase exports are `any`.
+`vite.config.js`, so it is never bundled — the browser fetches it at runtime.
 
-Real types would be better, and the reason they aren't here is worth knowing:
-`@firebase/rules-unit-testing@4.x` declares a peer dependency on
-`firebase@^11`, while the runtime is pinned to `10.13.2`. Installing
-`firebase@10.13.2` for its types makes `npm ci` fail with `ERESOLVE`. The test
-tooling and the runtime are a major version apart.
+**The version lives in exactly one file: `src/infrastructure/firebase-sdk.js`.**
+Every Firebase import in `src/` comes from that module, which re-exports the
+CDN entry points explicitly. Bumping the SDK is a one-file edit. It used to be
+hard-coded in seven feature files, where missing one would have loaded two SDK
+versions side by side in the same page.
 
-That skew is the concrete argument for the SDK upgrade. Once the runtime moves
-to a version whose peers line up, replace each declaration body with
-`export * from 'firebase/<entry>'` and the app gains genuine Firebase types —
-which, while briefly in place during this work, already caught a miscast
-query-constraint array in `listPaginated`.
+`src/types/firebase-cdn.d.ts` maps those URLs onto the `firebase` package,
+installed as a **devDependency for types only**.
 
-**The version in `firebase-cdn.d.ts` must match the `src/` import URLs**; a
-mismatch resurfaces as an unresolved module rather than failing silently.
+Three things must stay in step, and
+`tests/unit/firebase-sdk-version.test.js` asserts all three:
+
+1. the CDN URLs in `firebase-sdk.js`,
+2. the URLs declared in `firebase-cdn.d.ts`,
+3. the exact `firebase` devDependency version.
+
+The failure modes differ and are all silent: 1≠2 resurfaces as unresolved
+modules; 2≠3 means type-checking against a different SDK than actually ships,
+so the checker validates confidently against an API the browser does not have.
+The devDependency is pinned exactly rather than with a caret, so a minor bump
+cannot drift away from the runtime unnoticed.
+
+Note `@firebase/rules-unit-testing` peers a matching major (`^12` for v5.x). If
+a future SDK bump makes `npm ci` fail with `ERESOLVE`, that is the pairing to
+check first.
 
 ### Staged strictness
 

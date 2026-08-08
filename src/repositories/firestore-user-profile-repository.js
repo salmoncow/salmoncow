@@ -25,7 +25,7 @@ import {
     startAfter,
     Timestamp,
     updateDoc,
-} from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+} from '../infrastructure/firebase-sdk.js';
 import { failure, success, UserProfileRepository } from './user-profile-repository.js';
 
 const USERS = 'users';
@@ -148,11 +148,10 @@ export class FirestoreUserProfileRepository extends UserProfileRepository {
     async listPaginated({ pageSize = 20, cursor = null } = {}) {
         try {
             const coll = collection(this.db, USERS);
-            // Annotated because the array would otherwise be inferred from its
-            // first element and reject the startAfter and limit constraints
-            // pushed below. Becomes QueryConstraint[] once the CDN modules are
-            // typed — see src/types/firebase-cdn.d.ts.
-            /** @type {any[]} */
+            // Annotated because the array would otherwise be inferred from
+            // its first element as QueryOrderByConstraint[], rejecting the
+            // startAfter and limit constraints pushed below.
+            /** @type {import('firebase/firestore').QueryConstraint[]} */
             const parts = [orderBy('createdAt', 'desc')];
             if (cursor instanceof Date) {
                 parts.push(startAfter(Timestamp.fromDate(cursor)));
