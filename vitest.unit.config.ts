@@ -8,5 +8,27 @@ export default defineConfig({
         include: ['tests/unit/**/*.test.js'],
         environment: 'node',
         testTimeout: 5_000,
+        coverage: {
+            provider: 'v8',
+            // Report on all of src/, not just files a test happens to import.
+            // Without this the number flatters itself: untested modules are
+            // simply absent instead of counted as 0%.
+            all: true,
+            include: ['src/**/*.js'],
+            exclude: [
+                // Type-only and generated surfaces have nothing to execute.
+                'src/**/*.d.ts',
+                'src/types/**',
+                // main.js is bootstrap wiring exercised in a browser, not by
+                // the node unit lane; counting it only adds noise.
+                'src/main.js',
+            ],
+            reporter: ['text-summary', 'text', 'html', 'json-summary'],
+            reportsDirectory: './coverage/unit',
+            // Deliberately no thresholds yet. The constitution asks for ≥80%
+            // overall and 100% on auth paths, but src/ is nowhere near that;
+            // failing the build on day one would just mean disabling it.
+            // Measure first, then ratchet.
+        },
     },
 });

@@ -85,8 +85,11 @@ jobs:
       - name: Install firebase-tools (pinned)
         run: npm install -g firebase-tools@${FIREBASE_CLI_VERSION}
 
-      - name: Run unit tests
-        run: npm run test:unit
+      - name: Run unit tests (with coverage)
+        # Coverage is reported, not enforced. src/ is far below the
+        # constitution's ≥80% target, so a threshold today would only get
+        # disabled. Measure first, then ratchet.
+        run: npm run test:coverage
 
       - name: Run Firestore rules tests
         run: npm run test:rules
@@ -135,8 +138,8 @@ jobs:
       - name: Install firebase-tools (pinned)
         run: npm install -g firebase-tools@${FIREBASE_CLI_VERSION}
 
-      - name: Run functions tests
-        run: npm run test:functions
+      - name: Run functions tests (with coverage)
+        run: npm run test:coverage:functions
 
       - name: Upload firestore debug log on failure
         if: failure()
