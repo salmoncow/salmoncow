@@ -1,4 +1,7 @@
 {
+  // Type-checks the JavaScript in src/ via its JSDoc. Nothing is emitted —
+  // Vite owns the build. See DEVELOPMENT.md "Type checking" for the staged
+  // adoption plan and how to tighten this further.
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
@@ -12,7 +15,21 @@
     "strict": true,
     "esModuleInterop": true,
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
+
+    // --- Staged adoption: relaxed for now, tighten later ---
+
+    // The codebase predates type checking, so most function parameters carry no
+    // @param tag. Requiring them would mean ~110 annotation-only edits for no
+    // behavioural benefit. The checks that find real mistakes — property
+    // access, null safety, and type mismatches — all remain on.
+    "noImplicitAny": false,
+
+    // Restores pre-TS-4.4 `any` for catch bindings. A dozen catch blocks
+    // inspect err.code / err.message on Firebase errors; narrowing each one
+    // adds ceremony without changing behaviour.
+    "useUnknownInCatchVariables": false,
+
     "paths": {
       "@/*": ["./src/*"],
       "@modules/*": ["./src/modules/*"],

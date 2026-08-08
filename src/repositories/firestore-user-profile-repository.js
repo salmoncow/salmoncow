@@ -145,6 +145,10 @@ export class FirestoreUserProfileRepository extends UserProfileRepository {
     async listPaginated({ pageSize = 20, cursor = null } = {}) {
         try {
             const coll = collection(this.db, USERS);
+            // Annotated because the array would otherwise be inferred from its
+            // first element as QueryOrderByConstraint[], rejecting the
+            // startAfter and limit constraints pushed below.
+            /** @type {import('firebase/firestore').QueryConstraint[]} */
             const parts = [orderBy('createdAt', 'desc')];
             if (cursor instanceof Date) {
                 parts.push(startAfter(Timestamp.fromDate(cursor)));

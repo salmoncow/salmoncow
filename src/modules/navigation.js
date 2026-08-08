@@ -177,7 +177,8 @@ export class NavigationModule {
 
         // Click outside to close dropdown
         document.addEventListener('click', (e) => {
-            if (this.isDropdownOpen && !e.target.closest('.nav-user-container')) {
+            const target = /** @type {Element|null} */ (e.target);
+            if (this.isDropdownOpen && !target?.closest('.nav-user-container')) {
                 this.closeDropdown();
             }
         });

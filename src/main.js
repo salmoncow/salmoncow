@@ -72,17 +72,17 @@ class App {
             // preference is 'system'. Firestore value takes over once the profile
             // loads (see setupAuthStateListener → profileService.onStateChange).
             this.theme = new ThemeModule();
-            this.theme.init();
+            this.theme?.init();
 
             // Initialize UI and navigation modules
             this.ui = new UIModule();
             this.navigation = new NavigationModule();
             this.ui.init();
-            this.navigation.init();
+            this.navigation?.init();
 
             // Apply auth hint immediately (no blocking wait)
             const hint = AuthHintModule.getHint();
-            this.navigation.initWithHint(hint);
+            this.navigation?.initWithHint(hint);
 
             // Initialize Firebase (non-blocking)
             this.firebaseApp = initializeApp(firebaseConfig);
@@ -107,17 +107,17 @@ class App {
 
             // Role state (custom claim + users/{uid}.roleChangedAt mirror listener)
             this.role = new RoleModule(this.auth, getDb(this.firebaseApp));
-            this.role.init();
+            this.role?.init();
 
             // If a role change demotes the user off /admin, bounce them to home.
-            this.role.onRoleChange((nextRole) => {
+            this.role?.onRoleChange((nextRole) => {
                 if (
                     this.router?.getCurrentRoute() === '/admin' &&
                     nextRole !== null &&
                     nextRole !== 'owner' &&
                     nextRole !== 'admin'
                 ) {
-                    this.router.navigate('/');
+                    this.router?.navigate('/');
                 }
             });
 
@@ -136,10 +136,12 @@ class App {
             this.setupAuthStateListener();
 
             // Initialize toast container
-            this.toastContainer = document.getElementById('toastContainer');
+            this.toastContainer = /** @type {import('./components/ToastContainer.js').ToastContainer|null} */ (
+                document.getElementById('toastContainer')
+            );
 
             // Initialize router (handles initial route)
-            this.router.init();
+            this.router?.init();
 
         } catch (error) {
             // Previously this was a bare console.error, which left the user
@@ -192,19 +194,19 @@ class App {
      * Setup routes for hash-based navigation
      */
     setupRoutes() {
-        this.router.register('/', () => this.showView('homeView'));
-        this.router.register('/profile', () => this.showView('profileView'));
-        this.router.register('/admin', () => {
+        this.router?.register('/', () => this.showView('homeView'));
+        this.router?.register('/profile', () => this.showView('profileView'));
+        this.router?.register('/admin', () => {
             this.showView('adminView');
             this.adminPortal?.show();
         });
 
-        this.router.onBeforeNavigate((newPath) => {
+        this.router?.onBeforeNavigate((newPath) => {
             if (newPath === '/profile') {
                 // Allow if authenticated or hint suggests authentication
                 const hint = AuthHintModule.getHint();
                 if (!this.auth?.isAuthenticated() && !hint?.isAuthenticated) {
-                    this.router.navigate('/');
+                    this.router?.navigate('/');
                     return false;
                 }
             }
@@ -213,14 +215,14 @@ class App {
                 // setUserRole callable. This guard is UX only: keep unprivileged
                 // users from landing on a page that would render nothing.
                 if (!this.auth?.isAuthenticated()) {
-                    this.router.navigate('/');
+                    this.router?.navigate('/');
                     return false;
                 }
                 const role = this.role?.getRole();
                 // role === null means the token hasn't loaded yet; let the user
                 // through and re-evaluate when onRoleChange fires (see init()).
                 if (role !== null && role !== 'owner' && role !== 'admin') {
-                    this.router.navigate('/');
+                    this.router?.navigate('/');
                     return false;
                 }
             }
@@ -238,24 +240,27 @@ class App {
             const el = document.getElementById(v);
             if (el) el.style.display = v === id ? 'block' : 'none';
         }
-        this.navigation.closeDropdown();
+        this.navigation?.closeDropdown();
     }
 
     /**
      * Initialize user profile service and portal module
      */
     initializeUserPortal() {
+        // Both portals are meaningless without Firebase; bail rather than
+        // constructing services around a null app.
+        if (!this.firebaseApp) return;
         const repositoryFactory = createRepositoryFactory({ firebaseApp: this.firebaseApp });
         this._userRepository = repositoryFactory.getUserProfileRepository();
         this.profileService = new UserProfileService(this._userRepository);
         // Authoritative theme apply: whenever the cached profile changes
         // (sign-in, successful preference update, or post-revert reload),
         // re-apply the stored theme preference to the DOM.
-        this._themeProfileUnsub = this.profileService.onStateChange((profile) =>
+        this._themeProfileUnsub = this.profileService?.onStateChange((profile) =>
             this.theme?.onProfileLoaded(profile),
         );
         this.userPortal = new UserPortalModule(this.profileService, { theme: this.theme });
-        this.userPortal.init('userPortalContainer');
+        this.userPortal?.init('userPortalContainer');
     }
 
     /**
@@ -264,6 +269,7 @@ class App {
      * loaded on first route match.
      */
     initializeAdminPortal() {
+        if (!this.firebaseApp || !this.role) return;
         this.adminUserService = new AdminUserService({
             firebaseApp: this.firebaseApp,
             repository: this._userRepository,
@@ -276,10 +282,10 @@ class App {
                     this.showToast(type, message, duration),
             },
         });
-        this.adminPortal.init('adminPortalContainer');
+        this.adminPortal?.init('adminPortalContainer');
 
         // Keep navigation Admin link synced with the role observable.
-        this.role.onRoleChange((next) => this.navigation.setRole(next));
+        this.role?.onRoleChange((next) => this.navigation?.setRole(next));
     }
 
     /**
@@ -287,7 +293,8 @@ class App {
      * @param {string} type - Type: success, error, warning, info, loading
      * @param {string} message - Message to display
      * @param {number} duration - Auto-dismiss in ms (0 = manual only)
-     * @returns {HTMLElement|null} The toast element for programmatic control
+     * @returns {import('./components/StatusBadge.js').StatusBadge|undefined} The toast
+     *   element for programmatic control, or undefined before the container mounts
      */
     showToast(type, message, duration = 3000) {
         return this.toastContainer?.show(type, message, duration);
@@ -295,11 +302,12 @@ class App {
 
     setupEventListeners() {
         // Login via navigation bar
-        this.navigation.onLoginClick(async () => {
+        this.navigation?.onLoginClick(async () => {
             const loadingToast = this.showToast('loading', 'Signing in...', 0);
 
             try {
                 validateFirebaseConfig();
+                if (!this.auth) throw new Error('Auth is not initialized');
                 const result = await this.auth.signInWithGoogle();
 
                 loadingToast?.dismiss();
@@ -307,7 +315,7 @@ class App {
                 if (result.success) {
                     this.showToast('success', result.message);
                     // Redirect to profile on successful login
-                    this.router.navigate('/profile');
+                    this.router?.navigate('/profile');
                 } else {
                     throw result.error;
                 }
@@ -323,16 +331,17 @@ class App {
         });
 
         // Logout via navigation dropdown
-        this.navigation.onLogoutClick(async () => {
+        this.navigation?.onLogoutClick(async () => {
             const loadingToast = this.showToast('loading', 'Signing out...', 0);
 
             try {
+                if (!this.auth) throw new Error('Auth is not initialized');
                 const result = await this.auth.signOut();
 
                 loadingToast?.dismiss();
 
                 if (result.success) {
-                    this.router.navigate('/');
+                    this.router?.navigate('/');
                     this.showToast('success', result.message);
                 } else {
                     throw result.error;
@@ -344,7 +353,7 @@ class App {
         });
 
         // Navigation events (future routing support)
-        this.navigation.onNavigate((destination) => {
+        this.navigation?.onNavigate((destination) => {
             console.log(`Navigation event: ${destination}`);
         });
 
@@ -352,27 +361,27 @@ class App {
         const profileLink = document.getElementById('navProfileLink');
         if (profileLink) {
             profileLink.addEventListener('click', () => {
-                this.navigation.closeDropdown();
+                this.navigation?.closeDropdown();
             });
         }
     }
 
     setupAuthStateListener() {
-        this.auth.onAuthStateChanged((user) => {
+        this.auth?.onAuthStateChanged((user) => {
             // Update both UI module and navigation module
-            this.ui.updateLoginButton(user);
-            this.navigation.updateAuthState(user);
+            this.ui?.updateLoginButton(user);
+            this.navigation?.updateAuthState(user);
 
             // Update user portal state
             if (this.userPortal) {
-                this.userPortal.handleAuthStateChange(user);
+                this.userPortal?.handleAuthStateChange(user);
             }
 
             // If user signed out while on a protected route, redirect home
             if (!user) {
-                const current = this.router.getCurrentRoute();
+                const current = this.router?.getCurrentRoute();
                 if (current === '/profile' || current === '/admin') {
-                    this.router.navigate('/');
+                    this.router?.navigate('/');
                 }
             }
 

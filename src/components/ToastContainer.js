@@ -35,10 +35,12 @@ export class ToastContainer extends HTMLElement {
      * @param {string} type - Type of toast: success, error, warning, info, loading
      * @param {string} message - Message to display
      * @param {number} duration - Auto-dismiss duration in ms (0 = no auto-dismiss)
-     * @returns {HTMLElement} The created toast element
+     * @returns {import('./StatusBadge.js').StatusBadge} The created toast element
      */
     show(type, message, duration = 3000) {
-        const toast = document.createElement('status-badge');
+        const toast = /** @type {import('./StatusBadge.js').StatusBadge} */ (
+            document.createElement('status-badge')
+        );
         toast.setAttribute('type', type);
         toast.setAttribute('message', message);
         toast.setAttribute('dismissible', 'true');
@@ -50,7 +52,7 @@ export class ToastContainer extends HTMLElement {
         if (duration > 0) {
             setTimeout(() => {
                 if (toast.isConnected) {
-                    toast.dismiss();
+                    /** @type {import('./StatusBadge.js').StatusBadge} */ (toast).dismiss();
                 }
             }, duration);
         }

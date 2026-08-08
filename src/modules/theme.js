@@ -87,7 +87,7 @@ export class ThemeModule {
      */
     onProfileLoaded(profile) {
         const pref = profile?.preferences?.theme;
-        if (!pref) return;
+        if (pref !== 'light' && pref !== 'dark' && pref !== 'system') return;
         this.applyPreference(pref);
     }
 

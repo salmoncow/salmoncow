@@ -246,7 +246,8 @@ ${footer}`;
 
     attachDelegatedListeners() {
         this.addEventListener('click', (e) => {
-            const action = e.target?.dataset?.action;
+            const target = /** @type {HTMLElement|null} */ (e.target);
+            const action = target?.dataset?.action;
             if (action === 'load-more') {
                 this.setLoadingMore(true);
                 this.dispatchEvent(new CustomEvent('page-request', { bubbles: true }));
@@ -257,9 +258,10 @@ ${footer}`;
         });
 
         this.addEventListener('change', (e) => {
-            if (e.target?.dataset?.action !== 'role-change') return;
-            const targetUid = e.target.dataset.uid;
-            const toRole = e.target.value;
+            const target = /** @type {HTMLSelectElement|null} */ (e.target);
+            if (target?.dataset?.action !== 'role-change') return;
+            const targetUid = target.dataset.uid;
+            const toRole = target.value;
             this.dispatchEvent(
                 new CustomEvent('role-change', {
                     bubbles: true,
@@ -269,8 +271,9 @@ ${footer}`;
         });
 
         this.addEventListener('input', (e) => {
-            if (!e.target?.classList?.contains('admin-portal__search')) return;
-            this.query = e.target.value;
+            const target = /** @type {HTMLInputElement|null} */ (e.target);
+            if (!target?.classList?.contains('admin-portal__search')) return;
+            this.query = target.value;
             const container = this.querySelector('.admin-portal__results');
             if (container) container.innerHTML = this.renderInner();
         });

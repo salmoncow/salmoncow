@@ -24,7 +24,7 @@ import { FirestoreUserProfileRepository } from '../repositories/firestore-user-p
 
 export class RepositoryFactory {
     /**
-     * @param {RepositoryConfig} config
+     * @param {Partial<RepositoryConfig>} [config]
      */
     constructor(config = {}) {
         if (!config.firebaseApp) {

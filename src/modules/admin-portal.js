@@ -17,7 +17,7 @@ export class AdminPortalModule {
      * @param {object} deps
      * @param {import('../services/admin-user-service.js').AdminUserService} deps.adminService
      * @param {import('./role.js').RoleModule} deps.role
-     * @param {{ show: Function }} [deps.toast] - optional toast API: show(type, message, duration)
+     * @param {{ show: Function }|null} [deps.toast] - optional toast API: show(type, message, duration)
      */
     constructor({ adminService, role, toast = null }) {
         if (!adminService) throw new Error('AdminPortalModule requires adminService');
@@ -41,7 +41,9 @@ export class AdminPortalModule {
             console.warn(`AdminPortalModule: container #${containerId} not found`);
             return;
         }
-        this.portal = document.createElement('admin-portal');
+        this.portal = /** @type {import('../components/AdminPortal.js').AdminPortal} */ (
+            document.createElement('admin-portal')
+        );
         this.container.appendChild(this.portal);
 
         this.attachComponentListeners();
@@ -49,10 +51,10 @@ export class AdminPortalModule {
     }
 
     attachComponentListeners() {
-        this.portal.addEventListener('page-request', () => this.loadMore());
-        this.portal.addEventListener('retry-request', () => this.refresh());
-        this.portal.addEventListener('role-change', (e) => {
-            const { targetUid, toRole } = e.detail ?? {};
+        this.portal?.addEventListener('page-request', () => this.loadMore());
+        this.portal?.addEventListener('retry-request', () => this.refresh());
+        this.portal?.addEventListener('role-change', (e) => {
+            const { targetUid, toRole } = /** @type {CustomEvent} */ (e).detail ?? {};
             if (targetUid && toRole) this.handleRoleChange(targetUid, toRole);
         });
     }
@@ -77,32 +79,32 @@ export class AdminPortalModule {
 
     async refresh() {
         this.cursor = null;
-        this.portal.setLoading(true);
+        this.portal?.setLoading(true);
         const res = await this.adminService.listUsers({ pageSize: 20, cursor: null });
         if (!res.success) {
-            this.portal.setError(res.error ?? 'Failed to load users');
+            this.portal?.setError(res.error ?? 'Failed to load users');
             return;
         }
         this.cursor = res.data.nextCursor;
         this.hasMore = res.data.hasMore;
-        this.portal.setUsers(res.data.users, res.data.hasMore);
+        this.portal?.setUsers(res.data.users, res.data.hasMore);
     }
 
     async loadMore() {
         if (!this.hasMore || this.cursor == null) return;
-        this.portal.setLoadingMore(true);
+        this.portal?.setLoadingMore(true);
         const res = await this.adminService.listUsers({
             pageSize: 20,
             cursor: this.cursor,
         });
         if (!res.success) {
-            this.portal.setLoadingMore(false);
+            this.portal?.setLoadingMore(false);
             this.toast?.show?.('error', res.error ?? 'Failed to load more users', 5000);
             return;
         }
         this.cursor = res.data.nextCursor;
         this.hasMore = res.data.hasMore;
-        this.portal.appendUsers(res.data.users, res.data.hasMore);
+        this.portal?.appendUsers(res.data.users, res.data.hasMore);
     }
 
     async handleRoleChange(targetUid, toRole) {
@@ -118,7 +120,7 @@ export class AdminPortalModule {
             await this.refresh();
             return;
         }
-        this.portal.updateUserRole(targetUid, toRole);
+        this.portal?.updateUserRole(targetUid, toRole);
         this.toast?.show?.('success', `Role updated to ${toRole}`, 3000);
     }
 
