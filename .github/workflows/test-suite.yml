@@ -60,6 +60,13 @@ jobs:
       - name: Install root dependencies
         run: npm ci --prefer-offline
 
+      - name: Type-check
+        # Verifies the JSDoc across src/ via tsc. Deliberately a step in this
+        # job rather than a job of its own: each job becomes its own required
+        # status check, and adding one without updating the branch ruleset
+        # silently stops gating on it.
+        run: npm run typecheck
+
       - name: Build web app
         # Catches a broken Vite build in CI rather than at deploy time, and
         # produces dist/ so the CSP inline-script hash test actually executes

@@ -92,6 +92,52 @@ firebase use salmoncow
 - Security headers (XSS protection, clickjacking prevention)
 - SPA routing (all routes serve `index.html`)
 
+## Type checking
+
+`src/` is JavaScript, but its JSDoc is verified by TypeScript:
+
+```bash
+npm run typecheck
+```
+
+This also runs in CI as a step inside the `Run test suite` job. It is a step
+rather than a job of its own on purpose — every job becomes its own required
+status check, and adding one without updating the branch ruleset silently stops
+gating on it.
+
+Nothing is emitted; Vite still owns the build.
+
+### Firebase types
+
+Firebase is loaded from the gstatic CDN and marked external in
+`vite.config.js`, so TypeScript cannot resolve those `https://` specifiers.
+`src/types/firebase-cdn.d.ts` maps each CDN URL onto the matching entry point of
+the `firebase` package, installed as a **devDependency for types only**. Nothing
+about the shipped bundle changes.
+
+A side benefit: the SDK version used to live only inside URL strings, invisible
+to `npm audit` and Dependabot. It is now a real dependency entry those tools can
+see. **The version in `firebase-cdn.d.ts` and in the `src/` import URLs must stay
+in step** — a mismatch surfaces as an unresolved module rather than silently.
+
+### Staged strictness
+
+`strict` is on, with two deliberate relaxations recorded in `tsconfig.json`:
+
+- `noImplicitAny: false` — the codebase predates type checking and most
+  parameters have no `@param`. Requiring them meant ~110 annotation-only edits
+  with no behavioural benefit.
+- `useUnknownInCatchVariables: false` — a dozen catch blocks read `err.code` /
+  `err.message` from Firebase errors.
+
+Everything that finds real mistakes stays on: property access, null safety, and
+type mismatches. Enabling this the first time surfaced genuinely broken JSDoc —
+`Result` and `User` were referenced in `@returns` but never imported, so those
+annotations resolved to nothing.
+
+To tighten later, flip `noImplicitAny` back on and work through the backlog
+file by file; nothing else needs to change.
+
 ## Observability
 
 ### Error reporting

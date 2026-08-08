@@ -51,7 +51,7 @@ export class UserProfileService {
      * Creates new profile if user doesn't have one
      *
      * @param {Object} authUser - Firebase Auth user
-     * @returns {Promise<Result>} Result with UserProfile
+     * @returns {Promise<import('../repositories/user-profile-repository.js').Result>} Result with UserProfile
      */
     async getOrCreateProfile(authUser) {
         if (!authUser || !authUser.uid) {
@@ -91,7 +91,7 @@ export class UserProfileService {
     /**
      * Get a user profile by ID
      * @param {string} uid - User ID
-     * @returns {Promise<Result>} Result with UserProfile or null
+     * @returns {Promise<import('../repositories/user-profile-repository.js').Result>} Result with UserProfile or null
      */
     async getProfile(uid) {
         if (!uid) {
@@ -116,7 +116,7 @@ export class UserProfileService {
      * Update user preferences
      * @param {string} uid - User ID
      * @param {Partial<import('../types/user-profile.js').UserPreferences>} preferences
-     * @returns {Promise<Result>} Result with updated UserProfile
+     * @returns {Promise<import('../repositories/user-profile-repository.js').Result>} Result with updated UserProfile
      */
     async updatePreferences(uid, preferences) {
         if (!uid) {
@@ -150,7 +150,7 @@ export class UserProfileService {
      * Update user profile fields
      * @param {string} uid - User ID
      * @param {Object} updates - Fields to update
-     * @returns {Promise<Result>} Result with updated UserProfile
+     * @returns {Promise<import('../repositories/user-profile-repository.js').Result>} Result with updated UserProfile
      */
     async updateProfile(uid, updates) {
         if (!uid) {

@@ -18,7 +18,7 @@ export class UserPortalModule {
     /**
      * Create UserPortalModule
      * @param {import('../services/user-profile-service.js').UserProfileService} profileService
-     * @param {{ theme?: import('./theme.js').ThemeModule }} [options] Optional DI:
+     * @param {{ theme?: import('./theme.js').ThemeModule|null }} [options] Optional DI:
      *   - theme: apply theme changes optimistically for instant UI response.
      *     The authoritative apply happens via profileService.onStateChange()
      *     wired in main.js, so this module only needs to fire-and-forget.
@@ -54,8 +54,10 @@ export class UserPortalModule {
      * Create and mount the UserPortal component
      */
     createPortalComponent() {
-        this.portal = document.createElement('user-portal');
-        this.container.appendChild(this.portal);
+        this.portal = /** @type {import('../components/UserPortal.js').UserPortal} */ (
+            document.createElement('user-portal')
+        );
+        this.container?.appendChild(this.portal);
     }
 
     /**
@@ -65,7 +67,7 @@ export class UserPortalModule {
         if (!this.portal) return;
 
         this.portal.addEventListener('preference-change', async (event) => {
-            const { key, value } = event.detail;
+            const { key, value } = /** @type {CustomEvent} */ (event).detail;
             await this.handlePreferenceChange(key, value);
         });
     }

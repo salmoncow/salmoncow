@@ -122,6 +122,7 @@ export class UserPortal extends HTMLElement {
     }
 
     renderProfile() {
+        if (!this.profile) return '';
         const { displayName, email, photoURL, preferences, createdAt } = this.profile;
         const memberSince = this.formatDate(createdAt);
         const currentTheme = preferences?.theme || 'system';
@@ -182,7 +183,8 @@ export class UserPortal extends HTMLElement {
         const themeSelect = this.querySelector('#themeSelect');
         if (themeSelect) {
             themeSelect.addEventListener('change', (e) => {
-                this.emitPreferenceChange('theme', e.target.value);
+                const el = /** @type {HTMLSelectElement} */ (e.target);
+                this.emitPreferenceChange('theme', el.value);
             });
         }
 
@@ -190,7 +192,8 @@ export class UserPortal extends HTMLElement {
         const emailToggle = this.querySelector('#emailNotificationsToggle');
         if (emailToggle) {
             emailToggle.addEventListener('change', (e) => {
-                this.emitPreferenceChange('emailNotifications', e.target.checked);
+                const el = /** @type {HTMLInputElement} */ (e.target);
+                this.emitPreferenceChange('emailNotifications', el.checked);
             });
         }
     }

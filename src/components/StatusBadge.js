@@ -59,7 +59,7 @@ export class StatusBadge extends HTMLElement {
         // Add dismiss handler
         if (dismissible) {
             const closeBtn = this.querySelector('.status-badge-close');
-            closeBtn.addEventListener('click', () => this.dismiss());
+            closeBtn?.addEventListener('click', () => this.dismiss());
         }
 
         this.addStyles();
