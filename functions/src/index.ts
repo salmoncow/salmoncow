@@ -2,3 +2,4 @@
 // Spec: .specs/archive/001-multi-user-rbac/spec.md §XI.4
 export { setUserRole } from './setUserRole.js';
 export { onUserCreate } from './onUserCreate.js';
+export { logClientError } from './logClientError.js';
