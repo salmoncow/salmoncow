@@ -37,6 +37,43 @@ function cspValue() {
     return header?.value ?? '';
 }
 
+/**
+ * App Check depends on reCAPTCHA Enterprise, which talks to https://www.google.com.
+ * That origin was present in script-src but missing from connect-src, so the
+ * browser blocked reCAPTCHA's fetches, App Check attestation failed with 403,
+ * and the SDK self-throttled for 24 hours — taking every App Check-gated
+ * callable (logClientError, setUserRole) down with it, silently.
+ *
+ * The failure produced no user-visible symptom and no server-side error: the
+ * callables were simply never reached. These assertions pin the origins that
+ * App Check needs so the same silent outage cannot be reintroduced by tidying
+ * the policy.
+ */
+describe('CSP App Check / reCAPTCHA requirements', () => {
+    const directives = Object.fromEntries(
+        cspValue()
+            .split(';')
+            .map((d) => d.trim())
+            .filter(Boolean)
+            .map((d) => {
+                const [name, ...sources] = d.split(/\s+/);
+                return [name, sources];
+            }),
+    );
+
+    it.each([
+        ['connect-src', 'reCAPTCHA Enterprise fetches its challenge from www.google.com'],
+        ['script-src', 'the reCAPTCHA Enterprise script is served from www.google.com'],
+        ['frame-src', 'reCAPTCHA renders its challenge in an iframe'],
+    ])('%s allows https://www.google.com — %s', (directive) => {
+        expect(directives[directive]).toContain('https://www.google.com');
+    });
+
+    it('connect-src allows the App Check exchange endpoint', () => {
+        expect(directives['connect-src']).toContain('https://firebaseappcheck.googleapis.com');
+    });
+});
+
 describe('CSP inline-script hashes', () => {
     it('never allows unsafe-inline in script-src', () => {
         // Independent of the build, so it runs even without dist/.
