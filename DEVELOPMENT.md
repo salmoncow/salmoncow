@@ -159,23 +159,30 @@ CSP-bypass origin back into `script-src` — the exact entry removed in `af76bae
 once it was found to be unused. `VITE_FIREBASE_MEASUREMENT_ID` is therefore
 still inert config; leave it or remove it, but don't assume it does anything.
 
-### Budget alerts (manual — requires billing permissions)
+### Budget alert
 
-The project is on Blaze, and `setUserRole` is a publicly reachable callable.
-Constitution §VI.1 wants alerts at 70% and 90% of quota, but the entire
-cost-control program is currently "check the console every Monday". A budget
-alert is the automated floor and cannot be set from this repo — it needs
-billing-account access:
+A **$5/month** budget alert is configured on the billing account for this
+project. Review or adjust it at GCP Console → **Billing** → **Budgets & alerts**
+(Firebase Console → ⚙️ → **Usage and billing** → **Details & settings** links to
+the same page).
 
-1. GCP Console → **Billing** → **Budgets & alerts** → **Create budget**
-2. Scope to project `salmoncow`
-3. Set a monthly amount you would want to know about (the free quotas make
-   anything above a few dollars a signal that something is wrong, not growth)
-4. Add threshold rules at **50%**, **70%**, and **90%** of actual spend
-5. Set email recipients to the billing admin
+$5 is a deliberately tight threshold rather than a spending limit. Blaze free
+quotas should keep normal usage at or near $0, so any meaningful spend is a
+signal that something is wrong — a runaway function, an abusive caller, a
+query pattern gone quadratic — not that the project is growing.
 
-Firebase Console → ⚙️ → **Usage and billing** → **Details & settings** links to
-the same budgets page.
+Two things it does **not** cover, so it complements rather than replaces the
+§VI.1 quota checks:
+
+- It measures **spend, not quota consumption**, and billing data lags by hours.
+  A burst that burns most of a daily free quota costs nothing and so triggers
+  nothing.
+- It is an **alert, not a cap**. Nothing stops spend automatically; the alert
+  is a prompt to go look.
+
+For faster signal on the Functions side, alert on the `logClientError` and
+`setUserRole` invocation counts in Cloud Monitoring, which react in minutes
+rather than hours.
 
 ## Rollback
 
