@@ -92,6 +92,61 @@ firebase use salmoncow
 - Security headers (XSS protection, clickjacking prevention)
 - SPA routing (all routes serve `index.html`)
 
+## Observability
+
+### Error reporting
+
+All client errors funnel through
+[src/infrastructure/error-reporter.js](src/infrastructure/error-reporter.js).
+`installGlobalHandlers()` runs first in `App.init()` and captures uncaught
+exceptions and unhandled promise rejections; anything else calls
+`reportError(error, { source })` directly.
+
+The reporter never throws, never blocks, dedupes identical errors, and caps
+reports per page session, so a component throwing every frame cannot flood.
+Reports carry message, stack, source, route, timestamp, and explicit context
+only — no email, displayName, or photoURL (constitution §III.2).
+
+**Today the only sink is the console.** That is a real improvement over
+scattered `console.error` calls — errors are now catchable in one place and the
+user sees a degraded state instead of a dead page — but it is not remote
+collection. Adding a remote sink is a one-file change: call `addSink(fn)` with
+a function that ships the report wherever you want. Until that exists, a
+production error is still only visible to the user who hit it.
+
+### Performance Monitoring
+
+[src/infrastructure/performance.js](src/infrastructure/performance.js)
+initializes Firebase Performance in production (skipped under the emulator,
+where local page loads would pollute production percentiles). This is what
+makes the constitution §III.3 p95 targets — FCP, LCP, TTI, CLS — measurable
+rather than aspirational. Data appears in Firebase Console → Performance,
+typically within a few hours of first traffic.
+
+Firebase **Analytics** is deliberately *not* enabled. Its SDK loads gtag from
+`https://www.googletagmanager.com`, which would mean putting a documented
+CSP-bypass origin back into `script-src` — the exact entry removed in `af76bae`
+once it was found to be unused. `VITE_FIREBASE_MEASUREMENT_ID` is therefore
+still inert config; leave it or remove it, but don't assume it does anything.
+
+### Budget alerts (manual — requires billing permissions)
+
+The project is on Blaze, and `setUserRole` is a publicly reachable callable.
+Constitution §VI.1 wants alerts at 70% and 90% of quota, but the entire
+cost-control program is currently "check the console every Monday". A budget
+alert is the automated floor and cannot be set from this repo — it needs
+billing-account access:
+
+1. GCP Console → **Billing** → **Budgets & alerts** → **Create budget**
+2. Scope to project `salmoncow`
+3. Set a monthly amount you would want to know about (the free quotas make
+   anything above a few dollars a signal that something is wrong, not growth)
+4. Add threshold rules at **50%**, **70%**, and **90%** of actual spend
+5. Set email recipients to the billing admin
+
+Firebase Console → ⚙️ → **Usage and billing** → **Details & settings** links to
+the same budgets page.
+
 ## Rollback
 
 Deploys to `main` are gated on the test suite (see
