@@ -1,3 +1,4 @@
+import './ToastContainer.css';
 /**
  * ToastContainer Web Component
  *
@@ -27,7 +28,6 @@ export class ToastContainer extends HTMLElement {
         this.setAttribute('role', 'region');
         this.setAttribute('aria-label', 'Notifications');
         this.setAttribute('aria-live', 'polite');
-        this.addStyles();
     }
 
     /**
@@ -65,67 +65,6 @@ export class ToastContainer extends HTMLElement {
         });
 
         return toast;
-    }
-
-    addStyles() {
-        // Check if styles already added to document
-        if (document.getElementById('toast-container-styles')) {
-            return;
-        }
-
-        const style = document.createElement('style');
-        style.id = 'toast-container-styles';
-        style.textContent = `
-            toast-container {
-                position: fixed;
-                bottom: 1.5rem;
-                right: 1.5rem;
-                z-index: 9999;
-                display: flex;
-                flex-direction: column-reverse;
-                gap: 0.75rem;
-                max-width: 400px;
-                pointer-events: none;
-            }
-
-            toast-container > * {
-                pointer-events: auto;
-                animation: toast-slide-in 0.3s ease-out;
-            }
-
-            @keyframes toast-slide-in {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-
-            /* Mobile responsiveness */
-            @media (max-width: 480px) {
-                toast-container {
-                    left: 1rem;
-                    right: 1rem;
-                    max-width: none;
-                }
-
-                @keyframes toast-slide-in {
-                    from {
-                        transform: translateY(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                }
-            }
-        `;
-
-        document.head.appendChild(style);
     }
 }
 

@@ -17,6 +17,7 @@
  *   See: .prompts/meta/architectural-evolution-strategy.md
  */
 import { escapeHtml } from '../utils/escape-html.js';
+import './LoadingSpinner.css';
 
 export class LoadingSpinner extends HTMLElement {
     static get observedAttributes() {
@@ -81,90 +82,6 @@ export class LoadingSpinner extends HTMLElement {
                 </div>
             </div>
         `;
-
-        // Add animation
-        this.addStyles();
-    }
-
-    addStyles() {
-        // Check if styles already added to document
-        if (document.getElementById('loading-spinner-styles')) {
-            return;
-        }
-
-        const style = document.createElement('style');
-        style.id = 'loading-spinner-styles';
-        style.textContent = `
-            .loading-spinner-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 1rem;
-                padding: 2rem;
-            }
-
-            .loading-spinner-svg {
-                animation: loading-spinner-rotate 1.4s linear infinite;
-            }
-
-            .loading-spinner-path {
-                animation: loading-spinner-dash 1.4s ease-in-out infinite;
-                stroke-linecap: round;
-            }
-
-            .loading-spinner-container {
-                color: var(--text-secondary);
-            }
-
-            .loading-spinner-message {
-                color: inherit;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                text-align: center;
-            }
-
-            @keyframes loading-spinner-rotate {
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-
-            @keyframes loading-spinner-dash {
-                0% {
-                    stroke-dasharray: 1, 150;
-                    stroke-dashoffset: 0;
-                }
-                50% {
-                    stroke-dasharray: 90, 150;
-                    stroke-dashoffset: -35;
-                }
-                100% {
-                    stroke-dasharray: 90, 150;
-                    stroke-dashoffset: -124;
-                }
-            }
-
-            /* Full-page loading overlay variant */
-            .loading-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: var(--surface-elevated);
-                opacity: 0.95;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 9999;
-            }
-
-            .loading-overlay .loading-spinner-container {
-                padding: 3rem;
-            }
-        `;
-
-        document.head.appendChild(style);
     }
 }
 

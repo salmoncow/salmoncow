@@ -23,6 +23,7 @@
 // served as index.html, breaking the fallback.
 import defaultAvatarUrl from '../assets/images/placeholders/default-avatar.svg';
 import { safeImageUrl } from '../utils/escape-html.js';
+import './UserAvatar.css';
 
 export class UserAvatar extends HTMLElement {
     static get observedAttributes() {
@@ -84,53 +85,10 @@ export class UserAvatar extends HTMLElement {
         });
 
         this.replaceChildren(img);
-
-        this.addStyles();
     }
 
     getDefaultAvatar() {
         return defaultAvatarUrl;
-    }
-
-    addStyles() {
-        // Check if styles already added to document
-        if (document.getElementById('user-avatar-styles')) {
-            return;
-        }
-
-        const style = document.createElement('style');
-        style.id = 'user-avatar-styles';
-        style.textContent = `
-            .user-avatar {
-                border-radius: 50%;
-                object-fit: cover;
-                display: inline-block;
-                background-color: var(--surface-muted);
-                border: 1px solid var(--surface-border);
-            }
-
-            .user-avatar[data-size="small"] {
-                width: 24px;
-                height: 24px;
-            }
-
-            .user-avatar[data-size="medium"] {
-                width: 32px;
-                height: 32px;
-            }
-
-            .user-avatar[data-size="large"] {
-                width: 48px;
-                height: 48px;
-            }
-
-            .user-avatar[data-size="xlarge"] {
-                width: 64px;
-                height: 64px;
-            }
-        `;
-
-        document.head.appendChild(style);
     }
 }
 

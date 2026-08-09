@@ -1,0 +1,35 @@
+/*
+ * Styles for <user-avatar>.
+ *
+ * Extracted from a template literal inside the component. Living in a real
+ * stylesheet means Vite's CSS pipeline minifies and hashes it, and editors,
+ * linters, and search treat it as CSS rather than an opaque string.
+ */
+
+.user-avatar {
+    border-radius: 50%;
+    object-fit: cover;
+    display: inline-block;
+    background-color: var(--surface-muted);
+    border: 1px solid var(--surface-border);
+}
+
+.user-avatar[data-size='small'] {
+    width: 24px;
+    height: 24px;
+}
+
+.user-avatar[data-size='medium'] {
+    width: 32px;
+    height: 32px;
+}
+
+.user-avatar[data-size='large'] {
+    width: 48px;
+    height: 48px;
+}
+
+.user-avatar[data-size='xlarge'] {
+    width: 64px;
+    height: 64px;
+}

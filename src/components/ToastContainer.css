@@ -1,0 +1,55 @@
+/*
+ * Styles for <toast-container>.
+ *
+ * Extracted from a template literal inside the component. Living in a real
+ * stylesheet means Vite's CSS pipeline minifies and hashes it, and editors,
+ * linters, and search treat it as CSS rather than an opaque string.
+ */
+
+toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+toast-container > * {
+    pointer-events: auto;
+    animation: toast-slide-in 0.3s ease-out;
+}
+
+@keyframes toast-slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    toast-container {
+        left: 1rem;
+        right: 1rem;
+        max-width: none;
+    }
+
+    @keyframes toast-slide-in {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
