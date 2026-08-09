@@ -3,6 +3,8 @@
 ## Prerequisites
 
 - Node.js — see [Node version](#node-version) below
+- **Java 21** — the Firestore emulator runs on the JVM, so `npm run dev` and
+  both emulator-backed test lanes need it
 - Firebase CLI (`npm install -g firebase-tools`)
 - Modern web browser
 
@@ -21,31 +23,67 @@ If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm use` in each directory
 
 ```bash
 npm install
+cp .env.example .env   # fill in your Firebase web config
 npm run dev
 ```
 
-This starts the Vite development server with Hot Module Replacement (HMR) at http://localhost:3000
+`npm run dev` starts the **Firebase emulator suite** (Auth, Firestore,
+Functions) *and* Vite, so local development never touches production data. It
+serves at http://localhost:3000, and emulator state is imported from and
+exported to `.emulator-data/` so it survives restarts.
 
-### Build Scripts
+This is why Java 21 is a prerequisite — the Firestore emulator runs on the JVM.
+If you only need the UI and no backend, `npm run dev:app` runs Vite alone.
+
+### Scripts
+
+**Develop**
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start Vite dev server with HMR |
-| `npm run build` | Production build with Vite |
-| `npm run preview` | Preview production build locally |
-| `npm run clean` | Remove build output (`dist/`) |
-| `npm run deploy` | Build and deploy to production |
-| `npm run deploy:preview` | Build and deploy to preview channel |
+| `npm run dev` | Emulator suite + Vite (the normal entry point) |
+| `npm run dev:app` | Vite alone, no emulators |
+| `npm run emulators` | Emulator suite alone |
+
+**Verify** — these are exactly what CI runs, in this order
+
+| Command | Description |
+|---------|-------------|
+| `npm run lint` | ESLint over JS and TS |
+| `npm run format:check` | Prettier check (`npm run format` to fix) |
+| `npm run typecheck` | `tsc --noEmit` over `src/` via JSDoc |
+| `npm run build` | Production build to `dist/` |
+| `npm test` | Unit + rules + functions |
+| `npm run test:unit` | Unit lane only — fast, no emulator |
+| `npm run test:rules` | Firestore rules against the emulator |
+| `npm run test:functions` | Cloud Functions against the emulator |
+| `npm run test:coverage` | Unit lane with a coverage report |
+| `npm run test:coverage:functions` | Functions lane with coverage |
+
+**Ship and operate**
+
+| Command | Description |
+|---------|-------------|
+| `npm run deploy` | Build and deploy hosting (prefer merging to `main`) |
+| `npm run deploy:preview` | Deploy to a 7-day preview channel |
+| `npm run firebase:open` | Open the live site |
+| `npm run clean` | Remove `dist/` |
+| `npm run optimize:logo` | Re-run SVGO over the source logo |
+| `npm run bootstrap:owner` | One-shot: grant the first `owner` claim |
+
+Prefer merging to `main` over `npm run deploy`: the pipeline gates on the test
+suite, a local deploy does not.
 
 ## Build Process
 
 The project uses **Vite** for modern development tooling:
 
 ### Development Mode (`npm run dev`)
+- Firebase emulators for Auth, Firestore, and Functions, wired automatically
+  (see `src/infrastructure/emulator.js` — detection is env-based, never a
+  hostname check, so a production build can never enter emulator mode)
 - Instant server start with native ES modules
-- Hot Module Replacement (HMR) for instant updates
-- Fast refresh without losing application state
-- On-demand compilation for fast iteration
+- Hot Module Replacement, without losing application state
 
 ### Production Build (`npm run build`)
 - Automatic code splitting and tree-shaking
@@ -64,7 +102,8 @@ The project uses **Vite** for modern development tooling:
 
 ### Firebase Hosting
 
-**Production**: https://salmoncow.web.app
+**Production**: https://salmoncow.com (also reachable at
+https://salmoncow.web.app)
 
 ```bash
 # Deploy to production
@@ -389,42 +428,41 @@ own problem to clean up.
 ## Project Structure
 
 ```
-├── dist/                       # Build output (gitignored)
-│   ├── index.html
-│   └── assets/                 # Optimized assets with hashes
-│       ├── js/                 # Minified JavaScript bundles
-│       ├── styles/             # Optimized CSS
-│       └── images/             # Optimized images
+├── src/                          # Vite root
+│   ├── index.html                # Entry point (inline theme pre-paint script)
+│   ├── main.js                   # Bootstrap and composition
+│   ├── firebase-config.js        # Config from import.meta.env
+│   ├── components/               # Web Components + co-located .css
+│   ├── modules/                  # Controllers (auth, role, router, theme, …)
+│   ├── services/                 # Application layer
+│   ├── repositories/             # Data access (interface + Firestore impl)
+│   ├── factories/                # Composition seam
+│   ├── infrastructure/           # Firebase SDK, App Check, errors, performance
+│   ├── types/                    # JSDoc typedefs + CDN module declarations
+│   ├── utils/                    # Shared helpers (escaping, URL safety)
+│   ├── styles/main.css           # Global tokens
+│   └── assets/                   # Images, navigation.css
 │
-├── src/                        # Source files (Vite root)
-│   ├── index.html              # HTML entry point
-│   ├── main.js                 # JavaScript entry point
-│   ├── firebase-config.js      # Firebase configuration
-│   ├── modules/
-│   │   ├── auth.js             # Authentication
-│   │   ├── navigation.js       # Navigation bar
-│   │   └── ui.js               # UI utilities
-│   ├── styles/
-│   │   ├── main.css            # Base styles
-│   │   └── navigation.css      # Navigation styles
-│   └── assets/
-│       └── images/             # Source images
-│           ├── branding/       # Logo and brand assets
-│           └── placeholders/   # Default avatars, etc.
+├── functions/                    # Cloud Functions (TypeScript, Node 22)
+│   ├── src/                      # setUserRole, onUserCreate, logClientError
+│   └── tests/
 │
-├── public/                     # Static assets (copied as-is)
-│   └── assets/
-│       └── images/
-│           └── placeholders/   # Public static images
+├── tests/
+│   ├── unit/                     # Plain-node lane (no emulator)
+│   └── rules/                    # Firestore rules against the emulator
 │
-├── .prompts/                   # Development guidance
-├── vite.config.js              # Vite configuration
-├── tsconfig.json               # TypeScript configuration
-├── firebase.json               # Hosting configuration
-├── .firebaserc                 # Firebase project ID
-├── .env                        # Environment variables (not committed)
-└── .env.example                # Environment template
+├── scripts/bootstrap-owner.ts    # One-shot first-owner grant
+├── .specs/                       # Constitution + archived feature specs
+├── .github/workflows/            # CI/CD
+├── firestore.rules               # Security rules
+├── firebase.json                 # Hosting, headers/CSP, emulators, functions
+├── eslint.config.mjs             # Lint config
+└── .env.example                  # Environment template
 ```
+
+Dependency direction is one-way: components and modules → services →
+repositories → infrastructure. Nothing below reaches back up, and only
+`src/infrastructure/firebase-sdk.js` imports the Firebase SDK.
 
 ## Firebase Configuration
 
@@ -437,17 +475,35 @@ Firebase config is loaded from `.env` via Vite's native environment variable sup
 
 ### Required Firebase Console Settings
 
-1. **Authentication**: Enable Google sign-in provider
-2. **Authorized Domains**: Automatically configured for `*.web.app`
-3. **Support Email**: Required for Google OAuth
+1. **Authentication** — enable the Google sign-in provider
+2. **Authorized Domains** — `*.web.app` is automatic; add any custom domain
+3. **Support Email** — required for Google OAuth
+4. **Firestore** — database created; rules and indexes deploy from this repo
+5. **Cloud Functions** — requires the Blaze plan
+6. **App Check** — register a reCAPTCHA Enterprise site key and set
+   `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY`; without it, protected callables reject
+   in production
+7. **First owner** — roles come from a custom claim, and the first one has to be
+   granted out-of-band with `npm run bootstrap:owner`
 
 ## Architecture
 
-The application uses modular JavaScript architecture:
+Layered, with a one-way dependency direction:
 
-- **`auth.js`** - Firebase Authentication integration
-- **`navigation.js`** - Navigation bar and user dropdown
-- **`ui.js`** - DOM manipulation and UI state
-- **`main.js`** - Application orchestrator
+- **`components/`** — Web Components. Presentation only; they render and emit
+  events, and never talk to Firebase.
+- **`modules/`** — controllers wiring components to services: `auth`, `role`
+  (authorization state from the ID-token claim), `router` (hash routing with
+  guards), `theme`, `navigation`, and the two portal controllers.
+- **`services/`** — application logic: `user-profile` (with a 5-minute cache)
+  and `admin-user`.
+- **`repositories/`** — data access behind an interface, so callers never touch
+  the Firestore SDK. This is the only path to `users/{uid}`, reads and live
+  subscriptions alike.
+- **`infrastructure/`** — Firebase singletons, App Check, error reporting,
+  performance, emulator detection, and the single SDK version.
+- **`main.js`** — composition root: builds the graph and wires it together.
 
-New features can be added as modules without modifying existing code.
+Security is enforced server-side, never in the client. Firestore rules read the
+`role` custom claim directly, and `setUserRole` re-checks the caller's claim.
+Anything the UI hides is convenience, not a control.

@@ -34,14 +34,15 @@ git checkout -b <type>/<description>
 ### 2. Make Changes Following Architectural Guidance
 
 Before making changes, consult:
-- **[CLAUDE.md](CLAUDE.md)** - Decision framework and mandatory consultation protocol
+- **[CLAUDE.md](CLAUDE.md)** - Decision framework and consultation protocol
 - **[.specs/constitution.md](.specs/constitution.md)** - Project constraints, quality standards, tech stack
-- **[.prompts/](.prompts/)** - Foundational patterns and Firebase best practices
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Setup, architecture, and operational runbooks
 
 **Key principles:**
 - Follow progressive complexity (don't over-engineer)
-- Reference `.prompts/` files for architectural patterns
 - Check `.specs/constitution.md` for project-specific constraints
+- Keep the dependency direction one-way: components and modules → services →
+  repositories → infrastructure
 
 ### 3. Commit and Create PR
 
@@ -58,28 +59,35 @@ git push -u origin <branch-name>
 
 ## Architectural Decisions
 
-This project uses a **hybrid guidance architecture**:
+Guidance lives in two places:
 
-**1. Spec-Kit (`.specs/`)** - Project-specific constraints
-- `.specs/constitution.md` - Quality standards, tech stack, cost constraints
-- `.specs/technical/` - Build system, CI/CD, deployment configs
+**1. Project-specific (`.specs/`)**
+- [`.specs/constitution.md`](.specs/constitution.md) — constraints, quality
+  standards, cost limits, and the current architectural phase
 
-**2. Prompts (`.prompts/`)** - Foundational patterns
-- `.prompts/core/` - Platform-agnostic principles
-- `.prompts/platforms/firebase/` - Firebase implementation guidance
-- `.prompts/meta/` - Architectural evolution strategy
+**2. Foundational patterns — global skills**
+Architecture, security, testing, and Firebase patterns come from the global
+skills in `~/.claude/skills/`, which load automatically by task context. They
+are not checked into this repo.
+
+`.prompts/` holds only the architectural history that is specific to this
+project:
+- [`.prompts/meta/architectural-decision-log.md`](.prompts/meta/architectural-decision-log.md) — what was decided and why
+- [`.prompts/meta/architectural-evolution-strategy.md`](.prompts/meta/architectural-evolution-strategy.md) — phase-transition triggers
 
 **Before making architectural decisions:**
 1. Read `.specs/constitution.md` for project constraints
-2. Check `.prompts/` for relevant patterns
-3. Follow decision triggers in `.prompts/meta/architectural-evolution-strategy.md`
-4. Document which guidance influenced your decision
+2. Check the decision log for prior art
+3. If a phase transition is in play, check the evolution triggers before
+   advancing — the constitution's rule is to stay put until there is measurable
+   pain
+4. Record the decision in the decision log if it changes a phase
 
 See [CLAUDE.md](CLAUDE.md) for the complete decision framework.
 
 ## Getting Help
 
-- **Documentation questions:** Check [CLAUDE.md](CLAUDE.md), [.specs/constitution.md](.specs/constitution.md), or [.prompts/](.prompts/)
+- **Documentation questions:** Check [CLAUDE.md](CLAUDE.md), [.specs/constitution.md](.specs/constitution.md), or [DEVELOPMENT.md](DEVELOPMENT.md)
 - **Development setup:** See [DEVELOPMENT.md](DEVELOPMENT.md)
 - **Git conventions:** See [.claude/skills/git-conventions/SKILL.md](.claude/skills/git-conventions/SKILL.md)
 - **Issues:** Create a GitHub issue with details
