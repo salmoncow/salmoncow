@@ -1,5 +1,11 @@
 # Owner Bootstrap Runbook
 
+> **Archived.** This is the historical record of a shipped feature, kept as-is.
+> Some links point at `.prompts/core/**` and `.prompts/platforms/**`, which no
+> longer exist — foundational guidance moved to the global skills described in
+> [CLAUDE.md](../../../CLAUDE.md). The paths are left unedited so the document
+> still reflects what was actually referenced at the time.
+
 **One-time procedure** to grant the first `owner` custom claim on a Firebase
 Auth user. After this runs, all future role changes go through the
 `setUserRole` callable inside the Salmoncow Admin Portal.

@@ -1,8 +1,14 @@
 # Feature Specification: Multi-User RBAC (owner / admin / user)
 
+> **Archived.** This is the historical record of a shipped feature, kept as-is.
+> Some links point at `.prompts/core/**` and `.prompts/platforms/**`, which no
+> longer exist — foundational guidance moved to the global skills described in
+> [CLAUDE.md](../../../CLAUDE.md). The paths are left unedited so the document
+> still reflects what was actually referenced at the time.
+
 **Version**: 1.0.0
 **Created**: 2026-04-18
-**Status**: Draft
+**Status**: Shipped 2026-04-20 (PR #25) — archived, historical record
 **Planning artifact**: [/Users/ted/.claude/plans/this-website-is-a-functional-badger.md](../../../../.claude/plans/this-website-is-a-functional-badger.md)
 
 ---
