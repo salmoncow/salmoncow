@@ -52,7 +52,7 @@ describe('users/{uid} field allowlist', () => {
         await assertFails(selfDoc().update({ roleChangedAt: new Date() }));
     });
 
-    it('denies writing the server-owned lastSignInAt field', async () => {
+    it('denies writing lastSignInAt, a legacy server-owned field', async () => {
         await seedUser(env, USER_UID, 'user');
         await assertFails(selfDoc().update({ lastSignInAt: new Date() }));
     });
@@ -164,16 +164,19 @@ describe('users/{uid} legitimate client payloads still succeed', () => {
 describe('users/{uid} real production document shapes', () => {
     /**
      * These mirror the field sets actually present in the production `users`
-     * collection, checked before this rules change shipped. Both carry
-     * server-owned fields the client never touches — the trigger-seeded
-     * `lastSignInAt`, and `roleChangedAt` written by setUserRole. The update
-     * rule uses diff().affectedKeys(), so those may sit on the document
-     * without being re-listed in the writable allowlist; if that ever changes
-     * to a whole-document hasOnly(), these two cases fail loudly instead of
-     * locking real users out of their own profiles.
+     * collection. Both carry server-owned fields the client never touches:
+     * `roleChangedAt` written by setUserRole, and `lastSignInAt`, which
+     * onUserCreate no longer seeds but which remains on every document created
+     * before it was removed.
+     *
+     * That legacy field is exactly why these cases matter. The update rule uses
+     * diff().affectedKeys(), so fields already on a document need not appear in
+     * the writable allowlist; if that ever became a whole-document hasOnly(),
+     * every existing profile would be locked out of its own preferences and
+     * these two tests would fail loudly instead.
      */
 
-    it('allows a preference update on a trigger-seeded profile (lastSignInAt present)', async () => {
+    it('allows a preference update on a profile carrying legacy lastSignInAt', async () => {
         await seedUser(env, USER_UID, 'user', { lastSignInAt: null });
         await assertSucceeds(
             selfDoc().update({ 'preferences.theme': 'dark', updatedAt: new Date() }),
