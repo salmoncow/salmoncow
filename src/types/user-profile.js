@@ -32,7 +32,7 @@
  */
 export const DEFAULT_PREFERENCES = Object.freeze({
     theme: 'system',
-    emailNotifications: true,
+    emailNotifications: false,
 });
 
 /**
