@@ -1,8 +1,14 @@
 # Feature Specification: Dark Mode Theme
 
+> **Archived.** This is the historical record of a shipped feature, kept as-is.
+> Some links point at `.prompts/core/**` and `.prompts/platforms/**`, which no
+> longer exist — foundational guidance moved to the global skills described in
+> [CLAUDE.md](../../../CLAUDE.md). The paths are left unedited so the document
+> still reflects what was actually referenced at the time.
+
 **Version**: 1.0.0
 **Created**: 2026-04-22
-**Status**: Draft
+**Status**: Shipped 2026-04-22 (PR #41) — archived, historical record
 
 ---
 

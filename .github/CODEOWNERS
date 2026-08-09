@@ -4,17 +4,12 @@
 # Any PR that modifies these files will automatically require approval from the
 # specified owners before merging.
 #
-# Reference: core/security/security-principles.md
 # Related: GitHub issue #7 - Service account protection controls
 
 # GitHub Actions workflows - require review for security
 # These workflows use the FIREBASE_SERVICE_ACCOUNT with custom IAM permissions
 # for Firebase Authentication domain management
 /.github/workflows/ @tdeknecht
-
-# GitHub Actions scripts - require review for security
-# Any automation scripts should be reviewed to prevent service account misuse
-/.github/scripts/ @tdeknecht
 
 # GitHub Actions setup documentation - require review for security
 # This file contains service account setup and security best practices
@@ -31,3 +26,14 @@
 # Environment configuration template - require review for security
 # Template files that define environment variables and secrets structure
 /.env.example @tdeknecht
+
+# Cloud Functions - require review for security
+# setUserRole writes custom claims via the Admin SDK, which is the mechanism
+# behind every authorization decision in the app; onUserCreate seeds the
+# default role. These bypass Firestore rules entirely.
+/functions/ @tdeknecht
+
+# First-owner bootstrap - require review for security
+# The only path that grants an initial owner claim, and it runs with a
+# service-account key.
+/scripts/bootstrap-owner.ts @tdeknecht
