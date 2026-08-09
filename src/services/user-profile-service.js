@@ -168,6 +168,25 @@ export class UserProfileService {
     }
 
     /**
+     * Replace the cached profile with a freshly-observed one and notify
+     * listeners.
+     *
+     * Fed by the live users/{uid} listener that RoleModule already holds. The
+     * cache has a 5-minute TTL, and a role change rewrites the same document —
+     * so without this, the two never talked and a promoted or demoted user
+     * could keep reading their pre-change profile for the rest of the TTL.
+     *
+     * Ignores anything without a uid rather than poisoning the cache.
+     *
+     * @param {import('../types/user-profile.js').UserProfile|null} profile
+     */
+    primeCache(profile) {
+        if (!profile || !profile.uid) return;
+        this.setCache(profile.uid, profile);
+        this.notifyStateChange(profile);
+    }
+
+    /**
      * Clear profile data for a user (on sign out)
      * @param {string} uid - User ID
      */
