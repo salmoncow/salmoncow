@@ -278,6 +278,60 @@ Logs-based Metrics, then an alerting policy on the metric.
 > overwrites it, which silently destroyed the client's message until it was
 > caught against the emulator. Use `clientMessage`.
 
+## App Check enforcement
+
+`firestore.googleapis.com` is set to **ENFORCED**. Firestore rejects requests
+that do not carry a valid App Check token, before rules are evaluated. The
+Cloud Functions callables enforce it in code (`enforceAppCheck: true`).
+
+Check or change the current state:
+
+```bash
+TOKEN=$(gcloud auth print-access-token)
+curl -s -H "Authorization: Bearer $TOKEN" -H "x-goog-user-project: salmoncow" \
+  "https://firebaseappcheck.googleapis.com/v1/projects/salmoncow/services/firestore.googleapis.com"
+```
+
+**Revert instantly** if legitimate users are being blocked — `PATCH` the same
+URL with `?updateMask=enforcementMode` and `{"enforcementMode":"UNENFORCED"}`,
+or use Firebase Console → App Check → APIs. It takes effect immediately and
+needs no deploy.
+
+### Why service-level and not `request.app` in the rules
+
+Firestore rules can gate on `request.app != null`, which looks like the more
+granular option. It was rejected here for two concrete reasons:
+
+1. **It cannot be tested.** `@firebase/rules-unit-testing` has no App Check
+   support and the emulator never populates `request.app`. Adding
+   `request.app != null` to a rule makes *legitimate* writes fail in the test
+   suite — verified by trying it, which broke the admin and owner cases in
+   `content.test.ts`. Any such rule would ship uncovered.
+2. **Rules have no rollback.** A bad ruleset is live until a revert goes through
+   a full PR and CI cycle. The service-level toggle is reversible in seconds.
+
+Same security outcome, testable suite, instant undo. Revisit rules-level
+enforcement only if `rules-unit-testing` gains App Check support.
+
+### The availability caveat
+
+App Check attestation depends on a reCAPTCHA Enterprise score meeting the
+threshold set on the site key. A legitimate user on a VPN, a privacy-hardened
+browser, or an unusual network can score below it, receive no token, and — now
+that enforcement is on — lose Firestore access entirely rather than just the
+callables.
+
+If a user reports the app loading but their profile never appearing, check the
+browser console for:
+
+```
+@firebase/app-check: AppCheck: Requests throttled due to 403 error.
+```
+
+After a 403 the SDK throttles itself for **24 hours**, so the symptom outlasts
+the cause and clearing site data is what resets it. Relaxing the score threshold
+on the reCAPTCHA Enterprise key or reverting enforcement are the two levers.
+
 #### If Cloud Logging goes quiet, check App Check first
 
 App Check gates the callable, so anything that breaks attestation silently

@@ -49,7 +49,7 @@ at two.
 | Domain | Phase | Notes |
 |---|---|---|
 | UI Components | 1: Vanilla Web Components | 6 components; Lit at 10+ (§II.2) |
-| Security | 2: App Check + custom claims | Rules validate field shape and types |
+| Security | 2: App Check + custom claims | App Check **enforced** on Firestore and callables; rules validate field shape and types |
 | Data | 1: Simple collections + rules | Single-field queries only; no composite indexes |
 | Testing | 2: Automated | 229 tests across unit, rules, and functions lanes |
 | Deployment | 2: GitHub Actions | Deploys gated on the test suite |
@@ -135,7 +135,10 @@ them without a concrete regression that reached production.
   `innerHTML` — that specific mistake produced a stored-XSS chain.
 - Firestore rules validate field **sets, types, and sizes**, not just ownership.
 - Rules tested in the emulator before deploy.
-- No secrets in client code. App Check on every role-mutating callable.
+- No secrets in client code. App Check enforced on Firestore and on every
+  role-mutating callable. Enforcement is a service-level setting, not a
+  `request.app` rule — the emulator cannot populate `request.app`, so such a
+  rule would be untestable, and rules cannot be rolled back quickly.
 - Minimize PII: error reports carry message, stack, source, route, and uid only.
 
 ### III.3 Performance
