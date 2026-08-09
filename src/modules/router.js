@@ -3,10 +3,6 @@
  *
  * Provides client-side routing using hash fragments (e.g., /#/profile).
  * Works with static hosting without server configuration.
- *
- * Architecture Reference:
- * - .prompts/core/architecture/modular-architecture-principles.md
- * - .prompts/core/architecture/feature-extensibility.md
  */
 
 export class RouterModule {

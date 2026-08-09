@@ -4,7 +4,7 @@
  * Run in a plain-node environment: window, document, localStorage, and
  * matchMedia are stubbed via vi.stubGlobal — no jsdom dependency needed.
  *
- * Feature spec: .specs/features/002-dark-mode-theme/spec.md §XI.6
+ * Feature spec: .specs/archive/002-dark-mode-theme/spec.md §XI.6
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThemeModule } from '../../../src/modules/theme.js';

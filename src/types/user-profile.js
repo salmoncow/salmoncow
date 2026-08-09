@@ -3,10 +3,6 @@
  *
  * Defines the user profile data structure used throughout the application.
  * Abstracts storage details - works with any backend (LocalStorage, Firestore, etc.)
- *
- * Architecture Reference:
- * - .prompts/core/architecture/code-structure.md (Data Types)
- * - .prompts/core/architecture/feature-extensibility.md (Dependency Inversion)
  */
 
 /**

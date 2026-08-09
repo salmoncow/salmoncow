@@ -9,10 +9,6 @@
  * - Load profile on auth state change
  * - Handle preference updates
  * - Clear state on sign out
- *
- * Architecture Reference:
- * - .prompts/core/architecture/modular-architecture-principles.md
- * - .prompts/core/architecture/code-structure.md (Module Pattern)
  */
 export class UserPortalModule {
     /**
