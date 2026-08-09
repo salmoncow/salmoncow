@@ -18,6 +18,7 @@ import {
     getDoc,
     getDocs,
     limit as fsLimit,
+    onSnapshot,
     orderBy,
     query,
     serverTimestamp,
@@ -133,6 +134,32 @@ export class FirestoreUserProfileRepository extends UserProfileRepository {
         const res = await this.findById(uid);
         if (!res.success) return res;
         return success(res.data !== null);
+    }
+
+    /**
+     * Subscribe to live changes on users/{uid}.
+     *
+     * Emits the same normalized shape as findById() so subscribers cannot tell
+     * a snapshot from a fetch — that symmetry is the point, since RoleModule
+     * and the profile cache now read the document through the same path.
+     *
+     * @param {string} uid
+     * @param {(profile: object|null) => void} onNext
+     * @param {(error: Error & { code?: string }) => void} [onError]
+     * @returns {Function} unsubscribe
+     */
+    onProfileChange(uid, onNext, onError) {
+        return onSnapshot(
+            doc(this.db, USERS, uid),
+            (snap) => {
+                if (!snap.exists()) {
+                    onNext(null);
+                    return;
+                }
+                onNext(normalizeTimestamps({ uid: snap.id, ...snap.data() }));
+            },
+            (err) => onError?.(err),
+        );
     }
 
     /**

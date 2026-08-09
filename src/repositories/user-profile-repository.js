@@ -99,4 +99,22 @@ export class UserProfileRepository {
     async exists(uid) {
         throw new Error('Method not implemented: exists');
     }
+
+    /**
+     * Subscribe to live changes on a single user profile.
+     *
+     * Exists so callers that need realtime updates do not reach past this
+     * interface into the Firestore SDK. RoleModule previously imported
+     * onSnapshot directly, which made users/{uid} readable through two
+     * independent paths and meant the document shape was known in two places.
+     *
+     * @param {string} uid
+     * @param {(profile: object|null) => void} onNext  Normalized profile, or
+     *   null when the document does not exist.
+     * @param {(error: Error & { code?: string }) => void} [onError]
+     * @returns {Function} unsubscribe
+     */
+    onProfileChange(uid, onNext, onError) {
+        throw new Error('Method not implemented: onProfileChange');
+    }
 }
