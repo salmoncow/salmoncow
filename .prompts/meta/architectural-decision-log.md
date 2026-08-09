@@ -49,13 +49,56 @@ When making architectural changes, add an entry using this template:
 
 ## Current Architectural State
 
-**For current domain phases and metrics, see [.specs/constitution.md §II.1](../../.specs/constitution.md#ii1-current-architectural-state).**
+**For current domain phases and metrics, see [.specs/constitution.md §II.1](../../.specs/constitution.md#ii1-current-state).**
 
 The constitution is the single source of truth for current state. This log is an append-only historical record of decisions made.
 
 ---
 
 ## Decision Log Entries
+
+### 2026-08-09: Production integrity review — phases 0–5
+
+**Context.** The project had been dormant ~3 months and was live in production
+while its documentation described a pre-launch prototype. A full review across
+security, architecture, CI/CD, observability, and documentation produced a
+five-phase remediation, executed as PRs #48–#65.
+
+**Decisions and their triggers**
+
+| Domain | Change | Trigger |
+|---|---|---|
+| Security | Field-level Firestore rules; DOM-based rendering | Stored-XSS chain reachable by any signed-in user |
+| CI/CD | Deploys gated on the test suite | Deploy and test workflows ran in parallel; a red suite could not stop a release |
+| Monitoring | Phase 1 → 2 | Site was live with zero error visibility; the trigger had fired unnoticed |
+| Testing | Phase 1 → 2 | 79 → 229 tests; `role.js` 0% → 100% |
+| Tooling | ESLint, Prettier, `checkJs`, coverage | No static analysis of any kind on ~4,600 lines |
+| Stack | Firebase SDK 10.13.2 → 12.17.1, centralized | Test tooling peered `firebase@^11`; the SDK could not be installed for types |
+| Architecture | RoleModule routed through the repository | §II.3 violation; duplicate `users/{uid}` read path and a stale-cache bug |
+
+**Phases NOT advanced, and why**
+
+- **UI → Lit**: 6 components against a 10-component trigger. Not met.
+- **Data → optimized NoSQL**: still single-field queries; no composite indexes
+  needed. Not met.
+- **UI/E2E testing**: ruled out as disproportionate for this application. This
+  is a standing decision, not a deferral.
+
+**Constitution v2.0.0.** Cut 737 → 252 lines. The document had lost authority by
+describing a project that no longer existed — pre-launch, zero users, manual
+testing, CI as "future" — and 45 of its links were dead. Removed §VII
+References (all 14 dead; that guidance became global skills), the spec-kit
+restatement duplicated in CLAUDE.md, a Quick Reference that contradicted §II.1
+on every count, and generic Firebase snippets. `.specs/technical/` was deleted
+outright: three files frozen at 2026-01-29 containing another machine's
+absolute paths and unfilled template placeholders, describing shipped work as
+future. DEVELOPMENT.md covers that ground accurately.
+
+**Lessons recorded in the constitution itself**
+
+- Only `src/infrastructure/firebase-sdk.js` may import the Firebase SDK.
+- A coverage gate set ahead of reality gets deleted; ratchet it behind progress.
+- The repo is public: document mechanisms, never gaps.
 
 ### 2026-04-20: Adopt Blaze plan and advance Security to Phase 2 for multi-user RBAC
 
