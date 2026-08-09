@@ -168,3 +168,60 @@ describe('UserProfileService.updatePreferences', () => {
         expect(repo.calls).toHaveLength(0);
     });
 });
+
+describe('primeCache', () => {
+    /**
+     * Fed by the live users/{uid} listener RoleModule holds. The cache has a
+     * 5-minute TTL and a role change rewrites the same document, so before this
+     * existed the two never talked and a promoted or demoted user could keep
+     * reading their pre-change profile for the rest of the TTL.
+     */
+
+    it('serves the primed profile instead of refetching', async () => {
+        const repo = makeFakeRepo();
+        const service = new UserProfileService(repo);
+
+        service.primeCache({ uid: 'u1', displayName: 'Fresh', role: 'admin' });
+        const result = await service.getProfile('u1');
+
+        expect(result.success).toBe(true);
+        expect(result.data.displayName).toBe('Fresh');
+        // Served from cache — the repository was never consulted.
+        expect(repo.calls).toHaveLength(0);
+    });
+
+    it('overwrites a stale cached profile', async () => {
+        const repo = makeFakeRepo();
+        const service = new UserProfileService(repo);
+
+        service.primeCache({ uid: 'u1', role: 'user' });
+        service.primeCache({ uid: 'u1', role: 'owner' });
+
+        const result = await service.getProfile('u1');
+        expect(result.data.role).toBe('owner');
+    });
+
+    it('notifies state listeners so the UI re-renders', () => {
+        const service = new UserProfileService(makeFakeRepo());
+        const seen = [];
+        service.onStateChange((p) => seen.push(p));
+
+        const profile = { uid: 'u1', displayName: 'Fresh' };
+        service.primeCache(profile);
+
+        expect(seen).toContainEqual(profile);
+    });
+
+    it.each([
+        ['null', null],
+        ['undefined', undefined],
+        ['an object with no uid', { displayName: 'nope' }],
+    ])('ignores %s rather than poisoning the cache', (_label, input) => {
+        const service = new UserProfileService(makeFakeRepo());
+        const seen = [];
+        service.onStateChange((p) => seen.push(p));
+
+        expect(() => service.primeCache(input)).not.toThrow();
+        expect(seen).toHaveLength(0);
+    });
+});
