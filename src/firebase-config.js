@@ -12,10 +12,6 @@ export const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Development environment check
-export const isDevelopment = import.meta.env.DEV;
-export const isProduction = import.meta.env.PROD;
-
 // Validation function to check if config is properly set
 export function validateFirebaseConfig() {
     const requiredFields = [
@@ -35,19 +31,4 @@ export function validateFirebaseConfig() {
     }
 
     return true;
-}
-
-// Instructions for setup (will be logged in development)
-if (isDevelopment) {
-    console.log(`
-🔥 Firebase Setup Instructions:
-1. Go to https://console.firebase.google.com
-2. Select or create your project
-3. Go to Project Settings (gear icon)
-4. Scroll down to "Your apps" section
-5. Click "Add app" or select existing web app
-6. Copy the config values and update firebase-config.js
-7. Enable Authentication > Sign-in method > Google in Firebase Console
-8. Add your domain to authorized domains in Firebase Auth settings
-    `);
 }
