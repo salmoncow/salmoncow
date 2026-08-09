@@ -26,6 +26,7 @@
  *   Rendered via ToastContainer.show(); see src/components/ToastContainer.js.
  */
 import { escapeHtml } from '../utils/escape-html.js';
+import './StatusBadge.css';
 
 export class StatusBadge extends HTMLElement {
     static get observedAttributes() {
@@ -61,8 +62,6 @@ export class StatusBadge extends HTMLElement {
             const closeBtn = this.querySelector('.status-badge-close');
             closeBtn?.addEventListener('click', () => this.dismiss());
         }
-
-        this.addStyles();
     }
 
     getIcon(type) {
@@ -113,141 +112,6 @@ export class StatusBadge extends HTMLElement {
         setTimeout(() => {
             this.remove();
         }, 300);
-    }
-
-    addStyles() {
-        // Check if styles already added to document
-        if (document.getElementById('status-badge-styles')) {
-            return;
-        }
-
-        const style = document.createElement('style');
-        style.id = 'status-badge-styles';
-        style.textContent = `
-            .status-badge {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                padding: 0.75rem 1rem;
-                border-radius: 0.5rem;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                font-size: 0.875rem;
-                line-height: 1.25rem;
-                border: 1px solid;
-                transition: opacity 0.3s ease;
-            }
-
-            .status-badge-icon {
-                flex-shrink: 0;
-                width: 20px;
-                height: 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .status-badge-icon svg {
-                width: 100%;
-                height: 100%;
-            }
-
-            .status-badge-message {
-                flex: 1;
-            }
-
-            .status-badge-close {
-                flex-shrink: 0;
-                background: none;
-                border: none;
-                font-size: 1.5rem;
-                line-height: 1;
-                cursor: pointer;
-                opacity: 0.5;
-                transition: opacity 0.2s;
-                padding: 0;
-                width: 24px;
-                height: 24px;
-            }
-
-            .status-badge-close:hover {
-                opacity: 1;
-            }
-
-            /* Type variants (light) */
-            .status-badge-success {
-                background-color: #f0fdf4;
-                border-color: #86efac;
-                color: #166534;
-            }
-
-            .status-badge-error {
-                background-color: #fef2f2;
-                border-color: #fca5a5;
-                color: #991b1b;
-            }
-
-            .status-badge-warning {
-                background-color: #fffbeb;
-                border-color: #fcd34d;
-                color: #92400e;
-            }
-
-            .status-badge-info {
-                background-color: #eff6ff;
-                border-color: #93c5fd;
-                color: #1e40af;
-            }
-
-            .status-badge-loading {
-                background-color: #f8fafc;
-                border-color: #cbd5e1;
-                color: #475569;
-            }
-
-            /* Type variants (dark) — inverted palette for readability on dark surfaces */
-            [data-theme="dark"] .status-badge-success {
-                background-color: #052e16;
-                border-color: #166534;
-                color: #bbf7d0;
-            }
-
-            [data-theme="dark"] .status-badge-error {
-                background-color: #450a0a;
-                border-color: #991b1b;
-                color: #fecaca;
-            }
-
-            [data-theme="dark"] .status-badge-warning {
-                background-color: #451a03;
-                border-color: #92400e;
-                color: #fde68a;
-            }
-
-            [data-theme="dark"] .status-badge-info {
-                background-color: #172554;
-                border-color: #1e40af;
-                color: #bfdbfe;
-            }
-
-            [data-theme="dark"] .status-badge-loading {
-                background-color: #1e293b;
-                border-color: #475569;
-                color: #cbd5e1;
-            }
-
-            /* Loading spinner animation */
-            .status-spinner {
-                animation: status-spinner-rotate 1s linear infinite;
-            }
-
-            @keyframes status-spinner-rotate {
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-        `;
-
-        document.head.appendChild(style);
     }
 }
 

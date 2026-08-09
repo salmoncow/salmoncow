@@ -145,6 +145,11 @@ Follow this pattern when creating new Web Components:
  *   - attribute1: Description
  *   - attribute2: Description
  */
+// Styles live in a sibling stylesheet, imported here so Vite bundles them.
+// Components used to inject a <style> tag at render time; that kept ~580 lines
+// of CSS inside template literals where no tooling could see it.
+import './ComponentName.css';
+
 export class ComponentName extends HTMLElement {
     static get observedAttributes() {
         return ['attribute1', 'attribute2'];
@@ -167,23 +172,6 @@ export class ComponentName extends HTMLElement {
                 <!-- Component markup -->
             </div>
         `;
-
-        this.addStyles();
-    }
-
-    addStyles() {
-        // Add styles only once to document head
-        if (document.getElementById('component-name-styles')) {
-            return;
-        }
-
-        const style = document.createElement('style');
-        style.id = 'component-name-styles';
-        style.textContent = `
-            /* Component styles */
-        `;
-
-        document.head.appendChild(style);
     }
 }
 
@@ -197,6 +185,8 @@ customElements.define('component-name', ComponentName);
 - **File name**: PascalCase (e.g., `LoadingSpinner.js`)
 - **Element tag**: kebab-case (e.g., `<loading-spinner>`)
 - **CSS classes**: kebab-case with component prefix (e.g., `.loading-spinner-container`)
+- **Stylesheet**: sibling file matching the component (e.g., `LoadingSpinner.css`),
+  imported from the component so it is bundled and removed together with it
 
 ### Best Practices
 
