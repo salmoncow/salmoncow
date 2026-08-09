@@ -126,7 +126,9 @@ export class UserPortal extends HTMLElement {
         const { displayName, email, photoURL, preferences, createdAt } = this.profile;
         const memberSince = this.formatDate(createdAt);
         const currentTheme = preferences?.theme || 'system';
-        const emailNotifications = preferences?.emailNotifications !== false;
+        // Opt-in: an absent preference means off, matching the server default
+        // in onUserCreate and the DEFAULT_PREFERENCES used on the client.
+        const emailNotifications = preferences?.emailNotifications === true;
 
         return `
             <div class="user-portal">
