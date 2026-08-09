@@ -24,4 +24,4 @@ Related to #[issue number]
 [Add screenshots here]
 
 ---
-📖 See [git-conventions](./.claude/skills/git-conventions/SKILL.md) for commit and PR conventions.
+📖 See [git-conventions](../.claude/skills/git-conventions/SKILL.md) for commit and PR conventions.
