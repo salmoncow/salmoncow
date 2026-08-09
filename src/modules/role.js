@@ -15,21 +15,25 @@
  *
  * Spec §XI.1 (application layer), AC-2, AC-9
  */
-import { doc, onSnapshot } from '../infrastructure/firebase-sdk.js';
-
 const ROLES = Object.freeze(['owner', 'admin', 'user']);
 const DEFAULT_ROLE = 'user';
 
 export class RoleModule {
     /**
      * @param {import('./auth.js').AuthModule} authModule
-     * @param {import('firebase/firestore').Firestore} db
+     * @param {import('../repositories/user-profile-repository.js').UserProfileRepository} repository
+     * @param {object} [options]
+     * @param {((profile: object|null) => void)|null} [options.onProfileSnapshot] Called
+     *   with every users/{uid} update this module already receives. Lets the
+     *   profile cache stay fresh off the same listener instead of opening a
+     *   second one, or going stale for its 5-minute TTL after a role change.
      */
-    constructor(authModule, db) {
+    constructor(authModule, repository, { onProfileSnapshot = null } = {}) {
         if (!authModule) throw new Error('RoleModule requires authModule');
-        if (!db) throw new Error('RoleModule requires db');
+        if (!repository) throw new Error('RoleModule requires a user profile repository');
         this.auth = authModule;
-        this.db = db;
+        this.repository = repository;
+        this.onProfileSnapshot = onProfileSnapshot;
 
         /** @type {'owner'|'admin'|'user'|null} null = unknown/not-signed-in */
         this.role = null;
@@ -119,12 +123,22 @@ export class RoleModule {
         this._teardownMirror();
 
         this.subscribedUid = uid;
-        this.mirrorUnsub = onSnapshot(
-            doc(this.db, 'users', uid),
-            async (snap) => {
-                if (!snap.exists()) return;
-                const data = snap.data();
-                const ts = data.roleChangedAt?.toDate?.()?.toISOString?.() ?? null;
+        this.mirrorUnsub = this.repository.onProfileChange(
+            uid,
+            async (profile) => {
+                if (!profile) return;
+
+                // Hand the fresh document to whoever else needs it (the profile
+                // cache) before doing our own work, so a role change cannot
+                // leave a stale profile behind this listener.
+                try {
+                    this.onProfileSnapshot?.(profile);
+                } catch (err) {
+                    console.error('[role] profile snapshot consumer threw:', err);
+                }
+
+                // The repository normalizes Firestore Timestamps to Dates.
+                const ts = profile.roleChangedAt?.toISOString?.() ?? null;
                 if (ts && ts !== this.roleChangedAtIso) {
                     this.roleChangedAtIso = ts;
                     await this.refreshRole();

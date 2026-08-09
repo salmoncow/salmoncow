@@ -2,29 +2,39 @@
  * Unit tests for RoleModule.
  *
  * This is the client-side authorization state machine, and it was at 0%
- * coverage — the single largest gap against §III.1, which asks for 100% on
- * auth paths. Coverage tooling in Phase 3.3 is what surfaced it.
+ * coverage — the largest gap against §III.1, which asks for 100% on auth paths.
+ * Phase 3.3's coverage tooling is what surfaced it.
  *
- * Runs in a plain-node environment; the Firebase SDK is mocked at the module
- * boundary and auth is a hand-rolled stub, following the precedent in
- * tests/unit/modules/theme.test.js — no jsdom.
+ * Note there is no Firebase SDK mock here. RoleModule now depends on the
+ * UserProfileRepository interface rather than importing onSnapshot itself, so
+ * the test injects a plain fake. That the mocking got simpler is the point of
+ * the refactor: the module no longer reaches past its layer.
  *
- * These assertions are about *authorization* behaviour, so the important cases
- * are the pessimistic ones: an unrecognised claim must not be trusted, a failed
- * token read must not leave a stale elevated role, and sign-out must drop the
- * role and detach the listener.
+ * The assertions are weighted toward pessimistic paths, because this decides
+ * what the UI lets a user reach: an unrecognised claim must not be trusted, a
+ * failed token read must not leave a stale elevated role, and sign-out must
+ * drop the role and detach the listener.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RoleModule } from '../../../src/modules/role.js';
 
-const onSnapshotMock = vi.fn();
-const docMock = vi.fn((_db, ...path) => ({ path: path.join('/') }));
-
-vi.mock('../../../src/infrastructure/firebase-sdk.js', () => ({
-    doc: (...args) => docMock(...args),
-    onSnapshot: (...args) => onSnapshotMock(...args),
-}));
-
-const { RoleModule } = await import('../../../src/modules/role.js');
+/** Fake repository capturing the subscription so tests can drive it. */
+function makeRepository() {
+    const unsubscribe = vi.fn();
+    const repo = {
+        onProfileChange: vi.fn((uid, onNext, onError) => {
+            repo._uid = uid;
+            repo._onNext = onNext;
+            repo._onError = onError;
+            return unsubscribe;
+        }),
+        _unsubscribe: unsubscribe,
+        _uid: null,
+        _onNext: null,
+        _onError: null,
+    };
+    return repo;
+}
 
 /** Minimal AuthModule stub: captures the auth-state callback so tests drive it. */
 function makeAuth() {
@@ -35,11 +45,9 @@ function makeAuth() {
             cb = fn;
         }),
         getCurrentUser: () => current,
-        /** Test helper: simulate sign-in / sign-out. */
         async _emit(user) {
             current = user;
             await cb?.(user);
-            // Let the internal refresh→subscribe promise chain settle.
             await Promise.resolve();
             await Promise.resolve();
         },
@@ -58,14 +66,11 @@ function makeUser(claimRole, { uid = 'u1', failTokenRead = false } = {}) {
 }
 
 let auth;
-let db;
+let repo;
 
 beforeEach(() => {
-    onSnapshotMock.mockReset();
-    docMock.mockClear();
-    onSnapshotMock.mockReturnValue(vi.fn()); // default unsubscribe
     auth = makeAuth();
-    db = {};
+    repo = makeRepository();
     vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -75,37 +80,37 @@ afterEach(() => {
 
 describe('construction', () => {
     it.each([
-        ['authModule', () => new RoleModule(null, {})],
-        ['db', () => new RoleModule({}, null)],
+        ['authModule', () => new RoleModule(null, makeRepository())],
+        ['a repository', () => new RoleModule({}, null)],
     ])('refuses to construct without %s', (_label, build) => {
         expect(build).toThrow();
     });
 
     it('starts with an unknown role', () => {
-        expect(new RoleModule(auth, db).getRole()).toBeNull();
+        expect(new RoleModule(auth, repo).getRole()).toBeNull();
     });
 });
 
 describe('reading the role claim', () => {
     it.each([['owner'], ['admin'], ['user']])('accepts the %s claim', async (role) => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser(role));
         expect(r.getRole()).toBe(role);
     });
 
     it('falls back to user for an unrecognised claim', async () => {
-        // Least privilege: an unexpected value must never be trusted as a role,
-        // and must never be passed through verbatim.
-        const r = new RoleModule(auth, db);
+        // Least privilege: an unexpected value is never trusted as a role, nor
+        // passed through verbatim.
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('superadmin'));
         expect(r.getRole()).toBe('user');
     });
 
     it('falls back to user when the claim is missing', async () => {
-        // Happens between first sign-in and the onUserCreate trigger landing.
-        const r = new RoleModule(auth, db);
+        // The window between first sign-in and the onUserCreate trigger landing.
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser(undefined));
         expect(r.getRole()).toBe('user');
@@ -114,7 +119,7 @@ describe('reading the role claim', () => {
     it('falls back to user when the token read throws', async () => {
         // Fail closed: an unreadable token must not leave the previous role in
         // place, or a demoted owner keeps owner UI until reload.
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('owner'));
         expect(r.getRole()).toBe('owner');
@@ -130,7 +135,7 @@ describe('role predicates', () => {
         ['admin', false, true],
         ['user', false, false],
     ])('for %s: isOwner=%o isAdminOrOwner=%o', async (role, owner, adminOrOwner) => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser(role));
         expect(r.isOwner()).toBe(owner);
@@ -138,7 +143,7 @@ describe('role predicates', () => {
     });
 
     it('is false for both when signed out', () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         expect(r.isOwner()).toBe(false);
         expect(r.isAdminOrOwner()).toBe(false);
     });
@@ -146,14 +151,13 @@ describe('role predicates', () => {
 
 describe('subscribers', () => {
     it('fires immediately with the current value', () => {
-        const r = new RoleModule(auth, db);
         const cb = vi.fn();
-        r.onRoleChange(cb);
+        new RoleModule(auth, repo).onRoleChange(cb);
         expect(cb).toHaveBeenCalledWith(null);
     });
 
     it('notifies on transition', async () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         const cb = vi.fn();
         r.onRoleChange(cb);
         r.init();
@@ -162,7 +166,7 @@ describe('subscribers', () => {
     });
 
     it('does not notify when the role is unchanged', async () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('admin'));
         const cb = vi.fn();
@@ -173,10 +177,9 @@ describe('subscribers', () => {
     });
 
     it('unsubscribes', async () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         const cb = vi.fn();
-        const off = r.onRoleChange(cb);
-        off();
+        r.onRoleChange(cb)();
         cb.mockClear();
         r.init();
         await auth._emit(makeUser('owner'));
@@ -184,12 +187,11 @@ describe('subscribers', () => {
     });
 
     it('keeps notifying other subscribers when one throws', async () => {
-        const r = new RoleModule(auth, db);
-        const bad = vi.fn(() => {
+        const r = new RoleModule(auth, repo);
+        r.onRoleChange(() => {
             throw new Error('subscriber boom');
         });
         const good = vi.fn();
-        r.onRoleChange(bad);
         r.onRoleChange(good);
         r.init();
         await expect(auth._emit(makeUser('owner'))).resolves.not.toThrow();
@@ -198,11 +200,8 @@ describe('subscribers', () => {
 });
 
 describe('sign-out', () => {
-    it('clears the role and detaches the mirror listener', async () => {
-        const unsub = vi.fn();
-        onSnapshotMock.mockReturnValue(unsub);
-
-        const r = new RoleModule(auth, db);
+    it('clears the role and detaches the listener', async () => {
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('owner'));
         expect(r.getRole()).toBe('owner');
@@ -210,87 +209,149 @@ describe('sign-out', () => {
         await auth._emit(null);
 
         expect(r.getRole()).toBeNull();
-        expect(unsub).toHaveBeenCalledTimes(1);
+        expect(repo._unsubscribe).toHaveBeenCalledTimes(1);
     });
 });
 
-describe('mirror listener', () => {
-    it('subscribes to the signed-in user document', async () => {
-        const r = new RoleModule(auth, db);
+describe('profile listener', () => {
+    it('subscribes through the repository, not the SDK', async () => {
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('user', { uid: 'abc' }));
-        expect(docMock).toHaveBeenCalledWith(db, 'users', 'abc');
-        expect(onSnapshotMock).toHaveBeenCalledTimes(1);
+        expect(repo.onProfileChange).toHaveBeenCalledTimes(1);
+        expect(repo._uid).toBe('abc');
     });
 
     it('does not resubscribe when auth fires twice for the same uid', async () => {
-        // onAuthStateChanged can fire repeatedly; duplicate listeners would
-        // mean duplicate reads and duplicate token refreshes.
-        const r = new RoleModule(auth, db);
+        // onAuthStateChanged can fire repeatedly; duplicate listeners would mean
+        // duplicate reads and duplicate token refreshes.
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('user', { uid: 'abc' }));
         await auth._emit(makeUser('user', { uid: 'abc' }));
-        expect(onSnapshotMock).toHaveBeenCalledTimes(1);
+        expect(repo.onProfileChange).toHaveBeenCalledTimes(1);
     });
 
     it('refreshes the token when roleChangedAt advances', async () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         const user = makeUser('user', { uid: 'abc' });
         await auth._emit(user);
 
-        const onNext = onSnapshotMock.mock.calls[0][1];
-        await onNext({
-            exists: () => true,
-            data: () => ({ roleChangedAt: { toDate: () => new Date('2026-01-01T00:00:00Z') } }),
-        });
+        await repo._onNext({ uid: 'abc', roleChangedAt: new Date('2026-01-01T00:00:00Z') });
 
         expect(user.getIdToken).toHaveBeenCalledWith(true);
     });
 
-    it('ignores a snapshot for a document that does not exist', async () => {
-        const r = new RoleModule(auth, db);
+    it('does not refresh again for an unchanged roleChangedAt', async () => {
+        const r = new RoleModule(auth, repo);
         r.init();
         const user = makeUser('user', { uid: 'abc' });
         await auth._emit(user);
 
-        const onNext = onSnapshotMock.mock.calls[0][1];
-        await onNext({ exists: () => false, data: () => ({}) });
+        const doc = { uid: 'abc', roleChangedAt: new Date('2026-01-01T00:00:00Z') };
+        await repo._onNext(doc);
+        user.getIdToken.mockClear();
+        await repo._onNext(doc);
+
+        expect(user.getIdToken).not.toHaveBeenCalled();
+    });
+
+    it('ignores a missing document', async () => {
+        const r = new RoleModule(auth, repo);
+        r.init();
+        const user = makeUser('user', { uid: 'abc' });
+        await auth._emit(user);
+
+        await repo._onNext(null);
 
         expect(user.getIdToken).not.toHaveBeenCalled();
     });
 
     it('stays quiet on permission-denied, which is a normal sign-out race', async () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('user', { uid: 'abc' }));
 
-        const onError = onSnapshotMock.mock.calls[0][2];
-        onError({ code: 'permission-denied' });
+        repo._onError({ code: 'permission-denied' });
 
         expect(console.error).not.toHaveBeenCalled();
     });
 
     it('logs other listener errors', async () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         await auth._emit(makeUser('user', { uid: 'abc' }));
 
-        const onError = onSnapshotMock.mock.calls[0][2];
-        onError({ code: 'unavailable' });
+        repo._onError({ code: 'unavailable' });
 
         expect(console.error).toHaveBeenCalled();
     });
 });
 
+describe('forwarding the profile to the cache', () => {
+    it('hands every profile update to onProfileSnapshot', async () => {
+        // This is what keeps UserProfileService's 5-minute cache from serving a
+        // pre-role-change profile: both now read the document off one listener.
+        const onProfileSnapshot = vi.fn();
+        const r = new RoleModule(auth, repo, { onProfileSnapshot });
+        r.init();
+        await auth._emit(makeUser('user', { uid: 'abc' }));
+
+        const profile = { uid: 'abc', displayName: 'A' };
+        await repo._onNext(profile);
+
+        expect(onProfileSnapshot).toHaveBeenCalledWith(profile);
+    });
+
+    it('forwards even when roleChangedAt has not moved', async () => {
+        // A plain profile edit still needs to reach the cache.
+        const onProfileSnapshot = vi.fn();
+        const r = new RoleModule(auth, repo, { onProfileSnapshot });
+        r.init();
+        await auth._emit(makeUser('user', { uid: 'abc' }));
+
+        await repo._onNext({ uid: 'abc', displayName: 'edited' });
+
+        expect(onProfileSnapshot).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not forward a missing document', async () => {
+        const onProfileSnapshot = vi.fn();
+        const r = new RoleModule(auth, repo, { onProfileSnapshot });
+        r.init();
+        await auth._emit(makeUser('user', { uid: 'abc' }));
+
+        await repo._onNext(null);
+
+        expect(onProfileSnapshot).not.toHaveBeenCalled();
+    });
+
+    it('still refreshes the role when the consumer throws', async () => {
+        // A broken cache consumer must not take down authorization.
+        const r = new RoleModule(auth, repo, {
+            onProfileSnapshot: () => {
+                throw new Error('consumer boom');
+            },
+        });
+        r.init();
+        const user = makeUser('user', { uid: 'abc' });
+        await auth._emit(user);
+
+        await expect(
+            repo._onNext({ uid: 'abc', roleChangedAt: new Date('2026-01-01T00:00:00Z') }),
+        ).resolves.not.toThrow();
+        expect(user.getIdToken).toHaveBeenCalledWith(true);
+    });
+});
+
 describe('refreshRole()', () => {
     it('returns null and does nothing when signed out', async () => {
-        const r = new RoleModule(auth, db);
-        await expect(r.refreshRole()).resolves.toBeNull();
+        await expect(new RoleModule(auth, repo).refreshRole()).resolves.toBeNull();
     });
 
     it('forces a token refresh and re-reads the claim', async () => {
-        const r = new RoleModule(auth, db);
+        const r = new RoleModule(auth, repo);
         r.init();
         const user = makeUser('user', { uid: 'abc' });
         await auth._emit(user);

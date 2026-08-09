@@ -27,7 +27,6 @@ import { AdminUserService } from './services/admin-user-service.js';
 import { AdminPortalModule } from './modules/admin-portal.js';
 import { initAppCheck } from './infrastructure/appcheck.js';
 import { RoleModule } from './modules/role.js';
-import { getDb } from './infrastructure/firestore.js';
 import { initPerformance } from './infrastructure/performance.js';
 import { addSink, installGlobalHandlers, reportError } from './infrastructure/error-reporter.js';
 import {
@@ -101,8 +100,15 @@ class App {
             initPerformance(this.firebaseApp);
             this.auth = new AuthModule(this.firebaseApp);
 
+            // User profile service + portal must exist before RoleModule: the
+            // role listener feeds the profile cache, and both now read
+            // users/{uid} through the same repository rather than two paths.
+            this.initializeUserPortal();
+
             // Role state (custom claim + users/{uid}.roleChangedAt mirror listener)
-            this.role = new RoleModule(this.auth, getDb(this.firebaseApp));
+            this.role = new RoleModule(this.auth, this._userRepository, {
+                onProfileSnapshot: (profile) => this.profileService?.primeCache(profile),
+            });
             this.role?.init();
 
             // If a role change demotes the user off /admin, bounce them to home.
@@ -120,9 +126,6 @@ class App {
             // Initialize router
             this.router = new RouterModule();
             this.setupRoutes();
-
-            // Initialize user profile service and portal
-            this.initializeUserPortal();
 
             // Initialize admin portal (owner/admin only; UI guards shown/hidden by role)
             this.initializeAdminPortal();
