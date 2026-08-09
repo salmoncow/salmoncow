@@ -1,5 +1,11 @@
 # Architectural Evolution Strategy
 
+> **Guidance references below name global skills, not files in this repo.**
+> The `.prompts/core/**` and `.prompts/platforms/**` trees this document was
+> written against no longer exist; that material moved to the global skills in
+> `~/.claude/skills/`, which load automatically by task context. See
+> [CLAUDE.md](../../CLAUDE.md).
+
 **Status**: Evergreen Strategic Framework
 **Purpose**: Guide architectural decisions across all domains using progressive complexity and platform simplification principles
 
@@ -85,7 +91,7 @@ Move when **4 or more** of these are true:
 | Vanilla WC → Lit | 95% automated | Low | None (HTML usage unchanged) |
 | Lit → React | 80% automated | Medium | Yes (consumers must update) |
 
-**Detailed Guidance**: [../core/architecture/modular-architecture-principles.md](../core/architecture/modular-architecture-principles.md)
+**Detailed Guidance**: `modular-architecture-principles` skill
 
 ---
 
@@ -141,8 +147,8 @@ Move when **3 or more** of these are true:
 | Phase 3 → 4 | 60% guided | High | Yes (auth provider change) |
 
 **Detailed Guidance**:
-- [../platforms/firebase/firebase-security.md](../platforms/firebase/firebase-security.md)
-- [../core/security/security-principles.md](../core/security/security-principles.md)
+- `firebase-security` skill
+- `security-principles` skill
 
 ---
 
@@ -203,7 +209,7 @@ Move when **3 or more** of these are true:
 | Phase 2 → 3 | 80% automated | Low | None (additive caching) |
 | Phase 3 → 4 | 50% guided | High | Yes (data migration needed) |
 
-**Detailed Guidance**: [../platforms/firebase/firebase-best-practices.md](../platforms/firebase/firebase-best-practices.md)
+**Detailed Guidance**: `firebase-best-practices` skill
 
 ---
 
@@ -274,8 +280,8 @@ Move when **3 or more** of these are true:
 | Phase 3 → 4 | 75% automated | High | None (additive) |
 
 **Detailed Guidance**:
-- [../core/testing/testing-principles.md](../core/testing/testing-principles.md)
-- [../platforms/firebase/firebase-testing.md](../platforms/firebase/firebase-testing.md)
+- `testing-principles` skill
+- `firebase-testing` skill
 
 ---
 
@@ -336,8 +342,8 @@ Move when **3 or more** of these are true:
 | Phase 3 → 4 | 70% guided | High | Minimal |
 
 **Detailed Guidance**:
-- [../core/deployment/deployment-principles.md](../core/deployment/deployment-principles.md)
-- [../platforms/firebase/firebase-deployment.md](../platforms/firebase/firebase-deployment.md)
+- `deployment-principles` skill
+- `firebase-deployment` skill
 
 ---
 
@@ -399,8 +405,8 @@ Move when **3 or more** of these are true:
 | Phase 3 → 4 | 60% guided | High | Minimal |
 
 **Detailed Guidance**:
-- [../core/operations/monitoring-principles.md](../core/operations/monitoring-principles.md)
-- [../platforms/firebase/firebase-monitoring.md](../platforms/firebase/firebase-monitoring.md)
+- `monitoring-principles` skill
+- `firebase-monitoring` skill
 
 ---
 
@@ -462,8 +468,8 @@ Monitor these monthly:
 | Phase 3 → 4 | 60% guided | High | Possible (architecture) |
 
 **Detailed Guidance**:
-- [../core/operations/budget-principles.md](../core/operations/budget-principles.md)
-- [../platforms/firebase/firebase-finops.md](../platforms/firebase/firebase-finops.md)
+- `budget-principles` skill
+- `firebase-finops` skill
 
 ---
 
@@ -530,7 +536,7 @@ Only add a new platform if **ALL** of these are true:
 - ❌ Separate monitoring → Use Firebase Performance
 - ❌ Separate CI/CD → Use GitHub Actions
 
-**Detailed Guidance**: [../core/operations/platform-simplification-principles.md](../core/operations/platform-simplification-principles.md)
+**Detailed Guidance**: `platform-simplification-principles` skill
 
 ---
 
