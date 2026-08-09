@@ -8,10 +8,6 @@
  * - Get or create profile from auth user
  * - Update preferences
  * - In-memory caching with TTL
- *
- * Architecture Reference:
- * - .prompts/core/architecture/code-structure.md (Service Layer)
- * - .prompts/core/architecture/feature-extensibility.md (Dependency Inversion)
  */
 
 import { createUserProfileFromAuth } from '../types/user-profile.js';

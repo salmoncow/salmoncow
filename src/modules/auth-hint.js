@@ -5,9 +5,6 @@
  * avoiding blocking wait for Firebase Auth initialization.
  *
  * Storage key: salmoncow_auth_hint
- *
- * Architecture Reference:
- * - .prompts/core/architecture/modular-architecture-principles.md
  */
 
 const STORAGE_KEY = 'salmoncow_auth_hint';

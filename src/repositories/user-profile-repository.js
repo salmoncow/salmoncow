@@ -5,10 +5,6 @@
  * Implementations can use LocalStorage, Firestore, or any other backend.
  *
  * Uses Result pattern for predictable error handling.
- *
- * Architecture Reference:
- * - .prompts/core/architecture/code-structure.md (Repository Pattern, Result Types)
- * - .prompts/core/architecture/feature-extensibility.md (Dependency Inversion)
  */
 
 /**

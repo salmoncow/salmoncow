@@ -14,7 +14,7 @@
  *
  * Pure DOM + window APIs; no Firebase imports; no service dependencies.
  *
- * Feature spec: .specs/features/002-dark-mode-theme/spec.md §XI.1
+ * Feature spec: .specs/archive/002-dark-mode-theme/spec.md §XI.1
  */
 
 const THEMES = Object.freeze(['light', 'dark', 'system']);

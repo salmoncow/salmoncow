@@ -16,9 +16,6 @@
  * Events:
  *   - preference-change: Fired when user changes a preference
  *     detail: { key: string, value: any }
- *
- * Architecture Reference:
- * - .prompts/core/architecture/code-structure.md (Web Components)
  */
 import { escapeHtml } from '../utils/escape-html.js';
 import './UserPortal.css';
