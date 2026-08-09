@@ -22,7 +22,6 @@ const ADMIN_VISIBLE_FIELDS = Object.freeze([
     'displayName',
     'photoURL',
     'createdAt',
-    'lastSignInAt',
     'role',
 ]);
 

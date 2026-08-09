@@ -97,9 +97,12 @@ export class AdminPortal extends HTMLElement {
     }
 
     /**
-     * Update the dropdown on a specific row without re-rendering the table.
-     * Used after a successful setUserRole call; the snapshot listener will
-     * eventually bring Firestore state up to date too.
+     * Update the dropdown on a specific row after a successful setUserRole
+     * call, so the table reflects the change without a refetch.
+     *
+     * Note there is no snapshot listener on the admin list — it is a one-shot
+     * paginated read — so this local update is the only thing keeping the row
+     * current until the page is reloaded.
      */
     updateUserRole(uid, newRole) {
         const u = this.users.find((x) => x.uid === uid);
@@ -141,9 +144,14 @@ export class AdminPortal extends HTMLElement {
         return `
 <div class="admin-portal__search-bar">
   <input type="search" class="admin-portal__search"
-    placeholder="Search by name or email"
-    aria-label="Search users by name or email"
+    placeholder="Filter loaded users"
+    aria-label="Filter the loaded users by name or email"
     value="${escapeHtml(this.query)}" />
+  ${
+      this.hasMore
+          ? '<p class="admin-portal__search-hint">Filters the users loaded so far. Use “Load more” to include the rest.</p>'
+          : ''
+  }
 </div>`;
     }
 
@@ -182,9 +190,15 @@ export class AdminPortal extends HTMLElement {
                </button>`
             : '';
         if (filtered.length === 0) {
+            // Filtering is client-side over the loaded page only, so "no
+            // matches" is not the same as "no such user". Saying so prevents
+            // the previous behaviour, where a user on page 2+ looked absent.
+            const more = this.hasMore
+                ? ' More users have not been loaded yet — use “Load more” and filter again.'
+                : '';
             return `
 <div class="admin-portal__status">
-  <p>No users match "${escapeHtml(this.query.trim())}".</p>
+  <p>No loaded users match "${escapeHtml(this.query.trim())}".${more}</p>
 </div>
 ${footer}`;
         }
@@ -197,7 +211,6 @@ ${footer}`;
         <th scope="col">User</th>
         <th scope="col">Email</th>
         <th scope="col">Joined</th>
-        <th scope="col">Last sign-in</th>
         <th scope="col">Role</th>
       </tr>
     </thead>
@@ -219,7 +232,6 @@ ${footer}`;
   </td>
   <td data-label="Email">${email}</td>
   <td data-label="Joined">${formatDate(u.createdAt)}</td>
-  <td data-label="Last sign-in">${formatDate(u.lastSignInAt)}</td>
   <td data-label="Role">${this.renderRoleCell(u)}</td>
 </tr>`;
     }
@@ -307,7 +319,13 @@ ${footer}`;
 .admin-portal__role-select { padding: .35rem .5rem; border-radius: 4px; border: 1px solid var(--surface-border); background: var(--surface-elevated); color: var(--text-primary); }
 .admin-portal__load-more { margin-top: 1rem; padding: .5rem 1rem; cursor: pointer; border: 1px solid var(--surface-border); background: var(--surface-elevated); color: var(--text-primary); border-radius: 4px; }
 .admin-portal__load-more:disabled { opacity: .6; cursor: wait; }
-.admin-portal__search-bar { margin-bottom: 1rem; }
+.admin-portal__search-hint {
+                margin: 0.375rem 0 0;
+                font-size: 0.8125rem;
+                color: var(--text-tertiary);
+            }
+
+            .admin-portal__search-bar { margin-bottom: 1rem; }
 .admin-portal__search { width: 100%; max-width: 400px; padding: .5rem .75rem; border: 1px solid var(--surface-border); border-radius: 6px; background: var(--surface-elevated); color: var(--text-primary); font-size: 1rem; box-sizing: border-box; }
 .admin-portal__search:focus { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 

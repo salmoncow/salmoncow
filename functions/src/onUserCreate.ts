@@ -31,7 +31,6 @@ export const onUserCreate = functionsV1.auth.user().onCreate(async (user) => {
             role: 'user',
             createdAt: FieldValue.serverTimestamp(),
             updatedAt: FieldValue.serverTimestamp(),
-            lastSignInAt: null,
             preferences: {
                 theme: 'system',
                 emailNotifications: false,
