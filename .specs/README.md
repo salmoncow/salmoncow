@@ -15,7 +15,6 @@ See [Spec-Kit Integration Guide](../.prompts/meta/speckit-integration-guide.md) 
 ```
 .specs/
 ├── constitution.md          # Project constitutional spec (single source of truth) — portable
-├── technical/               # Technical configurations — portable scaffolding
 │   ├── build-system.md
 │   ├── cicd-pipeline.md
 │   └── firebase-deployment.md
@@ -28,7 +27,7 @@ See [Spec-Kit Integration Guide](../.prompts/meta/speckit-integration-guide.md) 
 ### Portability rule
 
 When migrating `.specs/` as starter scaffolding to a new project:
-- **Copy**: `constitution.md` (adapt content), `technical/` (adapt content), empty `features/`
+- **Copy**: `constitution.md` (adapt content), empty `features/`
 - **Skip**: `archive/` — it's this project's history, not generic guidance
 
 Archive is a peer of `features/` (not nested inside it) specifically to make this rule unambiguous.
@@ -117,7 +116,7 @@ Use these slash commands to work with spec-kit:
 **Related Documentation:**
 - [Spec-Kit Integration Guide](../.prompts/meta/speckit-integration-guide.md) - Comprehensive guide to hybrid architecture
 - [CLAUDE.md](../CLAUDE.md) - Decision framework and mandatory consultation protocol
-- [Prompts Library](../.prompts/README.md) - Foundational patterns and best practices
+- Foundational patterns come from the global skills in `~/.claude/skills/`, not this repo — see [CLAUDE.md](../CLAUDE.md)
 - [Architectural Evolution Strategy](../.prompts/meta/architectural-evolution-strategy.md) - Phase transition framework
 - [Architectural Decision Log](../.prompts/meta/architectural-decision-log.md) - Historical decisions
 

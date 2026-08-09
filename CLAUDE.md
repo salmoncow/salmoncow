@@ -13,10 +13,10 @@ If you encounter a task where no skill or project artifact provides sufficient g
 **Constitutional Spec (single source of truth):**
 - `.specs/constitution.md` — Project constraints, current phase, quality thresholds, tech stack, cost limits
 
-**Technical Specifications:**
-- `.specs/technical/build-system.md` — Vite configuration and optimization
-- `.specs/technical/cicd-pipeline.md` — GitHub Actions CI/CD workflows
-- `.specs/technical/firebase-deployment.md` — Firebase Hosting deployment process
+**Operational Documentation:**
+- `DEVELOPMENT.md` — setup, build, type checking, coverage, observability, and
+  rollback procedures. Replaces the former `.specs/technical/` files, which had
+  drifted so far from the codebase that they misinformed rather than informed.
 
 **Architectural History:**
 - `.prompts/meta/architectural-evolution-strategy.md` — Framework for phase transitions and decision triggers
